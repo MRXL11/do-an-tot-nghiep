@@ -6,7 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\UpdateProductRequest;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -86,32 +92,152 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show($id)
     {
         //
+        $brands = Brand::all();
+        $categories = Category::all();
+        $product = Product::with('variants')->findOrFail($id); // add reletionship with reviews later
+        return view('admin.products.show', compact('product', 'categories', 'brands'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Product $product)
-    {
-        //
-    }
+    public function edit($id) {}
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, $id)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $product = Product::findOrFail($id);
+
+            // Xử lý ảnh thumbnail
+            if ($request->hasFile('thumbnail')) {
+                // Xóa ảnh cũ nếu tồn tại
+                if ($product->thumbnail && Storage::disk('public')->exists($product->thumbnail)) {
+                    Storage::disk('public')->delete($product->thumbnail);
+                }
+
+                // Lưu ảnh mới với tên có timestamp
+                $file = $request->file('thumbnail');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $filePath = $file->storeAs('uploads/products', $fileName, 'public');
+            } else {
+                $filePath = $product->thumbnail;
+            }
+
+            // Cập nhật thông tin sản phẩm
+            $product->update([
+                'name' => $request->input('name'),
+                'description' => $request->input('description'),
+                'brand_id' => $request->input('brand_id'),
+                'category_id' => $request->input('category_id'),
+                'status' => $request->input('status'),
+                'thumbnail' => $filePath,
+                'short_description' => $request->input('short_description'),
+            ]);
+
+            // Xử lý biến thể
+            if ($request->has('variants')) {
+                foreach ($request->input('variants') as $index => $variantData) {
+                    $variant = ProductVariant::find($variantData['id']);
+                    if (!$variant) {
+                        Log::warning("Variant ID {$variantData['id']} not found for product ID {$id}");
+                        continue;
+                    }
+
+                    // Nếu có ảnh mới
+                    if ($request->hasFile("variants.$index.image")) {
+                        // Xóa ảnh cũ nếu tồn tại
+                        if ($variant->image && Storage::disk('public')->exists(str_replace('storage/', '', $variant->image))) {
+                            Storage::disk('public')->delete(str_replace('storage/', '', $variant->image));
+                        }
+
+                        $file = $request->file("variants.$index.image");
+                        $fileName = time() . '_' . $file->getClientOriginalName();
+                        $path = $file->storeAs('uploads/variants', $fileName, 'public');
+                        $variant->image = 'storage/' . $path;
+                    }
+
+                    $variant->color = $variantData['color'];
+                    $variant->size = $variantData['size'];
+                    $variant->price = $variantData['price'];
+                    $variant->stock_quantity = $variantData['stock_quantity'];
+                    $variant->status = $variantData['status'];
+
+                    if ($product->status === 'inactive') {
+                        $variant->status = 'inactive';
+                    }
+
+                    $variant->save();
+                }
+            }
+
+            DB::commit();
+            return redirect()->route('admin.products.show', $product->id)->with('success', 'Cập nhật sản phẩm thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Update product failed: ' . $e->getMessage(), [
+                'product_id' => $id,
+                'request_data' => $request->all(),
+            ]);
+            return back()->with('error', 'Đã xảy ra lỗi khi cập nhật sản phẩm: ' . $e->getMessage());
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Product $product)
+    public function destroy($id)
     {
         //
+        DB::beginTransaction();
+
+        try {
+            // 1. Cập nhật trạng thái sản phẩm
+            $product = Product::findOrFail($id);
+            $product->status = 'inactive';
+            $product->save();
+
+            // 2. Cập nhật tất cả các biến thể của sản phẩm đó
+            ProductVariant::where('product_id', $id)
+                ->update(['status' => 'inactive']);
+
+            DB::commit();
+
+            // 👉 Quay lại trang trước và flash thông báo
+            return redirect()
+                ->back()
+                ->with(
+                    'success',
+                    'Sản phẩm ' . $product->name .
+                        ' và các biến thể tương ứng đã được ngừng bán (inactive).'
+                );
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
+    }
+
+    public function restore($id)
+    {
+        try {
+            $product = Product::findOrFail($id);
+            $product->status = 'active';
+            $product->save();
+
+            // Khôi phục các biến thể
+            ProductVariant::where('product_id', $id)->update(['status' => 'active']);
+
+            return redirect()->back()->with('success', 'Sản phẩm và các biến thể đã được khôi phục.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Lỗi khi khôi phục: ' . $e->getMessage());
+        }
     }
 }
