@@ -10,7 +10,7 @@
             <div class="row g-4 mb-4">
                 <div class="col-md-8">
                     <!-- Form tìm kiếm -->
-                    <form class="row gx-2 align-items-center mb-2" action="{{ route('products') }}" method="GET">
+                    <form class="row gx-2 align-items-center mb-2" action="{{ route('admin.products.index') }}" method="GET">
                         <!-- Ô tìm kiếm -->
                         <div class="col-auto">
                             <div class="input-group">
@@ -26,7 +26,7 @@
                         <!-- Select danh mục -->
                         <div class="col-auto">
                             <select class="form-select" name="category">
-                                <option value="">--Danh mục--</option>
+                                <option value="">-- Danh mục --</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}"
                                         {{ request('category') == $category->id ? 'selected' : '' }}>
@@ -38,7 +38,7 @@
                         <!-- Select thương hiệu -->
                         <div class="col-auto">
                             <select class="form-select" name="brand">
-                                <option value="">--Thương hiệu--</option>
+                                <option value="">-- Thương hiệu --</option>
                                 @foreach ($brands as $brand)
                                     <option value="{{ $brand->id }}"
                                         {{ request('brand') == $brand->id ? 'selected' : '' }}>
@@ -65,6 +65,18 @@
                             </button>
                         </div>
                     </form>
+
+                    @if (session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if (session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
+                    @endif
 
                     <!-- Thông báo không tìm thấy -->
                     @if ($noResults)
@@ -101,9 +113,29 @@
                                             </td>
                                             <td class="text-center">{{ $product->status }}</td>
                                             <td class="text-center">
-                                                <button type="button" class="btn btn-sm btn-primary">Chi tiết</button>
-                                                <button type="button" class="btn btn-sm btn-warning">Sửa</button>
-                                                <button type="button" class="btn btn-sm btn-danger">Xóa</button>
+                                                <a href="{{ route('admin.products.show', $product->id) }}"
+                                                    class="btn btn-sm btn-primary">Chi tiết</a>
+                                                {{-- <button type="button" class="btn btn-sm btn-warning">Sửa</button> --}}
+                                                @if (in_array($product->status, ['active', 'out_of_stock']))
+                                                    <form action="{{ route('admin.products.destroy', $product->id) }}"
+                                                        method="POST" style="display:inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                            onclick="return confirm('Bạn có chắc chắn muốn ngừng kích hoạt sản phẩm này và toàn bộ biến thể của nó không?')">
+                                                            Ngừng bán
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <form action="{{ route('admin.products.restore', $product->id) }}"
+                                                        method="POST" style="display:inline;">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-success"
+                                                            onclick="return confirm('Bạn có chắc chắn muốn khôi phục sản phẩm này và các biến thể không?')">
+                                                            Khôi phục
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
