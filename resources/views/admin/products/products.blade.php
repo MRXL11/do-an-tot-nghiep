@@ -105,7 +105,7 @@
                                             <td class="text-center text-truncate">
                                                 {{ Str::limit($product->name, 20, '...') }}</td>
                                             <td class="text-center">
-                                                <img src="{{ asset('dist/assets/img/prod-1.jpg') }}" alt="Thumbnail"
+                                                <img src="{{ Storage::url($product->thumbnail) }}" alt="Thumbnail"
                                                     class="img-fluid" style="max-width: 50px; height: auto;" />
                                             </td>
                                             <td class="text-center">{{ $product->sku }}</td>
@@ -151,7 +151,8 @@
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-header">
-                            <button class="btn btn-sm btn-block btn-success mb-2">Thêm sản phẩm</button><br>
+                            <a href="{{ route('admin.products.create') }}"
+                                class="btn btn-sm btn-block btn-success mb-2">Thêm sản phẩm</a><br>
                             <h3 class="card-title">Các sản phẩm đã thêm gần đây</h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-sm btn-tool" data-lte-toggle="card-collapse">
@@ -165,19 +166,24 @@
                         </div>
                         <div class="card-body p-0">
                             <div class="px-2">
-                                <div class="d-flex border-top py-2 px-1">
-                                    <div class="col-2">
-                                        <img src="../../dist/assets/img/default-150x150.png" alt="Product Image"
-                                            class="img-size-50" />
+                                @foreach ($latestProducts as $product)
+                                    <div class="d-flex border-top py-2 px-1">
+                                        <div class="col-2">
+                                            <img src="{{ Storage::url($product->thumbnail) }}" alt="Product Image"
+                                                class="img-size-50" />
+                                        </div>
+                                        <div class="col-10">
+                                            <a href="{{ route('admin.products.show', $product->id) }}"
+                                                class="fw-bold"
+                                                style="font-size: 1rem; text-decoration: none; color: ;">
+                                                {{ Str::limit($product->name, 25, '...') }}
+                                                <span class="badge text-bg-warning float-end">
+                                                    {{ $product->getPriceRangeAttribute() }} </span>
+                                            </a>
+                                            <div class="text-truncate">{{ $product->short_description }}</div>
+                                        </div>
                                     </div>
-                                    <div class="col-10">
-                                        <a href="javascript:void(0)" class="fw-bold">
-                                            Samsung TV
-                                            <span class="badge text-bg-warning float-end"> $1800 </span>
-                                        </a>
-                                        <div class="text-truncate">Samsung 32" 1080p 60Hz LED Smart HDTV.</div>
-                                    </div>
-                                </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>

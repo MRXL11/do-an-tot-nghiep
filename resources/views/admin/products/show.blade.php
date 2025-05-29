@@ -4,19 +4,54 @@
 
 @section('content')
     <div class="container-fluid">
-        <h2>Thông tin sản phẩm</h2>
-
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
         @if (session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        {{ $error }}
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
 
         <form id="productForm" action="{{ route('admin.products.update', $product->id) }}" method="POST"
             enctype="multipart/form-data">
             @csrf
             @method('PUT')
+
+            <div class="row align-items-center mb-3">
+                <!-- Cột trái: Tiêu đề và mô tả -->
+                <div class="col-md-6">
+                    <h3>Thông tin sản phẩm</h3>
+                    <p class="text-muted mb-0">
+                        Bạn có thể chỉnh sửa thông tin sản phẩm ở đây!
+                    </p>
+                </div>
+
+                <!-- Cột phải: Nút bấm -->
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <button type="submit" id="saveButton" class="btn btn-success">Lưu</button>
+                </div>
+            </div>
+
+            {{-- @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif --}}
+
+
             <div class="row g-3 align-items-center mb-3">
                 <div class="col-md-7">
                     <div class="row g-3">
@@ -104,99 +139,155 @@
             <!-- Thông tin sản phẩm -->
 
 
-            <h4>Biến thể sản phẩm</h4>
-            @foreach ($product->variants as $i => $variant)
-                <div class="card p-3 mb-3">
-                    <div class="row g-3 align-items-center">
-                        <!-- Ảnh bên trái -->
-                        <div class="col-md-5 text-center">
-                            <img id="preview_variant_{{ $i }}"
-                                src="{{ asset($variant->image ?? 'dist/assets/img/default-150x150.png') }}"
-                                class="img-fluid rounded mb-2"
-                                style="max-height: 200px; object-fit: cover; cursor: pointer;" alt="Ảnh biến thể"
-                                onclick="document.querySelector(`input[name='variants[{{ $i }}][image]']`).click()">
-                            <div class="mt-3">
-                                <label for="variant_image_{{ $i }}" class="form-label d-none"
-                                    id="label_variant_image_{{ $i }}">Chọn ảnh mới</label>
-                                <input type="file" id="variant_image_{{ $i }}"
-                                    name="variants[{{ $i }}][image]" class="form-control d-none"
-                                    accept="image/*" onchange="previewImage(this, {{ $i }})">
-                            </div>
-                            @error("variants.$i.image")
-                                <div class="text-danger small">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Thông tin bên phải -->
-                        <div class="col-md-7">
-                            <input type="hidden" name="variants[{{ $i }}][id]" value="{{ $variant->id }}">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label>Màu sắc</label>
-                                    <input type="text" class="form-control"
-                                        name="variants[{{ $i }}][color]"
-                                        value="{{ old("variants.$i.color", $variant->color) }}">
-                                    @error("variants.$i.color")
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label>Kích cỡ</label>
-                                    <input type="text" class="form-control"
-                                        name="variants[{{ $i }}][size]"
-                                        value="{{ old("variants.$i.size", $variant->size) }}">
-                                    @error("variants.$i.size")
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label>Giá</label>
-                                    <input type="number" class="form-control"
-                                        name="variants[{{ $i }}][price]"
-                                        value="{{ old("variants.$i.price", $variant->price) }}" step='any'>
-                                    @error("variants.$i.price")
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label>Số lượng</label>
-                                    <input type="number" class="form-control"
-                                        name="variants[{{ $i }}][stock_quantity]"
-                                        value="{{ old("variants.$i.stock_quantity", $variant->stock_quantity) }}">
-                                    @error("variants.$i.stock_quantity")
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-12">
-                                    <label for="variants[{{ $i }}][status]" class="form-label">Trạng
-                                        thái</label>
-                                    <select class="form-control" id="variants[{{ $i }}][status]"
-                                        name="variants[{{ $i }}][status]">
-                                        <option value="active" {{ $variant->status == 'active' ? 'selected' : '' }}>Kích
-                                            hoạt
-                                        </option>
-                                        <option value="inactive" {{ $variant->status == 'inactive' ? 'selected' : '' }}>
-                                            Không kích
-                                            hoạt
-                                        </option>
-                                    </select>
-                                    @error("variants.$i.status")
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="row align-items-center mb-3">
+                <!-- Cột trái: Tiêu đề và mô tả -->
+                <div class="col-md-6">
+                    <h3>Biến thể sản phẩm</h3>
+                    <p class="text-muted mb-0">
+                        Bạn có thể thêm, chỉnh sửa hoặc xóa các biến thể sản phẩm như màu sắc, kích cỡ,
+                        giá và số lượng.
+                    </p>
                 </div>
-            @endforeach
 
-            <div class="mt-3">
-                <button type="submit" id="saveButton" class="btn btn-success">Lưu</button>
+
             </div>
+
+            <!-- Biến thể sản phẩm -->
+            @forelse ($product->variants->chunk(2) as $chunk)
+                <div class="row">
+                    @foreach ($chunk as $j => $variant)
+                        <div class="col-12 col-md-6">
+                            <div class="card p-3 mb-3">
+                                <div class="row g-3">
+                                    <!-- Ảnh bên trái -->
+                                    <div class="col-12 col-md-5 text-center">
+                                        <img id="preview_variant_{{ $loop->parent->index * 2 + $j }}"
+                                            src="{{ asset($variant->image ?? 'dist/assets/img/default-150x150.png') }}"
+                                            class="img-fluid rounded mb-2"
+                                            style="max-height: 200px; object-fit: cover; cursor: pointer;"
+                                            alt="Ảnh biến thể"
+                                            onclick="document.querySelector(`input[name='variants[{{ $loop->parent->index * 2 + $j }}][image]']`).click()">
+                                        <input type="file" id="variant_image_{{ $loop->parent->index * 2 + $j }}"
+                                            name="variants[{{ $loop->parent->index * 2 + $j }}][image]"
+                                            class="form-control d-none" accept="image/*"
+                                            onchange="previewImage(this, {{ $loop->parent->index * 2 + $j }})">
+                                        @error('variants.' . ($loop->parent->index * 2 + $j) . '.image')
+                                            <div class="text-danger small">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <!-- Thông tin bên phải -->
+                                    <div class="col-12 col-md-7">
+                                        <input type="hidden" name="variants[{{ $loop->parent->index * 2 + $j }}][id]"
+                                            value="{{ $variant->id }}">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <label>Màu sắc</label>
+                                                <input type="text" class="form-control"
+                                                    name="variants[{{ $loop->parent->index * 2 + $j }}][color]"
+                                                    value="{{ old('variants.' . ($loop->parent->index * 2 + $j) . '.color', $variant->color) }}">
+                                                @error('variants.' . ($loop->parent->index * 2 + $j) . '.color')
+                                                    <div class="text-danger small">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-6">
+                                                <label>Kích cỡ</label>
+                                                <input type="text" class="form-control"
+                                                    name="variants[{{ $loop->parent->index * 2 + $j }}][size]"
+                                                    value="{{ old('variants.' . ($loop->parent->index * 2 + $j) . '.size', $variant->size) }}">
+                                                @error('variants.' . ($loop->parent->index * 2 + $j) . '.size')
+                                                    <div class="text-danger small">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-6">
+                                                <label>Giá</label>
+                                                <input type="number" class="form-control"
+                                                    name="variants[{{ $loop->parent->index * 2 + $j }}][price]"
+                                                    value="{{ old('variants.' . ($loop->parent->index * 2 + $j) . '.price', $variant->price) }}"
+                                                    step="any">
+                                                @error('variants.' . ($loop->parent->index * 2 + $j) . '.price')
+                                                    <div class="text-danger small">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-6">
+                                                <label>Số lượng</label>
+                                                <input type="number" class="form-control"
+                                                    name="variants[{{ $loop->parent->index * 2 + $j }}][stock_quantity]"
+                                                    value="{{ old('variants.' . ($loop->parent->index * 2 + $j) . '.stock_quantity', $variant->stock_quantity) }}">
+                                                @error('variants.' . ($loop->parent->index * 2 + $j) . '.stock_quantity')
+                                                    <div class="text-danger small">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-12">
+                                                <label>Trạng thái</label>
+                                                <select class="form-control"
+                                                    name="variants[{{ $loop->parent->index * 2 + $j }}][status]">
+                                                    <option value="active"
+                                                        {{ $variant->status == 'active' ? 'selected' : '' }}>
+                                                        Kích hoạt</option>
+                                                    <option value="inactive"
+                                                        {{ $variant->status == 'inactive' ? 'selected' : '' }}>
+                                                        Không kích hoạt</option>
+                                                </select>
+                                                @error('variants.' . ($loop->parent->index * 2 + $j) . '.status')
+                                                    <div class="text-danger small">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> <!-- row -->
+                            </div> <!-- card -->
+                        </div> <!-- col -->
+                    @endforeach
+                </div> <!-- row -->
+            @empty
+                <div class="col-12">
+                    <div class="alert alert-info">Sản phẩm không có biến thể nào.</div>
+                </div>
+            @endforelse
+
+
         </form>
+        <button type="button" id="add_variant" class="btn btn-primary">-- Thêm biến thể --</button>
+        <div id="variant_form_container" class="d-none mt-3">
+            <form action="{{ route('admin.products.addVariants', $product->id) }}" method="POST">
+                @csrf
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label>Danh sách màu (phẩy cách)</label>
+                        <input type="text" id="color" class="form-control" placeholder="Đỏ,Trắng,Xanh">
+                        <div class="invalid-feedback" id="color_error"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Danh sách size (phẩy cách)</label>
+                        <input type="text" id="size" class="form-control" placeholder="S,M,L,XL">
+                        <div class="invalid-feedback" id="size_error"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Giá mặc định</label>
+                        <input type="number" id="default_price" class="form-control" step="any">
+                        <div class="invalid-feedback" id="default_price_error"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Số lượng mặc định</label>
+                        <input type="number" id="default_quantity" class="form-control">
+                        <div class="invalid-feedback" id="default_quantity_error"></div>
+                    </div>
+
+                    <div class="col-md-12 text-end">
+                        <button type="button" class="btn btn-success" id="generate_variants">Tạo tổ hợp</button>
+                        <button type="submit" class="btn btn-info">Lưu</button>
+                    </div>
+
+                    <!-- Hidden input để chứa JSON -->
+                    <input type="hidden" name="variants_json" id="variants_json">
+                </div>
+
+                <div class="mt-3">
+                    <strong>Các tổ hợp đã tạo:</strong>
+                    <ul id="variantList"></ul>
+                </div>
+            </form>
+        </div>
     </div>
 @endsection
