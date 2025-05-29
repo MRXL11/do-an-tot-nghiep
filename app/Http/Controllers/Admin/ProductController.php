@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AddVariantsRequest;
+use App\Http\Requests\StoreProductRequest;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
@@ -12,6 +14,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdateProductRequest;
+use Illuminate\Contracts\Cache\Store;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
@@ -67,9 +72,12 @@ class ProductController extends Controller
         // Kiểm tra nếu có tìm kiếm nhưng không có kết quả
         $noResults = $hasSearch && $products->isEmpty();
 
+        // 5 sản phẩm mới nhất
+        $latestProducts = Product::with('variants')->orderByDesc('id')->take(5)->get();
+
         return view(
             'admin.products.products',
-            compact('products', 'categories', 'brands', 'statuses', 'noResults')
+            compact('products', 'categories', 'brands', 'statuses', 'noResults', 'latestProducts')
         );
     }
 
@@ -79,14 +87,64 @@ class ProductController extends Controller
     public function create()
     {
         //
+        $brands = Brand::all();
+        $categories = Category::all();
+        return view('admin.products.create', compact('categories', 'brands'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
         //
+        DB::beginTransaction();
+        if ($request->hasFile('thumbnail')) {
+            // Lưu ảnh mới với tên có timestamp
+            $file = $request->file('thumbnail');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs('uploads/products', $fileName, 'public');
+        } else {
+            $filePath = null;
+        }
+
+        try {
+            $product = Product::create([
+                'name' => $request->name,
+                'category_id' => $request->category_id,
+                'brand_id' => $request->brand_id,
+                'sku' => strtoupper(Str::random(8)),
+                'slug' => Str::slug($request->name . '-' . Str::random(4)),
+                'description' => $request->description,
+                'short_description' => $request->short_description,
+                'status' => $request->status,
+                'thumbnail' => $filePath ?? null,
+            ]);
+
+            if ($request->filled('variants_json')) {
+                $variants = json_decode($request->variants_json, true);
+
+                foreach ($variants as $variant) {
+
+                    $product->variants()->create([
+                        'color' => $variant['color'],
+                        'size' => $variant['size'],
+                        'price' => $variant['price'],
+                        'stock_quantity' => $variant['quantity'],
+                        'sku' => $variant['sku'],
+                        'status' => 'active'
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return redirect()
+                ->route('admin.products.show', $product->id)
+                ->with('success', 'Sản phẩm đã được tạo thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -178,7 +236,9 @@ class ProductController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('admin.products.show', $product->id)->with('success', 'Cập nhật sản phẩm thành công!');
+            return redirect()
+                ->route('admin.products.show', $product->id)
+                ->with('success', 'Cập nhật sản phẩm thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Update product failed: ' . $e->getMessage(), [
@@ -188,8 +248,6 @@ class ProductController extends Controller
             return back()->with('error', 'Đã xảy ra lỗi khi cập nhật sản phẩm: ' . $e->getMessage());
         }
     }
-
-
     /**
      * Remove the specified resource from storage.
      */
@@ -238,6 +296,40 @@ class ProductController extends Controller
             return redirect()->back()->with('success', 'Sản phẩm và các biến thể đã được khôi phục.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Lỗi khi khôi phục: ' . $e->getMessage());
+        }
+    }
+
+    public function addVariants(AddVariantsRequest $request, $id)
+    {
+        try {
+            $product = Product::findOrFail($id);
+
+            // Giải mã JSON từ variants_json
+            $variants = json_decode($request->input('variants_json'), true);
+
+            if ($variants) {
+                foreach ($variants as $variant) {
+                    $exists = $product->variants()->where('color', $variant['color'])
+                        ->where('size', $variant['size'])
+                        ->exists();
+
+                    if ($exists) {
+                        return redirect()->back()->with('error', 'Biến thể với màu sắc và kích cỡ này đã tồn tại.');
+                    }
+                    $product->variants()->create([
+                        'color' => $variant['color'],
+                        'size' => $variant['size'],
+                        'price' => $variant['price'],
+                        'stock_quantity' => $variant['quantity'],
+                        'sku' => $variant['sku'],
+                        'status' => 'active'
+                    ]);
+                }
+            }
+
+            return redirect()->back()->with('success', 'Thêm biến thể thành công.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Lỗi khi thêm biến thể: ' . $e->getMessage());
         }
     }
 }
