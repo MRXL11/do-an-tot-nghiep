@@ -38,4 +38,19 @@ class Product extends Model
     // {
     //     return $this->hasMany(Review::class);
     // }
+    public function getPriceRangeAttribute()
+    {
+        if ($this->variants()->exists()) {
+            $minPrice = $this->variants()->min('price');
+            $maxPrice = $this->variants()->max('price');
+
+            if ($minPrice == $maxPrice) {
+                return number_format($minPrice) . ' VNĐ';
+            }
+
+            return number_format($minPrice) . ' - ' . number_format($maxPrice) . ' VNĐ';
+        }
+
+        return number_format($this->price) . ' VNĐ';
+    }
 }
