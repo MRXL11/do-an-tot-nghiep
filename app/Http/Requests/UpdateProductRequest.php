@@ -20,14 +20,14 @@ class UpdateProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:products,name,' . $this->route('product') . ',id',
             'brand_id' => 'required|exists:brands,id',
             'category_id' => 'required|exists:categories,id',
             'status' => 'required|in:active,inactive,out_of_stock',
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string|max:2000',
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            
+
             'variants' => 'nullable|array',
             'variants.*.id' => 'required|exists:product_variants,id',
             'variants.*.color' => 'required|string|max:50',
@@ -45,6 +45,7 @@ class UpdateProductRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'name.unique' => 'Tên sản phẩm đã tồn tại.',
             'name.required' => 'Tên sản phẩm là bắt buộc.',
             'name.string' => 'Tên sản phẩm phải là chuỗi ký tự.',
             'name.max' => 'Tên sản phẩm không được vượt quá 255 ký tự.',
