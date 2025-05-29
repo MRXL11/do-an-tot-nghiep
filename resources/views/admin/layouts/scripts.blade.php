@@ -275,5 +275,142 @@
             reader.readAsDataURL(file);
         }
     }
+
+    function generateSku(length = 8) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let sku = '';
+        for (let i = 0; i < length; i++) {
+            sku += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return sku;
+    }
+
+    // Hàm thêm product variants
+    function generateVariants() {
+        const colors = document.getElementById('colors').value.split(',').map(c => c.trim()).filter(c => c);
+        const sizes = document.getElementById('sizes').value.split(',').map(s => s.trim()).filter(s => s);
+        const price = document.getElementById('default_price').value;
+        const quantity = document.getElementById('default_quantity').value;
+
+        if (!colors.length || !sizes.length || !price || !quantity) {
+            alert("Vui lòng nhập đủ màu, size, giá và số lượng!");
+            return;
+        }
+
+        const variants = [];
+        let html = '';
+        colors.forEach(color => {
+            sizes.forEach(size => {
+                const sku = generateSku();
+                variants.push({
+                    color,
+                    size,
+                    price,
+                    quantity,
+                    sku
+                });
+                html += `<li>${color} - ${size} | SL: ${quantity} | Giá: ${price} | SKU: ${sku}</li>`;
+            });
+        });
+
+        document.getElementById('variantList').innerHTML = html;
+        document.getElementById('variants_json').value = JSON.stringify(variants);
+    }
+
+    // Mở/đóng form thêm biến thể
+    document.getElementById('add_variant').addEventListener('click', function() {
+        const formContainer = document.getElementById('variant_form_container');
+        formContainer.classList.toggle('d-none');
+    });
+
+    function showError(inputId, message) {
+        const input = document.getElementById(inputId);
+        const error = document.getElementById(inputId + '_error');
+        input.classList.add('is-invalid');
+        error.textContent = message;
+    }
+
+    function clearErrors() {
+        ['color', 'size', 'default_price', 'default_quantity'].forEach(id => {
+            document.getElementById(id).classList.remove('is-invalid');
+            document.getElementById(id + '_error').textContent = '';
+        });
+    }
+
+    document.getElementById('generate_variants').addEventListener('click', function() {
+        clearErrors();
+        const colorInput = document.getElementById('color');
+        const sizeInput = document.getElementById('size');
+        const priceInput = document.getElementById('default_price');
+        const quantityInput = document.getElementById('default_quantity');
+
+        let hasError = false;
+
+        const colors = colorInput.value.split(',').map(c => c.trim()).filter(Boolean);
+        const sizes = sizeInput.value.split(',').map(s => s.trim()).filter(Boolean);
+        const price = priceInput.value;
+        const quantity = quantityInput.value;
+
+        if (!colors.length) {
+            showError('color', 'Vui lòng nhập ít nhất một màu.');
+            hasError = true;
+        }
+
+        if (!sizes.length) {
+            showError('size', 'Vui lòng nhập ít nhất một kích cỡ.');
+            hasError = true;
+        }
+
+        if (!price || parseFloat(price) < 0) {
+            showError('default_price', 'Giá phải lớn hơn hoặc bằng 0.');
+            hasError = true;
+        }
+
+        if (!quantity || parseInt(quantity) < 0) {
+            showError('default_quantity', 'Số lượng phải lớn hơn hoặc bằng 0.');
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+    });
+
+
+    // Tạo tổ hợp khi nhấn nút
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'generate_variants') {
+            const colors = document.getElementById('color').value.split(',').map(c => c.trim()).filter(Boolean);
+            const sizes = document.getElementById('size').value.split(',').map(s => s.trim()).filter(Boolean);
+            const price = document.getElementById('default_price').value;
+            const quantity = document.getElementById('default_quantity').value;
+
+            if (!colors.length || !sizes.length || !price || !quantity) {
+                alert("Vui lòng nhập đủ màu, size, giá và số lượng!");
+                return;
+            }
+
+            const variants = [];
+            let html = '';
+
+            colors.forEach(color => {
+                sizes.forEach(size => {
+                    const sku = generateSku(); // Hàm tạo SKU tự động của bạn
+                    variants.push({
+                        color,
+                        size,
+                        price,
+                        quantity,
+                        sku,
+                        status: 'active'
+                    });
+                    html +=
+                        `<li>${color} - ${size} | SL: ${quantity} | Giá: ${price} | SKU: ${sku}</li>`;
+                });
+            });
+
+            document.getElementById('variants_json').value = JSON.stringify(variants);
+            document.getElementById('variantList').innerHTML = html;
+        }
+    });
 </script>
 <!--end::Optional Scripts-->
