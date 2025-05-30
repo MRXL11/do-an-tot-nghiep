@@ -1,9 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\BrandController;
 
-
-Route::get('/admin', function () {
+// khi làm route admin mọi người hãy sửa lại đường dẫn cho đúng với tên thư mục của mình nhé
+// ví dụ như url admin/user/edit-user
+// nằm trong admin thì sẽ là admin/.....
+Route::get('/admin/statistical', function () {
     return view('admin.others_menu.statistical');  
 })->name('statistical');
 
@@ -27,9 +30,15 @@ Route::get('/reviews', function () {
     return view('admin.others_menu.reviews');
 })->name('reviews');
 
-Route::get('/brands', function () {
-    return view('admin.brands.brands');
-})->name('brands');
+
+Route::get('/admin/brands', [BrandController::class, 'index'])->name('brands');
+Route::get('/admin/brands/create', [BrandController::class, 'create'])->name('brands.create');
+Route::post('/admin/brands', [BrandController::class, 'store'])->name('brands.store');
+Route::get('/admin/brands/{id}', [BrandController::class, 'show'])->name('brands.show');
+Route::get('/admin/brands/{id}/edit', [BrandController::class, 'edit'])->name('brands.edit');
+Route::put('/admin/brands/{id}', [BrandController::class, 'update'])->name('brands.update');
+Route::delete('/admin/brands/{id}', [BrandController::class, 'destroy'])->name('brands.destroy');
+
 
 Route::get('/vouchers', function () {
     return view('admin.vouchers.vouchers');
