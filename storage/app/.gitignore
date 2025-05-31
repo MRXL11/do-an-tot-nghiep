@@ -1,4 +1,7 @@
 *
 !private/
 !public/
+!public/brands/
+!public/products/
+!public/users/
 !.gitignore
