@@ -5,14 +5,21 @@
 @section('content')
 <div class="container-fluid">
     <div class="col-lg-12">
+        {{-- ở đây sẽ là các thông báo thành công success --}}
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong class="me-2">Thành công!</strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
         <div class="row g-4 mb-4">
             <!-- Cột trái: Danh sách Brands với bảng và paginate -->
-            <div class="col-md-8">
+            <div class="col-md-9">
                 {{-- Phần tìm kiếm --}}
                 <div class="card-header bg-info text-white fw-bold">
                     <div class="row align-items-center">
                         <!-- Tìm kiếm -->
-                        <div class="col-md-10">
+                        <div class="col-md-7">
                         <form class="d-flex" method="GET" action="">
                             <input type="text" name="search" value="{{ request('search') }}" class="form-control me-2" placeholder="Tìm kiếm Brand...">
                             <button class="btn btn-light text-primary" type="submit">
@@ -20,7 +27,16 @@
                             </button>
                          </form>
                         </div>
-
+                        <!-- Lọc theo trạng thái -->
+                        <div class="col-md-3">
+                            <form method="GET" action="{{ route('brands') }}">
+                            <select name="status" onchange="this.form.submit()" class="form-select text-center">
+                                <option value="">Tất cả</option>
+                                <option value="active"   {{ request('status')==='active' ? 'selected' : '' }}>Active</option>
+                                <option value="inactive" {{ request('status')==='inactive' ? 'selected' : '' }}>Inactive</option>
+                            </select>
+                        </form>
+                        </div>
                         <!-- Nút thêm -->
                         <div class="col-md-2 text-end">
                             <button class="btn btn-success">
@@ -35,8 +51,9 @@
                     <thead>
                         <tr>
                             <th scope="col">ID</th>
-                            <th scope="col">Tên thương hiệu</th>
-                            <th scope="col">Hình ảnh</th>
+                            <th scope="col">Tên thương hiệu</th> 
+                            <th scope="col">Slug</th>  
+                            <th scope="col">Ngày tạo</th>                        
                             <th scope="col">Trạng thái</th>
                             <th scope="col">Thao tác</th>
                         </tr>
@@ -47,33 +64,41 @@
                                 <tr>
                                     <td>{{ $brand->id }}</td>
                                     <td>{{ $brand->name }}</td>
-                                      <td>
-                                        <img src="{{ $brand->image ? asset('storage/' . $brand->image) : asset('images/placeholder.png') }}"
-                                            alt="{{ $brand->name }}"
-                                            style="width: 80px; height: auto; object-fit: cover;">
-                                    </td>
-                                    {{-- nếu status==active thì màu xanh, nếu status==inactive thì màu đỏ --}}
+                                      
+                                    <td>{{ $brand->slug }}</td>
+                                    <td>{{ $brand->created_at->format('d-m-Y H:i') }}</td>
                                     <td>
                                         <span class="badge {{ $brand->status == 'active' ? 'bg-success' : 'bg-danger' }}">
                                             {{ $brand->status }}
                                         </span>
                                     </td>
                                    
-                                    <td>
+                                    <td class="d-flex justify-content-center align-items-center">
                                       <a href="{{ route('brands.edit', $brand->id) }}" class="btn btn-sm btn-warning me-1">
                                     <i class="bi bi-pencil-square"></i> Sửa
-                                </a>
-                                <a href="{{ route('brands.show', $brand->id) }}" class="btn btn-sm btn-primary me-1">
-                                    <i class="bi bi-info-circle"></i> Chi tiết
-                                </a>
-                                <form action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn xóa?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i> Xoá
-                                    </button>
-                                </form>
-
+                                    </a>
+                                    {{-- ở đây sẽ có nút đển cập nhật trạng thái từ active -> inactive, ngược lại. --}}
+                                   <!-- Form nút chuyển trạng thái -->
+                                   
+                                    <form action="{{ route('brands.toggleStatus', $brand->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn chuyển trạng thái?')">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-sm me-1 text-white {{ $brand->status == 'active' ? 'bg-danger' : 'bg-success' }}">
+                                            {{-- nếu trạng thái là active thì nút màu xanh, nếu inactive thì nút màu đỏ --}}
+                                                 <i class="bi {{ $brand->status == 'active' ? 'bi-pause-circle' : 'bi-play-circle' }}"></i>
+                                                {{ $brand->status == 'active' ? 'Ngừng bán' : 'Kích hoạt' }}
+                                           
+                                           
+                                        </button>
+                                    </form>
+                                    <!-- Nút xóa -->
+                                    <form action="{{ route('brands.destroy', $brand->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa thương hiệu này?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Xóa
+                                        </button>
+                                    </form>
                                     </td>
                                 </tr>
                             @endforeach
@@ -92,7 +117,7 @@
             <!-- Kết thúc cột trái -->
 
             <!-- Cột phải: TOP Nhãn hàng bán chạy -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card">
                     <div class="card-header mb-2">
                         <strong>
@@ -116,10 +141,7 @@
                             @foreach($topBrands as $brand)
                                 <div class="col-3 d-flex flex-column align-items-center">
                                     <!-- Vì bảng brands không có hình ảnh, nên ta sử dụng ảnh placeholder (đặt tại public/images/placeholder.png) -->
-                                    <img class="img-fluid rounded-circle mb-1"
-                                   src="{{ $brand->image ? asset('storage/' . $brand->image) : asset('images/placeholder.png') }}"
-                                       alt="{{ $brand->name }}"
-                                    style="width: 60px; height: 60px; object-fit: cover;">
+                                    
 
                                     <a class="fw-semibold text-secondary text-center text-truncate d-block w-100"
                                        href="#"

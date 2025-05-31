@@ -11,23 +11,27 @@
       {{-- class này là làm bố cục lên cùng hàng --}}
     <div class="col-md-8 ">
         {{-- ở dây chứa nội dung bên trái --}}
+        <a href="{{ route('brands') }}" class="btn btn-outline-danger mb-2"> <i class="bi bi-arrow-left"></i>Quay lại</a>
+         {{-- form này dùng để tạo mới thương hiệu --}}
          <form action="{{ route('brands.store') }}" method="POST" class="form-control border border-2 p-4"
             {{-- enctype là để upload file --}}
           enctype="multipart/form-data">
             @csrf
             <div class="mb-3">
-                <label for="name">Tên thương hiệu:</label>
-                <input type="text" name="name" class="form-control" required>
+                <label for="name" class="form-label">Tên thương hiệu</label>
+                    <input type="text" id="name" name="name" value="{{ old('name') }}" class="form-control">
+                    @error('name')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
             </div>
             <div class="mb-3">
-                <label for="slug">Slug:</label>
-                <input type="text" name="slug" class="form-control" required>
+                <label for="slug" class="form-label">Slug</label>
+                <input type="text" id="slug" name="slug" value="{{ old('slug') }}" class="form-control">
+                @error('slug')
+                    <div class="text-danger">{{ $message }}</div>
+                @enderror
             </div>
-             <div class="mb-3">
-                <label for="image">Hình ảnh:</label>
-                <input type="file" name="image" class="form-control">
-            </div>
-            
+
             <div class="mb-3">
                 <label for="status">Trạng thái:</label>
                 <select name="status" class="form-control">
@@ -35,7 +39,7 @@
                     <option value="inactive">Ngừng hoạt động</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-success w-100">Tạo mới</button>
+            <button type="submit" class="btn btn-success w-30"><i class="bi bi-plus-circle"></i>Tạo mới</button>
         </form>
     </div>
     </div>

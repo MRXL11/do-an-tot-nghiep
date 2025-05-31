@@ -34,10 +34,12 @@ Route::get('/reviews', function () {
 Route::get('/admin/brands', [BrandController::class, 'index'])->name('brands');
 Route::get('/admin/brands/create', [BrandController::class, 'create'])->name('brands.create');
 Route::post('/admin/brands', [BrandController::class, 'store'])->name('brands.store');
-Route::get('/admin/brands/{id}', [BrandController::class, 'show'])->name('brands.show');
 Route::get('/admin/brands/{id}/edit', [BrandController::class, 'edit'])->name('brands.edit');
 Route::put('/admin/brands/{id}', [BrandController::class, 'update'])->name('brands.update');
+Route::patch('/admin/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
 Route::delete('/admin/brands/{id}', [BrandController::class, 'destroy'])->name('brands.destroy');
+
+
 
 
 Route::get('/vouchers', function () {
