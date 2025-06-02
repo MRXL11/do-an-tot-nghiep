@@ -1,10 +1,27 @@
 <?php
 
+
+
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Laravel\Socialite\Facades\Socialite;
+use App\Models\User;
+use App\Http\Controllers\Client\Auth\LoginController;
+use App\Http\Controllers\Client\Auth\RegisterController;
+use App\Http\Controllers\Client\VerifyController;
+use App\Http\Controllers\Client\AccountController;
+
+use App\Http\Controllers\Client\Auth\Mail\ResetPasswordController;
+use App\Http\Controllers\Client\Auth\Mail\ForgotPasswordController;
+
+
+
+
 
 
 Route::get('/admin', function () {
-    return view('admin.others_menu.statistical');  
+    return view('admin.others_menu.statistical');
 })->name('statistical');
 
 Route::get('/users', function () {
@@ -42,43 +59,98 @@ Route::get('/notifications', function () {
 Route::get('/', function () {
    return view('client.layouts.index');
 });
-route ::get('/page', function () {
+Route ::get('/page', function () {
     return view('client.pages.page-layout');
 });
-route ::get('/products-client', function () {
+Route::get('/products-client', function () {
     return view('client.pages.products-client');
 });
-route ::get('/cart', function () {
+Route::get('/cart', function () {
     return view('client.pages.cart');
 });
-route ::get('/checkout', function () {
+Route::get('/checkout', function () {
     return view('client.pages.checkout');
 });
-route ::get('/about', function () {
+Route::get('/about', function () {
     return view('client.pages.about');
 });
 
-route ::get('/contact', function () {
+Route::get('/contact', function () {
     return view('client.pages.contact');
 });
 
-route ::get('/wishlist', function () {
+Route::get('/wishlist', function () {
     return view('client.pages.wishlist');
 });
 
-route ::get('/account', function () {
+Route::get('/account', function () {
     return view('client.pages.account');
 });
-route ::get('/detail-product', function () {
+Route::post('/account', [AccountController::class, 'update'])->name('account.update');
+Route::get('/detail-product', function () {
     return view('client.pages.detail-product');
 });
 
-route ::get('/login', function () {
-    return view('client.pages.login');
+
+Route::middleware('web')->group(function () {
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'handleLogin'])->name('login.submit');
+    Route::get('/logout', function () {
+        Auth::logout();
+        return redirect('/login')->with('success', 'Bạn đã đăng xuất');
+    })->name('logout');
 });
-route ::get('/register', function () {
+
+Route::get('/register', function () {
     return view('client.pages.register');
-});
-route ::get('/notifications-client', function () {
+})->name('register');
+Route::post('/register', [RegisterController::class, 'handleRegister'])->name('register.submit');
+
+
+
+Route::get('/notifications-client', function () {
     return view('client.pages.notifications-client');
 });
+
+// Xác thực email
+Route::post('/register/otp/send', [RegisterController::class, 'sendOtp'])->name('register.otp.send');
+Route::post('/register/otp/submit', [RegisterController::class, 'registerWithOtp'])->name('register.submit.otp');
+Route::post('/verify/send', [VerifyController::class, 'send'])->name('verify.send');
+Route::post('/verify/check', [VerifyController::class, 'check'])->name('verify.check');
+
+// Gửi email chứa link đặt lại mật khẩu
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+
+// Trang form nhập mật khẩu mới
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+
+// Đăng nhập bằng mạng xã hội
+Route::get('/auth/google', function () {
+    return Socialite::driver('google')->redirect();
+})->name('google.login');
+
+Route::get('/auth/google/callback', function () {
+    $googleUser = Socialite::driver('google')->stateless()->user();
+
+    $user = \App\Models\User::updateOrCreate([
+        'email' => $googleUser->getEmail(),
+    ], [
+        'name' => $googleUser->getName(),
+        'password' => bcrypt(Str::random(12)),
+        'email_verified_at' => now(),
+        'status' => 'active',
+        'role_id' => 2
+    ]);
+
+    Auth::login($user);
+    return redirect('/');
+});
+
+
+
+
+
+
+

@@ -2,7 +2,32 @@
 @section('content')
 
 <div class="container">
-    
+     @auth
+    @if (is_null(Auth::user()->email_verified_at))
+        <div class="alert alert-warning text-center mt-4">
+            <strong>⚠ Email của bạn chưa được xác minh!</strong>
+
+            @if(session('resent_code'))
+                <div class="text-success mt-2">✅ Mã đã được gửi tới <b>{{ Auth::user()->email }}</b></div>
+            @endif
+
+            <form method="POST" action="{{ route('verify.send') }}" class="mt-2">
+                @csrf
+                <button class="btn btn-warning btn-sm">Gửi mã xác minh</button>
+            </form>
+
+            <form method="POST" action="{{ route('verify.check') }}" class="mt-2 w-50 mx-auto">
+                @csrf
+                <input type="text" name="code" class="form-control mb-2" placeholder="Nhập mã xác minh đã gửi đến email" required>
+                <button class="btn btn-success btn-sm w-100">Xác minh</button>
+            </form>
+        </div>
+    @else
+        <div class="alert alert-success text-center mt-4">
+            ✅ Email của bạn đã được xác minh!
+        </div>
+    @endif
+    @endauth
 <!-- ***** About Area Starts ***** -->
 <div class="about-us">
     <div class="container">
@@ -199,6 +224,6 @@
 </div>
 <!-- ***** Subscribe Area Ends ***** -->
 </div>
-     
+
 @endsection
 

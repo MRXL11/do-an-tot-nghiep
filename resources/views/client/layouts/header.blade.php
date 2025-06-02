@@ -54,24 +54,48 @@
                         </li>
 
                         <!-- Tài khoản -->
-                        <li class="submenu">
-                            <a href="javascript:;">
-                                <i class="bi bi-person-circle me-1"></i> Tài khoản
-                            </a>
-                            <ul>
-                                <li><a href="{{ url('/account') }}" class="{{ Request::is('account') ? 'active' : '' }}"><i class="bi bi-person-lines-fill me-1"></i> Trang cá nhân</a></li>
+                    <li class="submenu">
+                        <a href="javascript:;">
+                            <i class="bi bi-person-circle me-1"></i> Tài khoản
+                        </a>
+                        <ul>
+                            @auth
+                                <li>
+                                    <a href="{{ url('/account') }}" class="{{ Request::is('account') ? 'active' : '' }}">
+                                        <i class="bi bi-person-lines-fill me-1"></i> Trang cá nhân
+                                    </a>
+                                </li>
                                 <li>
                                     <a href="{{ url('/checkout') }}" class="{{ Request::is('checkout') ? 'active' : '' }}">
                                         <i class="bi bi-credit-card-fill me-1 text-success"></i> Thanh toán
                                     </a>
                                 </li>
+                                <li>
+                                    <a href="{{ url('/notifications-client') }}" class="{{ Request::is('notifications-client') ? 'active' : '' }}">
+                                        <i class="bi bi-bell-fill me-1 text-warning"></i> Thông báo
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('logout') }}">
+                                        <i class="bi bi-box-arrow-right me-1 text-danger"></i> Đăng xuất
+                                    </a>
+                                </li>
+                            @endauth
 
-                                <li><a href="{{ url('/notifications-client') }}" class="{{ Request::is('notifications-client') ? 'active' : '' }}"><i class="bi bi-bell-fill me-1 text-warning"></i> Thông báo</a></li>
-                                <li><a href="{{ url('/register') }}" class="{{ Request::is('register') ? 'active' : '' }}"><i class="bi bi-person-plus-fill me-1 text-success"></i> Đăng ký</a></li>
-                                <li><a href="{{ url('/login') }}" class="{{ Request::is('login') ? 'active' : '' }}"><i class="bi bi-box-arrow-in-right me-1 text-primary"></i> Đăng nhập</a></li>
-                                <li><a href="#"><i class="bi bi-box-arrow-right me-1 text-danger"></i> Đăng xuất</a></li>
-                            </ul>
-                        </li>
+                            @guest
+                                <li>
+                                    <a href="{{ url('/register') }}" class="{{ Request::is('register') ? 'active' : '' }}">
+                                        <i class="bi bi-person-plus-fill me-1 text-success"></i> Đăng ký
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url('/login') }}" class="{{ Request::is('login') ? 'active' : '' }}">
+                                        <i class="bi bi-box-arrow-in-right me-1 text-primary"></i> Đăng nhập
+                                    </a>
+                                </li>
+                            @endguest
+                        </ul>
+                    </li>
                     </ul>
                     <!-- ***** Menu End ***** -->
                 </nav>

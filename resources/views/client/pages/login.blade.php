@@ -2,13 +2,14 @@
 
 @section('content')
 <div class="container d-flex justify-content-center align-items-center">
-      <div class="card shadow-lg p-4 w-100" style="max-width: 500px;">
+  <div class="card shadow-lg p-4 w-100" style="max-width: 500px;">
     <div class="text-center mb-4">
       <i class="bi bi-box-arrow-in-right text-success" style="font-size: 2rem;"></i>
       <h4 class="mt-2">Đăng nhập tài khoản</h4>
       <p class="text-muted">Chào mừng bạn quay trở lại!</p>
     </div>
-    <form action="" method="POST">
+
+    <form action="{{ route('login.submit') }}" method="POST">
       @csrf
       <div class="mb-3">
         <label for="email" class="form-label">Địa chỉ Email</label>
@@ -25,17 +26,45 @@
       <div class="d-grid">
         <button class="btn btn-outline-success" type="submit"><i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập</button>
       </div>
-      <div class="text-center mt-3">
-    <a href="" class="btn btn-outline-danger w-100">
-        <i class="bi bi-google me-1"></i> Đăng nhập bằng Google
-    </a>
+    </form>
+
+    <div class="text-center mt-3">
+      <button class="btn btn-link text-decoration-none" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
+        🔐 Quên mật khẩu?
+      </button>
     </div>
 
-    </form>
     <div class="text-center mt-3">
-      <small>Bạn chưa có tài khoản? <a href="">Đăng ký ngay</a></small>
+        <a href="{{ route('google.login') }}" class="btn btn-outline-danger w-100">
+            <i class="bi bi-google me-1"></i> Đăng nhập bằng Google
+        </a>
+    </div>
+
+    <div class="text-center mt-3">
+      <small>Bạn chưa có tài khoản? <a href="{{ route('register') }}">Đăng ký ngay</a></small>
     </div>
   </div>
 </div>
 
+<!-- Modal Quên Mật Khẩu -->
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="{{ route('password.email') }}">
+      @csrf
+      <div class="modal-content">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title" id="forgotPasswordModalLabel">Quên mật khẩu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body">
+          <p>Nhập email để nhận liên kết đặt lại mật khẩu:</p>
+          <input type="email" name="email" class="form-control" placeholder="email@example.com" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-warning w-100">📩 Gửi liên kết</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
 @endsection
