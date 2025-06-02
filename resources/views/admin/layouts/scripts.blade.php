@@ -285,7 +285,7 @@
         return sku;
     }
 
-    // Hàm thêm product variants
+    // auto generate variants
     function generateVariants() {
         const colors = document.getElementById('colors').value.split(',').map(c => c.trim()).filter(c => c);
         const sizes = document.getElementById('sizes').value.split(',').map(s => s.trim()).filter(s => s);
@@ -314,7 +314,9 @@
         });
 
         document.getElementById('variantList').innerHTML = html;
-        document.getElementById('variants_json').value = JSON.stringify(variants);
+        // Sửa ID từ variants_json -> variants
+        document.getElementById('variants').value = JSON.stringify(variants);
+
     }
 
     // Mở/đóng form thêm biến thể
@@ -337,6 +339,7 @@
         });
     }
 
+    // validate input fields before generating variants
     document.getElementById('generate_variants').addEventListener('click', function() {
         clearErrors();
         const colorInput = document.getElementById('color');
@@ -373,44 +376,6 @@
 
         if (hasError) return;
 
-    });
-
-
-    // Tạo tổ hợp khi nhấn nút
-    document.addEventListener('click', function(e) {
-        if (e.target && e.target.id === 'generate_variants') {
-            const colors = document.getElementById('color').value.split(',').map(c => c.trim()).filter(Boolean);
-            const sizes = document.getElementById('size').value.split(',').map(s => s.trim()).filter(Boolean);
-            const price = document.getElementById('default_price').value;
-            const quantity = document.getElementById('default_quantity').value;
-
-            if (!colors.length || !sizes.length || !price || !quantity) {
-                alert("Vui lòng nhập đủ màu, size, giá và số lượng!");
-                return;
-            }
-
-            const variants = [];
-            let html = '';
-
-            colors.forEach(color => {
-                sizes.forEach(size => {
-                    const sku = generateSku(); // Hàm tạo SKU tự động của bạn
-                    variants.push({
-                        color,
-                        size,
-                        price,
-                        quantity,
-                        sku,
-                        status: 'active'
-                    });
-                    html +=
-                        `<li>${color} - ${size} | SL: ${quantity} | Giá: ${price} | SKU: ${sku}</li>`;
-                });
-            });
-
-            document.getElementById('variants_json').value = JSON.stringify(variants);
-            document.getElementById('variantList').innerHTML = html;
-        }
     });
 </script>
 <!--end::Optional Scripts-->
