@@ -13,8 +13,11 @@ Route::get('/users', function () {
 })->name('users');
 
 Route::resource('/products', AdminProductController::class)->names('admin.products');
-Route::post('/admin/products/{id}/restore', [AdminProductController::class, 'restore'])->name('admin.products.restore');
-Route::post('/admin/products/{id}/addVariants', [AdminProductController::class, 'addVariants'])->name('admin.products.addVariants');
+
+Route::post('/admin/products/{id}/restore', [AdminProductController::class, 'restore'])
+    ->name('admin.products.restore');
+Route::post('/admin/products/{id}/addVariants', [AdminProductController::class, 'addVariants'])
+    ->name('admin.products.addVariants');
 
 
 Route::get('/orders', function () {
