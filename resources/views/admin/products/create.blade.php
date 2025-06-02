@@ -9,8 +9,21 @@
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
-        @if (session('error'))
+        {{-- @if (session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif --}}
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    <div class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>
+                                {{ $error }}
+                            </li>
+                        @endforeach
+                    </div>
+                </ul>
+            </div>
         @endif
 
         <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
@@ -129,7 +142,9 @@
             <button type="button" class="btn btn-secondary mb-3" onclick="generateVariants()">Tạo biến thể</button>
 
             <ul id="variantList"></ul>
-            <input type="hidden" name="variants_json" id="variants_json">
+            <!-- Sửa name từ variants_json -> variants -->
+            <input type="hidden" name="variants" id="variants">
+
 
             <button type="submit" class="btn btn-primary">Lưu sản phẩm</button>
         </form>

@@ -7,15 +7,21 @@
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
+
         @if (session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
+
         @if ($errors->any())
             <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        {{ $error }}
-                    @endforeach
+                <ul>
+                    <div class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>
+                                {{ $error }}
+                            </li>
+                        @endforeach
+                    </div>
                 </ul>
             </div>
         @endif
@@ -255,12 +261,12 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label>Danh sách màu (phẩy cách)</label>
-                        <input type="text" id="color" class="form-control" placeholder="Đỏ,Trắng,Xanh">
+                        <input type="text" id="colors" class="form-control" placeholder="Đỏ,Trắng,Xanh">
                         <div class="invalid-feedback" id="color_error"></div>
                     </div>
                     <div class="col-md-6">
                         <label>Danh sách size (phẩy cách)</label>
-                        <input type="text" id="size" class="form-control" placeholder="S,M,L,XL">
+                        <input type="text" id="sizes" class="form-control" placeholder="S,M,L,XL">
                         <div class="invalid-feedback" id="size_error"></div>
                     </div>
                     <div class="col-md-6">
@@ -275,12 +281,13 @@
                     </div>
 
                     <div class="col-md-12 text-end">
-                        <button type="button" class="btn btn-success" id="generate_variants">Tạo tổ hợp</button>
+                        <button type="button" class="btn btn-success" id="generate_variants"
+                            onclick="generateVariants()">Tạo tổ hợp</button>
                         <button type="submit" class="btn btn-info">Lưu</button>
                     </div>
 
                     <!-- Hidden input để chứa JSON -->
-                    <input type="hidden" name="variants_json" id="variants_json">
+                    <input type="hidden" name="variants" id="variants">
                 </div>
 
                 <div class="mt-3">

@@ -121,20 +121,28 @@ class ProductController extends Controller
                 'thumbnail' => $filePath ?? null,
             ]);
 
-            if ($request->filled('variants_json')) {
-                $variants = json_decode($request->variants_json, true);
+            // if (!$request->filled('variants_json')) {
+            //     return redirect()->back()->with('error', 'Vui lòng nhập thông tin biến thể sản phẩm.');
+            // }
 
-                foreach ($variants as $variant) {
+            $variants = $request->variants; // Bây giờ đã là mảng PHP
 
-                    $product->variants()->create([
-                        'color' => $variant['color'],
-                        'size' => $variant['size'],
-                        'price' => $variant['price'],
-                        'stock_quantity' => $variant['quantity'],
-                        'sku' => $variant['sku'],
-                        'status' => 'active'
-                    ]);
-                }
+            if (empty($variants)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Vui lòng nhập thông tin biến thể sản phẩm.');
+            }
+
+            foreach ($variants as $variant) {
+
+                $product->variants()->create([
+                    'color' => $variant['color'],
+                    'size' => $variant['size'],
+                    'price' => $variant['price'],
+                    'stock_quantity' => $variant['quantity'],
+                    'sku' => $variant['sku'],
+                    'status' => 'active'
+                ]);
             }
 
             DB::commit();
@@ -303,31 +311,46 @@ class ProductController extends Controller
     {
         try {
             $product = Product::findOrFail($id);
+            $variants = $request->variants;
 
-            // Giải mã JSON từ variants_json
-            $variants = json_decode($request->input('variants_json'), true);
+            $added = 0;
+            $skipped = [];
 
             if ($variants) {
                 foreach ($variants as $variant) {
-                    $exists = $product->variants()->where('color', $variant['color'])
+                    $exists = $product->variants()
+                        ->where('color', $variant['color'])
                         ->where('size', $variant['size'])
                         ->exists();
 
                     if ($exists) {
-                        return redirect()->back()->with('error', 'Biến thể với màu sắc và kích cỡ này đã tồn tại.');
+                        $skipped[] = "{$variant['color']} - {$variant['size']}";
+                        continue;
                     }
+
                     $product->variants()->create([
                         'color' => $variant['color'],
                         'size' => $variant['size'],
                         'price' => $variant['price'],
                         'stock_quantity' => $variant['quantity'],
                         'sku' => $variant['sku'],
-                        'status' => 'active'
+                        'status' => $variant['status'] ?? 'active',
                     ]);
+
+                    $added++;
                 }
             }
 
-            return redirect()->back()->with('success', 'Thêm biến thể thành công.');
+            // Xây dựng thông báo
+            $messages = [];
+            if ($added > 0) {
+                $messages[] = "Đã thêm $added biến thể mới.";
+            }
+            if (!empty($skipped)) {
+                $messages[] = "Bỏ qua " . count($skipped) . " biến thể đã tồn tại: " . implode(', ', $skipped) . ".";
+            }
+
+            return redirect()->back()->with('success', implode(' ', $messages));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Lỗi khi thêm biến thể: ' . $e->getMessage());
         }
