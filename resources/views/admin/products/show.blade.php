@@ -159,10 +159,10 @@
             </div>
 
             <!-- Biến thể sản phẩm -->
-            @forelse ($product->variants->chunk(2) as $chunk)
+            @forelse ($product->variants->chunk(3) as $chunk)
                 <div class="row">
                     @foreach ($chunk as $j => $variant)
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-4">
                             <div class="card p-3 mb-3">
                                 <div class="row g-3">
                                     <!-- Ảnh bên trái -->
