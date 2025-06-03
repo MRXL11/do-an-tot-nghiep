@@ -51,7 +51,7 @@
                 </li>
 
                   <li class="nav-item">
-                    <a href="{{ route('products') }}" class="nav-link {{ request()->routeIs('products') ? 'active' : '' }}">
+                    <a href="{{ route('admin.products.index') }}" class="nav-link {{ request()->routeIs('admin.products.index') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-circle"></i>
                         <p>Sản Phẩm</p>
                     </a>
