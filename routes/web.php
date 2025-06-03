@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 
 
+=======
+>>>>>>> 9ab69761863cee2eaebc91a5016bfa3a5f3a56af
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;

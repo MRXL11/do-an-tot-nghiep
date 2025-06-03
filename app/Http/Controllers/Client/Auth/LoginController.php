@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-     public function showLoginForm()
+    public function showLoginForm()
     {
         return view('client.pages.login');
     }
@@ -21,11 +21,20 @@ class LoginController extends Controller
         ]);
 
         $credentials = $request->only('email', 'password');
-
         $remember = $request->has('remember');
 
         if (Auth::attempt($credentials, $remember)) {
-            return redirect()->intended('/')->with('success', 'Đăng nhập thành công');
+            $user = Auth::user();
+
+            // Kiểm tra role và chuyển hướng tương ứng
+            if ($user->role_id == 1) {
+                return redirect('/admin')->with('success', 'Đăng nhập thành công (Admin)');
+            } elseif ($user->role_id == 2) {
+                return redirect('/home')->with('success', 'Đăng nhập thành công (Khách hàng)');
+            } else {
+                Auth::logout(); // Nếu role không hợp lệ
+                return redirect('/login')->withErrors(['email' => 'Tài khoản không có quyền truy cập']);
+            }
         }
 
         return back()->withErrors(['email' => 'Email hoặc mật khẩu không đúng']);
