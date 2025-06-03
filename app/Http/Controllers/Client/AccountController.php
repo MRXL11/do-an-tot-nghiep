@@ -29,7 +29,6 @@ class AccountController extends Controller
             } else {
                 return back()->withErrors(['old_password' => 'Mật khẩu cũ không đúng']);
             }
-            
         }
 
         $user->save();

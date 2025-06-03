@@ -172,7 +172,7 @@ Route::get('/auth/google', function () {
 Route::get('/auth/google/callback', function () {
     $googleUser = Socialite::driver('google')->stateless()->user();
 
-    $user = \App\Models\User::updateOrCreate([
+    $user = User::updateOrCreate([
         'email' => $googleUser->getEmail(),
     ], [
         'name' => $googleUser->getName(),
