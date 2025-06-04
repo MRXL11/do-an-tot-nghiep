@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
-
+use App\Http\Controllers\Admin\BrandController;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -48,9 +48,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/products/{id}/addVariants', [AdminProductController::class, 'addVariants'])
         ->name('admin.products.addVariants');
 
-    Route::get('/brands', function () {
-        return view('admin.brands.brands');
-    })->name('brands');
+    Route::get('/admin/brands', [BrandController::class, 'index'])->name('brands');
+    Route::get('/admin/brands/create', [BrandController::class, 'create'])->name('brands.create');
+    Route::post('/admin/brands', [BrandController::class, 'store'])->name('brands.store');
+    Route::get('/admin/brands/{id}/edit', [BrandController::class, 'edit'])->name('brands.edit');
+    Route::put('/admin/brands/{id}', [BrandController::class, 'update'])->name('brands.update');
+    Route::patch('/admin/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
+    Route::delete('/admin/brands/{id}', [BrandController::class, 'destroy'])->name('brands.destroy');
 
     Route::get('/vouchers', function () {
         return view('admin.vouchers.vouchers');
@@ -64,9 +68,6 @@ Route::middleware(['auth'])->group(function () {
         return view('admin.others_menu.reviews');
     })->name('reviews');
 
-    Route::get('/brands', function () {
-        return view('admin.brands.brands');
-    })->name('brands');
 
     Route::get('/vouchers', function () {
         return view('admin.vouchers.vouchers');
