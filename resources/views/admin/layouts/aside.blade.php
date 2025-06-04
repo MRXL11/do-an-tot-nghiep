@@ -43,6 +43,7 @@
                              </a>
                          </li>
 
+<<<<<<< HEAD
                          <li class="nav-item">
                              <a href="{{ route('products') }}"
                                  class="nav-link {{ request()->routeIs('products') ? 'active' : '' }}">
@@ -64,6 +65,26 @@
                                  <p>Đánh giá</p>
                              </a>
                          </li>
+=======
+                  <li class="nav-item">
+                    <a href="{{ route('admin.products.index') }}" class="nav-link {{ request()->routeIs('admin.products.index') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-circle"></i>
+                        <p>Sản Phẩm</p>
+                    </a>
+                </li>
+                  <li class="nav-item">
+                    <a href="{{ route('orders') }}" class="nav-link {{ request()->routeIs('orders') ? 'active' : '' }}">
+                      <i class="nav-icon bi bi-circle"></i>
+                      <p>Đơn hàng</p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                     <a href="{{ route('reviews') }}" class="nav-link {{ request()->routeIs('reviews') ? 'active' : '' }}">
+                      <i class="nav-icon bi bi-circle"></i>
+                      <p>Đánh giá</p>
+                    </a>
+                  </li>
+>>>>>>> origin/main
 
                          <li class="nav-item">
                              <a href="{{ route('brands') }}"
