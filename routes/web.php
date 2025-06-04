@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 
 
 use Illuminate\Support\Facades\Route;
+
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
@@ -14,6 +16,7 @@ use App\Http\Controllers\Client\VerifyController;
 use App\Http\Controllers\Client\AccountController;
 use App\Http\Controllers\Client\Auth\Mail\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\Mail\ForgotPasswordController;
+use App\Http\Controllers\Admin\CategoryController;
 
 // ✅ Route ADMIN
 Route::middleware(['auth'])->group(function () {
@@ -24,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/users', function () {
         return view('admin.users.users');
     })->name('users');
+
 
     Route::get('/products', function () {
         return view('admin.products.products');
@@ -37,11 +41,24 @@ Route::middleware(['auth'])->group(function () {
         return view('admin.categories.categories');
     })->name('categories');
 
-    Route::get('/reviews', function () {
-        return view('admin.others_menu.reviews');
-    })->name('reviews');
 
-    Route::resource('/products', AdminProductController::class)->names('admin.products');
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/categories/trashed', [CategoryController::class, 'trashed'])->name('categories.trashed');
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories');
+    Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('/categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
+    Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+    Route::post('/categories/{id}/restore', [CategoryController::class, 'restore'])->name('categories.restore');
+    Route::delete('/categories/{id}/force-delete', [CategoryController::class, 'forceDelete'])->name('categories.forceDelete');
+});
+Route::get('/reviews', function () {
+    return view('admin.others_menu.reviews');
+})->name('reviews');
+
 
     Route::post('/admin/products/{id}/restore', [AdminProductController::class, 'restore'])
         ->name('admin.products.restore');
@@ -51,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/brands', function () {
         return view('admin.brands.brands');
     })->name('brands');
+
 
     Route::get('/vouchers', function () {
         return view('admin.vouchers.vouchers');
@@ -127,6 +145,7 @@ Route::get('/', function () {
     return view('client.layouts.index');
 })->name('home');
 
+
 Route::get('/page', function () {
     return view('client.pages.page-layout');
 });
@@ -151,6 +170,7 @@ Route::get('/wishlist', function () {
 Route::get('/account', function () {
     return view('client.pages.account');
 });
+
 Route::post('/account', [AccountController::class, 'update'])->name('account.update');
 Route::get('/detail-product', function () {
     return view('client.pages.detail-product');
@@ -175,6 +195,7 @@ Route::get('/register', function () {
 Route::post('/register', [RegisterController::class, 'handleRegister'])->name('register.submit');
 
 // Xác thực email & đặt lại mật khẩu
+
 Route::get('/notifications-client', function () {
     return view('client.pages.notifications-client');
 });

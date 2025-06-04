@@ -4,28 +4,36 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Category;
 
 class Product extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProductFactory> */
+
     use HasFactory;
 
     protected $fillable = [
         'name',
-        'slug',
-        'sku',
-        'description',
-        'short_description',
         'category_id',
         'brand_id',
+        'sku',
         'thumbnail',
+        'description',
+        'short_description',
+        'slug',
         'status',
     ];
+
+    protected $casts = [
+        'status' => 'string',
+    ];
+
+    // Quan hệ với model Category
 
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
+
     public function brand()
     {
         return $this->belongsTo(Brand::class);
@@ -54,3 +62,4 @@ class Product extends Model
         return number_format($this->price) . ' VNĐ';
     }
 }
+
