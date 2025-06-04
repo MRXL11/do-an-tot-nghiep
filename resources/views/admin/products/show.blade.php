@@ -14,18 +14,16 @@
 
         @if ($errors->any())
             <div class="alert alert-danger">
-                <ul>
-                    <div class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>
-                                {{ $error }}
-                            </li>
-                        @endforeach
-                    </div>
+                <ul class="mb-0">
+                    @php
+                        $uniqueErrors = array_unique($errors->all());
+                    @endphp
+                    @foreach ($uniqueErrors as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
                 </ul>
             </div>
         @endif
-
 
         <form id="productForm" action="{{ route('admin.products.update', $product->id) }}" method="POST"
             enctype="multipart/form-data">
@@ -46,18 +44,7 @@
                     <button type="submit" id="saveButton" class="btn btn-success">Lưu</button>
                 </div>
             </div>
-
-            {{-- @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif --}}
-
-
+            
             <div class="row g-3 align-items-center mb-3">
                 <div class="col-md-7">
                     <div class="row g-3">

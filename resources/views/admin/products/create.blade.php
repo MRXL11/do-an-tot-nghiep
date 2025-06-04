@@ -14,17 +14,17 @@
         @endif --}}
         @if ($errors->any())
             <div class="alert alert-danger">
-                <ul>
-                    <div class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>
-                                {{ $error }}
-                            </li>
-                        @endforeach
-                    </div>
+                <ul class="mb-0">
+                    @php
+                        $uniqueErrors = array_unique($errors->all());
+                    @endphp
+                    @foreach ($uniqueErrors as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
                 </ul>
             </div>
         @endif
+
 
         <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
