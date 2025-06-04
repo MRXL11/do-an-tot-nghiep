@@ -1,10 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Admin\CategoryController;
 
 Route::get('/admin', function () {
-    return view('admin.others_menu.statistical');  
+    return view('admin.others_menu.statistical');
 })->name('statistical');
 
 Route::get('/users', function () {
@@ -19,10 +19,19 @@ Route::get('/orders', function () {
     return view('admin.orders.orders');
 })->name('orders');
 
-Route::get('/categories', function () {
-    return view('admin.categories.categories');
-})->name('categories');
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/categories/trashed', [CategoryController::class, 'trashed'])->name('categories.trashed');
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories');
+    Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('/categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
+    Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
+    Route::post('/categories/{id}/restore', [CategoryController::class, 'restore'])->name('categories.restore');
+    Route::delete('/categories/{id}/force-delete', [CategoryController::class, 'forceDelete'])->name('categories.forceDelete');
+});
 Route::get('/reviews', function () {
     return view('admin.others_menu.reviews');
 })->name('reviews');
@@ -38,47 +47,43 @@ Route::get('/notifications', function () {
     return view('admin.others_menu.notifications');
 })->name('notifications');
 
-// đây là khách hàng
+// Đây là khách hàng
 Route::get('/', function () {
-   return view('client.layouts.index');
+    return view('client.layouts.index');
 });
-route ::get('/page', function () {
+Route::get('/page', function () {
     return view('client.pages.page-layout');
 });
-route ::get('/products-client', function () {
+Route::get('/products-client', function () {
     return view('client.pages.products-client');
 });
-route ::get('/cart', function () {
+Route::get('/cart', function () {
     return view('client.pages.cart');
 });
-route ::get('/checkout', function () {
+Route::get('/checkout', function () {
     return view('client.pages.checkout');
 });
-route ::get('/about', function () {
+Route::get('/about', function () {
     return view('client.pages.about');
 });
-
-route ::get('/contact', function () {
+Route::get('/contact', function () {
     return view('client.pages.contact');
 });
-
-route ::get('/wishlist', function () {
+Route::get('/wishlist', function () {
     return view('client.pages.wishlist');
 });
-
-route ::get('/account', function () {
+Route::get('/account', function () {
     return view('client.pages.account');
 });
-route ::get('/detail-product', function () {
+Route::get('/detail-product', function () {
     return view('client.pages.detail-product');
 });
-
-route ::get('/login', function () {
+Route::get('/login', function () {
     return view('client.pages.login');
 });
-route ::get('/register', function () {
+Route::get('/register', function () {
     return view('client.pages.register');
 });
-route ::get('/notifications-client', function () {
+Route::get('/notifications-client', function () {
     return view('client.pages.notifications-client');
 });
