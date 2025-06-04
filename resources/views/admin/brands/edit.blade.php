@@ -12,8 +12,8 @@
       
     <div class="col-md-8 ">
         {{-- ở dây chứa nội dung bên trái --}}
-          <a href="{{ route('brands') }}" class="btn btn-outline-danger mb-2"> <i class="bi bi-arrow-left"></i>Quay lại</a>
-         <form action="{{ route('brands.update', $brand->id) }}" method="POST" class="form-control border border-2 p-4"
+          <a href="{{ route('admin.brands.index') }}" class="btn btn-outline-danger mb-2"> <i class="bi bi-arrow-left"></i>Quay lại</a>
+         <form action="{{ route('admin.brands.update', $brand->id) }}" method="POST" class="form-control border border-2 p-4"
              enctype="multipart/form-data">
             @csrf
             @method('PUT')

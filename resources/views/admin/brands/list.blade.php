@@ -29,7 +29,7 @@
                         </div>
                         <!-- Lọc theo trạng thái -->
                         <div class="col-md-3">
-                            <form method="GET" action="{{ route('brands') }}">
+                            <form method="GET" action="{{ route('admin.brands.index') }}">
                             <select name="status" onchange="this.form.submit()" class="form-select text-center">
                                 <option value="">Tất cả</option>
                                 <option value="active"   {{ request('status')==='active' ? 'selected' : '' }}>Active</option>
@@ -40,7 +40,7 @@
                         <!-- Nút thêm -->
                         <div class="col-md-2 text-end">
                             <button class="btn btn-success">
-                              <a href="{{ route('brands.create') }}" class="text-white"><i class="bi bi-plus-circle me-1"></i> Thêm</a>
+                              <a href="{{ route('admin.brands.create') }}" class="text-white"><i class="bi bi-plus-circle me-1"></i> Thêm</a>
                             </button>
                         </div>
                     </div>
@@ -74,13 +74,13 @@
                                     </td>
                                    
                                     <td class="d-flex justify-content-center align-items-center">
-                                      <a href="{{ route('brands.edit', $brand->id) }}" class="btn btn-sm btn-warning me-1">
+                                      <a href="{{ route('admin.brands.edit', $brand->id) }}" class="btn btn-sm btn-warning me-1">
                                     <i class="bi bi-pencil-square"></i> Sửa
                                     </a>
                                     {{-- ở đây sẽ có nút đển cập nhật trạng thái từ active -> inactive, ngược lại. --}}
                                    <!-- Form nút chuyển trạng thái -->
                                    
-                                    <form action="{{ route('brands.toggleStatus', $brand->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn chuyển trạng thái?')">
+                                    <form action="{{ route('admin.brands.toggleStatus', $brand->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn chuyển trạng thái?')">
                                         @csrf
                                         @method('PATCH')
                                         <button type="submit" class="btn btn-sm me-1 text-white {{ $brand->status == 'active' ? 'bg-danger' : 'bg-success' }}">
@@ -92,7 +92,7 @@
                                         </button>
                                     </form>
                                     <!-- Nút xóa -->
-                                    <form action="{{ route('brands.destroy', $brand->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa thương hiệu này?')">
+                                    <form action="{{ route('admin.brands.destroy', $brand->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa thương hiệu này?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">

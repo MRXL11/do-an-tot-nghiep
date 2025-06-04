@@ -56,7 +56,7 @@ class BrandController extends Controller
     {
         Brand::create($request->only(['name', 'slug', 'status']));
 
-        return redirect()->route('brands')->with('success', 'Thương hiệu được tạo thành công');
+        return redirect()->route('admin.brands.index')->with('success', 'Thương hiệu được tạo thành công');
     }
 
  
@@ -74,7 +74,7 @@ class BrandController extends Controller
 
         $brand->update($request->only(['name', 'slug', 'status']));
 
-        return redirect()->route('brands')->with('success', 'Thương hiệu được cập nhật thành công');
+        return redirect()->route('admin.brands.index')->with('success', 'Thương hiệu được cập nhật thành công');
     }
 
      // thay đổi trạng thái
@@ -83,14 +83,14 @@ class BrandController extends Controller
     $brand = Brand::findOrFail($id);
     $brand->status = $brand->status == 'active' ? 'inactive' : 'active';
     $brand->save();
-    return redirect()->route('brands')->with('success', 'Trạng thái thương hiệu đã đổi');
+    return redirect()->route('admin.brands.index')->with('success', 'Trạng thái thương hiệu đã đổi');
 }
     // Xóa thương hiệu
     public function destroy($id)
     {
         $brand = Brand::findOrFail($id);
         $brand->delete();
-        return redirect()->route('brands')->with('success', 'Thương hiệu đã được xóa');
+        return redirect()->route('admin.brands.index')->with('success', 'Thương hiệu đã được xóa');
     }
 
 }
