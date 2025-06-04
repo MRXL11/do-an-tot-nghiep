@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\Auth\RegisterController;
-use App\Http\Controllers\Client\VerifyController;
+use App\Http\Controllers\Client\Auth\VerifyController;
 use App\Http\Controllers\Client\AccountController;
 use App\Http\Controllers\Client\Auth\Mail\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\Mail\ForgotPasswordController;
