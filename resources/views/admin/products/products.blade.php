@@ -95,6 +95,8 @@
                                         <th class="text-center">SKU</th>
                                         <th class="text-center">Thương hiệu</th>
                                         <th class="text-center">Trạng thái</th>
+                                        <th class="text-center">Ngày tạo</th>
+                                        <th class="text-center">Ngày cập nhật</th>
                                         <th class="text-center">Thao tác</th>
                                     </tr>
                                 </thead>
@@ -112,6 +114,8 @@
                                             <td class="text-center">{{ $product->brand ? $product->brand->name : 'N/A' }}
                                             </td>
                                             <td class="text-center">{{ $product->status }}</td>
+                                            <td class="text-center">{{ $product->created_at->format('d/m/Y H:i') }}</td>
+                                            <td class="text-center">{{ $product->updated_at->format('d/m/Y H:i') }}</td>
                                             <td class="text-center">
                                                 <a href="{{ route('admin.products.show', $product->id) }}"
                                                     class="btn btn-sm btn-primary">Chi tiết</a>
@@ -173,8 +177,7 @@
                                                 class="img-size-50" />
                                         </div>
                                         <div class="col-10">
-                                            <a href="{{ route('admin.products.show', $product->id) }}"
-                                                class="fw-bold"
+                                            <a href="{{ route('admin.products.show', $product->id) }}" class="fw-bold"
                                                 style="font-size: 1rem; text-decoration: none; color: ;">
                                                 {{ Str::limit($product->name, 25, '...') }}
                                                 <span class="badge text-bg-warning float-end">
