@@ -50,7 +50,8 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="name" class="form-label">Tên sản phẩm</label>
-                            <input type="text" name="name" class="form-control" id="name">
+                            <input type="text" name="name" class="form-control" id="name"
+                                value="{{ old('name') }}">
                             @error('name')
                                 <div class="text-danger small">{{ $message }}</div>
                             @enderror
@@ -94,7 +95,8 @@
 
                         <div class="col-md-12">
                             <label for="short_description" class="form-label">Mô tả ngắn</label>
-                            <input type="text" name="short_description" class="form-control" id="short_description">
+                            <input type="text" name="short_description" class="form-control" id="short_description"
+                                value="{{ old('short_description') }}">
                             @error('short_description')
                                 <div class="text-danger small">{{ $message }}</div>
                             @enderror
@@ -102,7 +104,7 @@
 
                         <div class="col-md-12">
                             <label for="description" class="form-label">Mô tả chi tiết</label>
-                            <textarea name="description" class="form-control" id="description" rows="3"></textarea>
+                            <textarea name="description" class="form-control" id="description" rows="3">{{ old('description') }}</textarea>
                             @error('description')
                                 <div class="text-danger small">{{ $message }}</div>
                             @enderror
@@ -118,22 +120,26 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label>Danh sách màu (ngăn cách bằng dấu phẩy)</label>
-                            <input type="text" id="colors" class="form-control" placeholder="Đỏ,Trắng,Xanh">
+                            <input type="text" id="colors" name='colors' class="form-control"
+                                placeholder="Đỏ,Trắng,Xanh" value="{{ old('colors') }}">
                         </div>
 
                         <div class="col-md-6">
                             <label>Danh sách size (ngăn cách bằng dấu phẩy)</label>
-                            <input type="text" id="sizes" class="form-control" placeholder="S,M,L,XL">
+                            <input type="text" id="sizes" name='sizes' class="form-control" placeholder="S,M,L,XL"
+                                value="{{ old('sizes') }}">
                         </div>
 
                         <div class="col-md-6">
                             <label>Giá mặc định</label>
-                            <input type="number" id="default_price" class="form-control" step="any">
+                            <input type="number" id="default_price" name='default_price' class="form-control"
+                                step="any" value="{{ old('default_price') }}">
                         </div>
 
                         <div class="col-md-6">
                             <label>Số lượng mặc định</label>
-                            <input type="number" id="default_quantity" class="form-control">
+                            <input type="number" id="default_quantity" name='default_quantity' class="form-control"
+                                value="{{ old('default_quantity') }}">
                         </div>
                     </div>
                 </div>

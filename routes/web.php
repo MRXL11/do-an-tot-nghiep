@@ -10,7 +10,7 @@ use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\Auth\RegisterController;
-use App\Http\Controllers\Client\VerifyController;
+use App\Http\Controllers\Client\Auth\VerifyController;
 use App\Http\Controllers\Client\AccountController;
 use App\Http\Controllers\Client\Auth\Mail\ResetPasswordController;
 use App\Http\Controllers\Client\Auth\Mail\ForgotPasswordController;
@@ -41,7 +41,7 @@ Route::middleware(['auth'])->group(function () {
         return view('admin.others_menu.reviews');
     })->name('reviews');
 
-    Route::resource('/products', AdminProductController::class)->names('admin.products');
+    Route::resource('/admin/products', AdminProductController::class)->names('admin.products');
 
     Route::post('/admin/products/{id}/restore', [AdminProductController::class, 'restore'])
         ->name('admin.products.restore');

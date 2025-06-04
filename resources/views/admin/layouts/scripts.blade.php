@@ -295,6 +295,12 @@
         if (!colors.length || !sizes.length || !price || !quantity) {
             alert("Vui lòng nhập đủ màu, size, giá và số lượng!");
             return;
+        } else if (parseFloat(price) < 0) {
+            alert("Giá phải lớn hơn hoặc bằng 0!");
+            return;
+        } else if (parseInt(quantity) < 0) {
+            alert("Số lượng phải lớn hơn hoặc bằng 0!");
+            return;
         }
 
         const variants = [];

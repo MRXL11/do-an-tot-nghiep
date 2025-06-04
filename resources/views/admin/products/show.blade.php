@@ -168,8 +168,7 @@
                                     <!-- Ảnh bên trái -->
                                     <div class="col-12 col-md-5 text-center">
                                         <img id="preview_variant_{{ $loop->parent->index * 2 + $j }}"
-                                            src="{{ asset($variant->image ?? 'dist/assets/img/default-150x150.png') }}"
-                                            class="img-fluid rounded mb-2"
+                                            src="{{ asset($variant->image) }}" class="img-fluid rounded mb-2"
                                             style="max-height: 200px; object-fit: cover; cursor: pointer;"
                                             alt="Ảnh biến thể"
                                             onclick="document.querySelector(`input[name='variants[{{ $loop->parent->index * 2 + $j }}][image]']`).click()">
@@ -254,6 +253,8 @@
 
 
         </form>
+
+
         <button type="button" id="add_variant" class="btn btn-primary">-- Thêm biến thể --</button>
         <div id="variant_form_container" class="d-none mt-3">
             <form action="{{ route('admin.products.addVariants', $product->id) }}" method="POST">

@@ -95,6 +95,7 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         //
+
         DB::beginTransaction();
         if ($request->hasFile('thumbnail')) {
             // Lưu ảnh mới với tên có timestamp
@@ -123,6 +124,7 @@ class ProductController extends Controller
             // }
 
             $variants = $request->variants; // Bây giờ đã là mảng PHP
+            // dd($variants);
 
             if (empty($variants)) {
                 return redirect()
