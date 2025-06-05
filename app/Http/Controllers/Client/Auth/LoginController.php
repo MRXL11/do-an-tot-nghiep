@@ -30,7 +30,7 @@ class LoginController extends Controller
             if ($user->role_id == 1) {
                 return redirect('/admin')->with('success', 'Đăng nhập thành công (Admin)');
             } elseif ($user->role_id == 2) {
-                return redirect('/home')->with('success', 'Đăng nhập thành công (Khách hàng)');
+                return redirect('/')->with('success', 'Đăng nhập thành công (Khách hàng)');
             } else {
                 Auth::logout(); // Nếu role không hợp lệ
                 return redirect('/login')->withErrors(['email' => 'Tài khoản không có quyền truy cập']);
