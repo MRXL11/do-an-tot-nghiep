@@ -20,7 +20,16 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone_number',
+        'address',
         'password',
+        'status',
+        'role_id',
+        'email_verified_at',
+        'reset_password_token',
+        'reset_password_expires_at',
+
+    
     ];
 
     /**
@@ -30,7 +39,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
+        'reset_password_token',
     ];
 
     /**
@@ -41,8 +50,16 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+           'email_verified_at' => 'datetime',
+        'reset_password_expires_at' => 'datetime',
+        'status' => 'string',
         ];
     }
+
+     public function role()
+        {
+            return $this->belongsTo(Role::class);
+        }
+
+   
 }

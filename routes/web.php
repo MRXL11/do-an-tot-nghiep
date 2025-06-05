@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -10,6 +11,9 @@ Route::get('/admin', function () {
 Route::get('/users', function () {
     return view('admin.users.users');
 })->name('users');
+
+Route::resource('/users', UserController::class)->names('admin.users');
+
 
 Route::get('/products', function () {
     return view('admin.products.products');
