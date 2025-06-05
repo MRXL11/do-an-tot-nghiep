@@ -10,9 +10,9 @@
                     <!-- ***** Logo End ***** -->
 
                     <!-- ***** Menu Start ***** -->
-                    <ul class="nav">
+                    <ul class="nav align-items-center">
                         <li class="scroll-to-section">
-                            <a href="{{ url('/index') }}" class="{{ Request::is('index') ? 'active' : '' }}">Trang chủ</a>
+                            <a href="{{ url('/') }}" class="{{ Request::is('index') ? 'active' : '' }}">Trang chủ</a>
                         </li>
                         <li class="scroll-to-section"><a href="#men">Nam</a></li>
                         <li class="scroll-to-section"><a href="#women">Nữ</a></li>
@@ -56,7 +56,12 @@
                         <!-- Tài khoản -->
                     <li class="submenu">
                         <a href="javascript:;">
-                            <i class="bi bi-person-circle me-1"></i> Tài khoản
+                        <i class="bi bi-person-circle me-1"></i>
+                        @auth
+                            {{ Auth::user()->name }}
+                        @else
+                            Tài khoản
+                        @endauth
                         </a>
                         <ul>
                             @auth

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
-
+use App\Http\Controllers\Client\Auth\SocialAuthController;// dăng nhập bằng gôogle
 // ✅ Route cho Admin
 Route::middleware(['auth'])->group(function () {
     // Dashboard admin
@@ -127,43 +127,17 @@ Route::middleware('web')->group(function () {
     Route::post('/register', [RegisterController::class, 'handleRegister'])->name('register.submit');
 });
 
-// Xác thực email & đặt lại mật khẩu
+// Xác thực email 
 Route::post('/register/otp/send', [RegisterController::class, 'sendOtp'])->name('register.otp.send');
 Route::post('/register/otp/submit', [RegisterController::class, 'registerWithOtp'])->name('register.submit.otp');
 Route::post('/verify/send', [VerifyController::class, 'send'])->name('verify.send');
 Route::post('/verify/check', [VerifyController::class, 'check'])->name('verify.check');
+// đặt lại mật khẩu
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
 // ✅ Đăng nhập Google (Socialite)
-Route::get('/auth/google', function () {
-    return Socialite::driver('google')->redirect();
-})->name('google.login');
-
-Route::get('/auth/google/callback', function () {
-    $googleUser = Socialite::driver('google')->stateless()->user();
-
-    $user = User::updateOrCreate([
-        'email' => $googleUser->getEmail(),
-    ], [
-        'name' => $googleUser->getName(),
-        'password' => bcrypt(Str::random(12)),
-        'email_verified_at' => now(),
-        'status' => 'active',
-        'role_id' => 2 // Mặc định là khách hàng
-    ]);
-
-    Auth::login($user);
-
-    // Chuyển hướng theo role_id
-    if ($user->role_id == 1) {
-        return redirect('/admin');
-    } elseif ($user->role_id == 2) {
-        return redirect('/home');
-    }
-
-    Auth::logout();
-    return redirect('/login')->withErrors(['msg' => 'Tài khoản không có quyền truy cập']);
-})->name('google.callback');
+Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle'])->name('google.login');
+Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback'])->name('google.callback');
