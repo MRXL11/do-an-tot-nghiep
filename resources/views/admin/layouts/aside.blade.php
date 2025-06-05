@@ -61,7 +61,6 @@
                       <p>Đánh giá</p>
                     </a>
                   </li>
->>>>>>> origin/main
 
                          <li class="nav-item">
                              <a href="{{ route('admin.brands.index') }}"
@@ -129,7 +128,7 @@
                              </a>
                          </li>
                          <li class="nav-item">
-                             <a href="" class="nav-link">
+                             <a href="{{ route('logout') }}" class="nav-link">
                                  <i class="nav-icon bi bi-circle"></i>
                                  <p>Đăng xuất</p>
                              </a>
