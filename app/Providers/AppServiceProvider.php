@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use Illuminate\Pagination\Paginator; // Thư viện phân trang của Laravel
+use Illuminate\Pagination\Paginator;// Thư viện phân trang của Laravel
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider

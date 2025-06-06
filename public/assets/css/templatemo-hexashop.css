@@ -249,10 +249,10 @@ header
 }
 
 .header-area .main-nav {
-  min-height: 80px;
+  height: 80px;
   background: transparent;
    float: left;
-   padding-left: 80px;
+   padding-left: 50px;
 }
 
 .header-area .main-nav .logo {
