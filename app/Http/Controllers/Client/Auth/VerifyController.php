@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Client;
+namespace App\Http\Controllers\Client\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -35,5 +35,3 @@ class VerifyController extends Controller
         return response()->json(['error' => 'Sai mã xác minh'], 422);
     }
 }
-
-

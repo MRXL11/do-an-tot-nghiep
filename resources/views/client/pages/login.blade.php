@@ -1,7 +1,9 @@
 @extends('client.pages.page-layout')
 
 @section('content')
+
     <div class="container d-flex justify-content-center align-items-center mt-5">
+
         <div class="card shadow-lg p-4 w-100" style="max-width: 500px;">
             <div class="text-center mb-4">
                 <i class="bi bi-box-arrow-in-right text-success" style="font-size: 2rem;"></i>
@@ -77,6 +79,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- Modal Quên Mật Khẩu -->
     <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel"
