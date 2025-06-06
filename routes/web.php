@@ -4,9 +4,10 @@
     use App\Http\Controllers\Admin\ProductController as AdminProductController;
     use App\Http\Controllers\Admin\BrandController;
     use App\Http\Controllers\Admin\CategoryController;
+    use App\Http\Controllers\Admin\OrderController;
     use App\Http\Controllers\Client\Auth\LoginController;
     use App\Http\Controllers\Client\Auth\RegisterController;
-    use App\Http\Controllers\Client\VerifyController;
+    use App\Http\Controllers\Client\Auth\VerifyController;
     use App\Http\Controllers\Client\AccountController;
     use App\Http\Controllers\Client\Auth\Mail\ResetPasswordController;
     use App\Http\Controllers\Client\Auth\Mail\ForgotPasswordController;
@@ -15,59 +16,65 @@
     use Illuminate\Support\Str;
     use Laravel\Socialite\Facades\Socialite;
     use App\Models\User;
-    use App\Http\Controllers\Client\Auth\SocialAuthController;// dăng nhập bằng gôogle
+    use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
     // ✅ Route cho Admin
     // Route cho Admin
-Route::middleware(['auth', 'restrict.admin'])->group(function () {
+    Route::middleware(['auth', 'restrict.admin'])->group(function () {
 
-    // Dashboard admin
-    Route::get('/admin', function () {
-        return view('admin.others_menu.statistical');
-    })->name('statistical');
+        // Dashboard admin
+        Route::get('/admin', function () {
+            return view('admin.others_menu.statistical');
+        })->name('statistical');
 
-    // Nhóm route admin với prefix và name
-    Route::prefix('admin')->name('admin.')->group(function () {
-        // Sản phẩm (Products)
-        Route::resource('products', AdminProductController::class);
-        Route::post('/products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
-        Route::post('/products/{id}/addVariants', [AdminProductController::class, 'addVariants'])->name('products.addVariants');
+        // Nhóm route admin với prefix và name
+        Route::prefix('admin')->name('admin.')->group(function () {
+            // Sản phẩm (Products)
+            Route::resource('products', AdminProductController::class);
+            Route::post('/products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
+            Route::post('/products/{id}/addVariants', [AdminProductController::class, 'addVariants'])->name('products.addVariants');
 
-        // Danh mục (Categories)
-        Route::resource('categories', CategoryController::class);
-        Route::get('/categories/trashed', [CategoryController::class, 'trashed'])->name('categories.trashed');
-        Route::post('/categories/{id}/restore', [CategoryController::class, 'restore'])->name('categories.restore');
-        Route::delete('/categories/{id}/force-delete', [CategoryController::class, 'forceDelete'])->name('categories.forceDelete');
+            // Đơn hàng (Orders)
+            Route::resource('orders', OrderController::class)
+                ->except(['store', 'create', 'edit', 'destroy']);
+            Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
-        // Thương hiệu (Brands)
-        Route::resource('brands', BrandController::class)->except(['show']);
-        Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
+
+            // Danh mục (Categories)
+            Route::resource('categories', CategoryController::class);
+            Route::get('/categories/trashed', [CategoryController::class, 'trashed'])->name('categories.trashed');
+            Route::post('/categories/{id}/restore', [CategoryController::class, 'restore'])->name('categories.restore');
+            Route::delete('/categories/{id}/force-delete', [CategoryController::class, 'forceDelete'])->name('categories.forceDelete');
+
+            // Thương hiệu (Brands)
+            Route::resource('brands', BrandController::class)->except(['show']);
+            Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
+        });
+
+        // Người dùng (Users)
+        Route::get('/users', function () {
+            return view('admin.users.users');
+        })->name('users');
+
+        // Đơn hàng (Orders)
+        Route::get('/orders', function () {
+            return view('admin.orders.orders');
+        })->name('orders');
+
+        // Voucher
+        Route::get('/vouchers', function () {
+            return view('admin.vouchers.vouchers');
+        })->name('vouchers');
+
+        // Đánh giá (Reviews)
+        Route::get('/reviews', function () {
+            return view('admin.others_menu.reviews');
+        })->name('reviews');
+
+        // Thông báo (Notifications)
+        Route::get('/notifications', function () {
+            return view('admin.others_menu.notifications');
+        })->name('notifications');
     });
-
-    // Người dùng (Users)
-    Route::get('/users', function () {
-        return view('admin.users.users');
-    })->name('users');
-
-    // Đơn hàng (Orders)
-    Route::get('/orders', function () {
-        return view('admin.orders.orders');
-    })->name('orders');
-
-    // Voucher
-    Route::get('/vouchers', function () {
-        return view('admin.vouchers.vouchers');
-    })->name('vouchers');
-
-    // Đánh giá (Reviews)
-    Route::get('/reviews', function () {
-        return view('admin.others_menu.reviews');
-    })->name('reviews');
-
-    // Thông báo (Notifications)
-    Route::get('/notifications', function () {
-        return view('admin.others_menu.notifications');
-    })->name('notifications');
-});
 
     // ✅ Route cho Khách hàng (Client)
     Route::get('/', function () {
