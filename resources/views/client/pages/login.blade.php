@@ -1,7 +1,9 @@
 @extends('client.pages.page-layout')
 
 @section('content')
-    <div class="container d-flex justify-content-center align-items-center">
+
+    <div class="container d-flex justify-content-center align-items-center mt-5">
+
         <div class="card shadow-lg p-4 w-100" style="max-width: 500px;">
             <div class="text-center mb-4">
                 <i class="bi bi-box-arrow-in-right text-success" style="font-size: 2rem;"></i>
@@ -9,31 +11,59 @@
                 <p class="text-muted">Chào mừng bạn quay trở lại!</p>
             </div>
 
+            {{-- Hiển thị lỗi chung từ controller --}}
+            @if ($errors->has('email'))
+                <div class="alert alert-danger">
+                    {{ $errors->first('email') }}
+                </div>
+            @endif
+
             <form action="{{ route('login.submit') }}" method="POST">
                 @csrf
                 <div class="mb-3">
                     <label for="email" class="form-label">Địa chỉ Email</label>
-                    <input type="email" class="form-control" name="email" id="email" placeholder="email@example.com"
-                        required>
+                    <input type="email"
+                           class="form-control @error('email') is-invalid @enderror"
+                           name="email"
+                           id="email"
+                           placeholder="email@example.com"
+                           value="{{ old('email') }}"
+                           required>
+                    @error('email')
+                        @if ($message !== 'Email hoặc mật khẩu không đúng')
+                            <small class="text-danger">{{ $message }}</small>
+                        @endif
+                    @enderror
                 </div>
+
                 <div class="mb-3">
                     <label for="password" class="form-label">Mật khẩu</label>
-                    <input type="password" class="form-control" name="password" id="password" placeholder="********"
-                        required>
+                    <input type="password"
+                           class="form-control @error('password') is-invalid @enderror"
+                           name="password"
+                           id="password"
+                           placeholder="********"
+                           required>
+                    @error('password')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
                 </div>
+
                 <div class="mb-3 form-check">
                     <input type="checkbox" class="form-check-input" id="remember" name="remember">
                     <label class="form-check-label" for="remember">Ghi nhớ đăng nhập</label>
                 </div>
+
                 <div class="d-grid">
-                    <button class="btn btn-outline-success" type="submit"><i class="bi bi-box-arrow-in-right me-1"></i>
-                        Đăng nhập</button>
+                    <button class="btn btn-outline-success" type="submit">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập
+                    </button>
                 </div>
             </form>
 
             <div class="text-center mt-3">
                 <button class="btn btn-link text-decoration-none" data-bs-toggle="modal"
-                    data-bs-target="#forgotPasswordModal">
+                        data-bs-target="#forgotPasswordModal">
                     🔐 Quên mật khẩu?
                 </button>
             </div>
@@ -49,6 +79,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- Modal Quên Mật Khẩu -->
     <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel"
