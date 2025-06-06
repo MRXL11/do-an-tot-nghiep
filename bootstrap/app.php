@@ -11,7 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Đăng ký alias cho middleware
+        $middleware->alias([
+            'restrict.admin' => \App\Http\Middleware\RestrictAdmin::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
