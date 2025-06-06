@@ -15,9 +15,9 @@ class OrderController extends Controller
         $statuses = [
             'pending' => 'Đang chờ xử lý',
             'processing' => 'Đang xử lý',
-            'shipped' => 'Đã giao',
+            'shipped' => 'Đang giao',
             'delivered' => 'Đã hoàn thành',
-            'cancelled' => 'Đã hủy',
+            'cancelled' => 'Đơn đã hủy',
         ];
         $q = request()->query('q');
         $hasSearch = false;
@@ -40,5 +40,59 @@ class OrderController extends Controller
 
         // dd($orders);
         return view('admin.orders.orders', compact('orders', 'statuses', 'noResults'));
+    }
+
+    public function show($id)
+    {
+        $order = Order::with('user', 'shippingAddress', 'orderDetails.productVariant.product', 'coupon')
+            ->findOrFail($id);
+
+        $discount = 0;
+        $total = $order->total_price;
+
+        // Tính toán giảm giá nếu có coupon
+        if ($order->coupon) {
+            if ($order->coupon->discount_type === 'fixed') {
+                $discount = $order->coupon->discount_value;
+            } elseif ($order->coupon->discount_type === 'percent') {
+                $discount = round($total * $order->coupon->discount_value / 100);
+            }
+        }
+        return view('admin.orders.show', compact('order', 'discount', 'total'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+        $newStatus = $request->input('status');
+
+        $validTransitions = [
+            'pending' => 'processing',
+            'processing' => 'shipped',
+            'shipped' => 'delivered',
+        ];
+
+        if (!isset($validTransitions[$order->status]) || $validTransitions[$order->status] !== $newStatus) {
+            return redirect()->back()->with('error', 'Chuyển trạng thái không hợp lệ.');
+        }
+
+        $order->status = $newStatus;
+        $order->save();
+
+        return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
+    }
+
+
+
+    public function cancel(Order $order)
+    {
+        if (in_array($order->status, ['delivered', 'cancelled'])) {
+            return redirect()->back()->with('error', 'Không thể huỷ đơn hàng đã hoàn tất hoặc đã huỷ.');
+        }
+
+        $order->status = 'cancelled';
+        $order->save();
+
+        return redirect()->back()->with('success', 'Đã huỷ đơn hàng thành công.');
     }
 }

@@ -31,9 +31,9 @@ class Order extends Model
         $statuses = [
             'pending' => ['label' => 'Đang chờ xử lý', 'color' => 'bg-warning'],
             'processing' => ['label' => 'Đang xử lý', 'color' => 'bg-primary'],
-            'shipped' => ['label' => 'Đã giao', 'color' => 'bg-info'],
+            'shipped' => ['label' => 'Đang giao hàng', 'color' => 'bg-info'],
             'delivered' => ['label' => 'Đã hoàn thành', 'color' => 'bg-success'],
-            'cancelled' => ['label' => 'Đã hủy', 'color' => 'bg-danger'],
+            'cancelled' => ['label' => 'Đơn đã hủy', 'color' => 'bg-danger'],
         ];
 
         return $statuses[$this->status] ?? ['label' => 'Không xác định', 'color' => 'bg-secondary'];
