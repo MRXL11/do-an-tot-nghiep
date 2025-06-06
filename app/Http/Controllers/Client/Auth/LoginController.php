@@ -28,6 +28,7 @@ class LoginController extends Controller
         } else {
             Auth::logout();
             return redirect('/login')->withErrors(['email' => 'Tài khoản không có quyền truy cập']);
+
         }
     }
 

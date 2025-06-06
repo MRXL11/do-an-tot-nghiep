@@ -46,6 +46,7 @@ class StoreProductRequest extends FormRequest
             'variants.*.size' => 'required|string|max:50',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'variants.*.quantity' => 'required|integer|min:0',
         ];
     }
 
@@ -86,6 +87,10 @@ class StoreProductRequest extends FormRequest
             'variants.*.image.image' => 'Ảnh biến thể phải là file ảnh.',
             'variants.*.image.mimes' => 'Ảnh biến thể chỉ hỗ trợ định dạng JPG, JPEG, PNG.',
             'variants.*.image.max' => 'Ảnh biến thể không được vượt quá 2MB.',
+            'variants.*.quantity.required' => 'Số lượng tồn kho là bắt buộc.',
+            'variants.*.quantity.integer' => 'Số lượng tồn kho phải là số nguyên.',
+            'variants.*.quantity.min' => 'Số lượng tồn kho không được nhỏ hơn 0.',
+            'variants.*.status.required' => 'Trạng thái của biến thể là bắt buộc.',
         ];
     }
 }

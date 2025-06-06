@@ -1,6 +1,7 @@
 @extends('client.pages.page-layout')
 
 @section('content')
+
 <div class="container d-flex justify-content-center align-items-center">
   {{-- nội dung để hiển thị thông báo success hoặc lỗi --}}
  
@@ -54,15 +55,15 @@
 
     @endif
 
-    @if (session('resent_code'))
-      <div class="alert alert-success mt-3">
-        ✅ Mã xác minh đã được gửi tới email!
-      </div>
-    @endif
+            @if (session('resent_code'))
+                <div class="alert alert-success mt-3">
+                    ✅ Mã xác minh đã được gửi tới email!
+                </div>
+            @endif
 
-    <div class="text-center mt-3">
-      <small>Bạn đã có tài khoản? <a href="{{ route('login') }}">Đăng nhập</a></small>
+            <div class="text-center mt-3">
+                <small>Bạn đã có tài khoản? <a href="{{ route('login') }}">Đăng nhập</a></small>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 @endsection

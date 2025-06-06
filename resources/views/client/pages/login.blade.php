@@ -2,6 +2,7 @@
 
 @section('content')
 
+
 <div class="container d-flex justify-content-center align-items-center">
   <div class="card shadow-lg p-4 w-100" style="max-width: 500px;">
     {{-- thông báo lỗi --}}
@@ -50,11 +51,25 @@
       </button>
     </div>
 
-    <div class="text-center mt-3">
-      <small>Bạn chưa có tài khoản? <a href="{{ route('register') }}">Đăng ký ngay</a></small>
-    </div>
-  </div>
-</div>
+
+            <form action="{{ route('login.submit') }}" method="POST">
+                @csrf
+                <div class="mb-3">
+                    <label for="email" class="form-label">Địa chỉ Email</label>
+                    <input type="email"
+                           class="form-control @error('email') is-invalid @enderror"
+                           name="email"
+                           id="email"
+                           placeholder="email@example.com"
+                           value="{{ old('email') }}"
+                           required>
+                    @error('email')
+                        @if ($message !== 'Email hoặc mật khẩu không đúng')
+                            <small class="text-danger">{{ $message }}</small>
+                        @endif
+                    @enderror
+                </div>
+
 
 <!-- Modal Quên Mật Khẩu -->
 <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
@@ -69,12 +84,31 @@
         <div class="modal-body">
           <p>Nhập email để nhận liên kết đặt lại mật khẩu:</p>
           <input type="email" name="email" class="form-control" placeholder="email@example.com" >
+
         </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-warning w-100">📩 Gửi liên kết</button>
+    </div>
+
+
+    <!-- Modal Quên Mật Khẩu -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ route('password.email') }}">
+                @csrf
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title" id="forgotPasswordModalLabel">Quên mật khẩu</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Nhập email để nhận liên kết đặt lại mật khẩu:</p>
+                        <input type="email" name="email" class="form-control" placeholder="email@example.com" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-warning w-100">📩 Gửi liên kết</button>
+                    </div>
+                </div>
+            </form>
         </div>
-      </div>
-    </form>
-  </div>
-</div>
+    </div>
 @endsection

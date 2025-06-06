@@ -1,3 +1,4 @@
+
     <?php
 
     use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -18,6 +19,7 @@
     // ✅ Route cho Admin
     // Route cho Admin
 Route::middleware(['auth', 'restrict.admin'])->group(function () {
+
     // Dashboard admin
     Route::get('/admin', function () {
         return view('admin.others_menu.statistical');

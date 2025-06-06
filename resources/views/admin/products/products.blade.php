@@ -8,63 +8,77 @@
     <div class="container-fluid">
         <div class="col-lg-12">
             <div class="row g-4 mb-4">
-                <div class="col-md-8">
-                    <!-- Form tìm kiếm -->
-                    <form class="row gx-2 align-items-center mb-2" action="{{ route('admin.products.index') }}" method="GET">
-                        <!-- Ô tìm kiếm -->
-                        <div class="col-auto">
-                            <div class="input-group">
-                                <span class="input-group-text bg-light" id="search-icon">
-                                    <i class="bi bi-search"></i>
-                                </span>
-                                <input type="text" class="form-control form-group-lg" placeholder="Tìm kiếm sản phẩm..."
-                                    aria-label="Tìm kiếm" aria-describedby="search-icon" name="q"
-                                    value="{{ request('q') }}">
-                            </div>
+                <div class="col-md-12">
+                    <div class="row d-flex mb-3">
+                        <div class="col-md-10">
+                            <!-- Form tìm kiếm -->
+                            <form class="row gx-2 align-items-center mb-2" action="{{ route('admin.products.index') }}"
+                                method="GET">
+                                <!-- Ô tìm kiếm -->
+                                <div class="col-auto">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light" id="search-icon">
+                                            <i class="bi bi-search"></i>
+                                        </span>
+                                        <input type="text" class="form-control form-group-lg"
+                                            placeholder="Tìm kiếm sản phẩm..." aria-label="Tìm kiếm"
+                                            aria-describedby="search-icon" name="q" value="{{ request('q') }}">
+                                    </div>
+                                </div>
+
+                                <!-- Select danh mục -->
+                                <div class="col-auto">
+                                    <select class="form-select" name="category">
+                                        <option value="">-- Danh mục --</option>
+                                        @foreach ($categories as $category)
+                                            <option value="{{ $category->id }}"
+                                                {{ request('category') == $category->id ? 'selected' : '' }}>
+                                                {{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Select thương hiệu -->
+                                <div class="col-auto">
+                                    <select class="form-select" name="brand">
+                                        <option value="">-- Thương hiệu --</option>
+                                        @foreach ($brands as $brand)
+                                            <option value="{{ $brand->id }}"
+                                                {{ request('brand') == $brand->id ? 'selected' : '' }}>
+                                                {{ $brand->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Select trạng thái -->
+                                <div class="col-auto">
+                                    <select class="form-select" name="status">
+                                        <option value="">-- Trạng thái --</option>
+                                        @foreach ($statuses as $key => $status)
+                                            <option value="{{ $key }}"
+                                                {{ request('status') == $key ? 'selected' : '' }}>
+                                                {{ $status }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Nút submit -->
+                                <div class="col-auto">
+                                    <button class="btn btn-primary" type="submit">
+                                        Tìm kiếm
+                                    </button>
+                                </div>
+                            </form>
                         </div>
 
-                        <!-- Select danh mục -->
-                        <div class="col-auto">
-                            <select class="form-select" name="category">
-                                <option value="">-- Danh mục --</option>
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}"
-                                        {{ request('category') == $category->id ? 'selected' : '' }}>
-                                        {{ $category->name }}</option>
-                                @endforeach
-                            </select>
+                        <div class="col-md-2 float-end">
+                            <a href="{{ route('admin.products.create') }}"
+                                class="btn btn-sm btn-block btn-success mb-2">Thêm
+                                sản
+                                phẩm
+                            </a>
                         </div>
-
-                        <!-- Select thương hiệu -->
-                        <div class="col-auto">
-                            <select class="form-select" name="brand">
-                                <option value="">-- Thương hiệu --</option>
-                                @foreach ($brands as $brand)
-                                    <option value="{{ $brand->id }}"
-                                        {{ request('brand') == $brand->id ? 'selected' : '' }}>
-                                        {{ $brand->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Select trạng thái -->
-                        <div class="col-auto">
-                            <select class="form-select" name="status">
-                                <option value="">-- Trạng thái --</option>
-                                @foreach ($statuses as $key => $status)
-                                    <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>
-                                        {{ $status }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Nút submit -->
-                        <div class="col-auto">
-                            <button class="btn btn-primary" type="submit">
-                                Tìm kiếm
-                            </button>
-                        </div>
-                    </form>
+                    </div>
 
                     @if (session('success'))
                         <div class="alert alert-success">
@@ -93,8 +107,11 @@
                                         <th class="text-center">Tên sản phẩm</th>
                                         <th class="text-center">Hình ảnh</th>
                                         <th class="text-center">SKU</th>
+                                        <th class="text-center">Danh mục</th>
                                         <th class="text-center">Thương hiệu</th>
                                         <th class="text-center">Trạng thái</th>
+                                        <th class="text-center">Ngày tạo</th>
+                                        <th class="text-center">Ngày cập nhật</th>
                                         <th class="text-center">Thao tác</th>
                                     </tr>
                                 </thead>
@@ -109,9 +126,12 @@
                                                     class="img-fluid" style="max-width: 50px; height: auto;" />
                                             </td>
                                             <td class="text-center">{{ $product->sku }}</td>
+                                            <td class="text-center">{{ $product->category ? $product->category->name : 'N/A' }}</td>
                                             <td class="text-center">{{ $product->brand ? $product->brand->name : 'N/A' }}
                                             </td>
                                             <td class="text-center">{{ $product->status }}</td>
+                                            <td class="text-center">{{ $product->created_at->format('d/m/Y H:i') }}</td>
+                                            <td class="text-center">{{ $product->updated_at->format('d/m/Y H:i') }}</td>
                                             <td class="text-center">
                                                 <a href="{{ route('admin.products.show', $product->id) }}"
                                                     class="btn btn-sm btn-primary">Chi tiết</a>
@@ -148,7 +168,7 @@
                     @endif
                 </div>
 
-                <div class="col-md-4">
+                {{-- <div class="col-md-4">
                     <div class="card">
                         <div class="card-header">
                             <a href="{{ route('admin.products.create') }}"
@@ -173,8 +193,7 @@
                                                 class="img-size-50" />
                                         </div>
                                         <div class="col-10">
-                                            <a href="{{ route('admin.products.show', $product->id) }}"
-                                                class="fw-bold"
+                                            <a href="{{ route('admin.products.show', $product->id) }}" class="fw-bold"
                                                 style="font-size: 1rem; text-decoration: none; color: ;">
                                                 {{ Str::limit($product->name, 25, '...') }}
                                                 <span class="badge text-bg-warning float-end">
@@ -187,8 +206,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
+                </div> --}}
             </div>
         </div>
     </div>

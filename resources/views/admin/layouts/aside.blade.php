@@ -43,6 +43,7 @@
                              </a>
                          </li>
 
+
                   <li class="nav-item">
                     <a href="{{ route('admin.products.index') }}" class="nav-link {{ request()->routeIs('admin.products.index') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-circle"></i>
@@ -61,8 +62,7 @@
                       <p>Đánh giá</p>
                     </a>
                   </li>
-
-                         <li class="nav-item">
+                   <li class="nav-item">
                              <a href="{{ route('admin.brands.index') }}"
                                  class="nav-link {{ request()->routeIs('brands') ? 'active' : '' }}">
                                  <i class="nav-icon bi bi-circle"></i>
