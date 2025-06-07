@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'phone_number',
+        'avatar',
         'address',
         'password',
         'status',
@@ -50,7 +51,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-           'email_verified_at' => 'datetime',
+        'email_verified_at' => 'datetime',
         'reset_password_expires_at' => 'datetime',
         'status' => 'string',
         ];

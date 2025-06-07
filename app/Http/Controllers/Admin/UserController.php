@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -23,7 +24,7 @@ class UserController extends Controller
                              ->orWhere('email', 'like', "%{$search}%");
             })
             ->paginate(10); 
-        $newUsers = User::latest()->take(8)->get();
+        $newUsers = User::latest()->take(6)->get();
         return view('admin.users.users', compact('users', 'search', 'newUsers'));
     }
 
@@ -41,6 +42,10 @@ class UserController extends Controller
         $data = $request->only(['name', 'email', 'phone_number', 'address', 'status', 'role_id']);
         $data['password'] = bcrypt($request->password);
 
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('users', 'public');
+            $data['avatar'] = $path;
+        }
 
         User::create($data);
 
@@ -70,6 +75,18 @@ class UserController extends Controller
     {
         $data = $request->only(['name', 'email', 'phone_number', 'address', 'status', 'role_id']);
         
+        if ($request->hasFile('avatar')) {
+            // Xóa ảnh cũ nếu có
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // Lưu ảnh mới vào thư mục 'users'
+            $path = $request->file('avatar')->store('users', 'public');
+
+            // Gán lại đường dẫn mới cho $data
+            $data['avatar'] = $path;
+        }
 
         $user->update($data);
 

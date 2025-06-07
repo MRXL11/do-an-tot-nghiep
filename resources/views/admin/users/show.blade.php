@@ -11,13 +11,13 @@
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <!-- <div class="col-md-3 text-center">
-                        @if($user->avatar)
+                    <div class="col-md-3 text-center">
+                        @if($user->avatar && file_exists(public_path('storage/' . $user->avatar)))
                             <img src="{{ asset('storage/' . $user->avatar) }}" class="img-fluid rounded-circle" alt="User Image" style="width: 128px; height: 128px;">
                         @else
                             <img src="{{ asset('dist/assets/img/user1-128x128.jpg') }}" class="img-fluid rounded-circle" alt="User Image" style="width: 128px; height: 128px;">
                         @endif
-                    </div> -->
+                    </div>
                     <div class="row">
                         <div class="col-12 mb-2">
                             <h5 class="card-title"><strong>Họ tên:</strong> {{ $user->name }}</h5>
