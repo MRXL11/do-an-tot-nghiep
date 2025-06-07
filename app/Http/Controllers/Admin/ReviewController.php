@@ -12,7 +12,7 @@ class ReviewController extends Controller
     {
         $reviews = Review::with(['user', 'product.category']) // Load quan hệ để tránh lỗi N+1
                         ->latest()
-                        ->paginate(5); // Thêm phân trang
+                        ->paginate(5);
 
         return view('admin.others_menu.reviews', compact('reviews'));
     }
