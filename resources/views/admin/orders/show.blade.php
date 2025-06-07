@@ -51,6 +51,12 @@
                     <p class="fw-semibold">#{{ $order->order_code }}</p>
                 </div>
                 <div class="col-md-2">
+                    <h6 class="text-muted">Trạng thái</h6>
+                    <span class="badge {{ $order->getStatusLabel()['color'] }}">
+                        {{ $order->getStatusLabel()['label'] }}
+                    </span>
+                </div>
+                <div class="col-md-2">
                     <h6 class="text-muted">Phương thức thanh toán</h6>
                     <p class="fw-semibold">{{ ucfirst($order->payment_method) }}</p>
                 </div>
@@ -66,7 +72,7 @@
                         <span class="badge bg-secondary">Không xác định</span>
                     @endif
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <h6 class="text-muted">Phiếu giảm giá</h6>
                     @if ($order->coupon)
                         @php
@@ -80,11 +86,6 @@
                     @else
                         <p class="fw-semibold">Không sử dụng</p>
                     @endif
-                </div>
-
-                <div class="col-md-1">
-                    <h6 class="text-muted">Trạng thái</h6>
-                    <span class="fw-semibold">{{ ucfirst($order->status) }}</span>
                 </div>
                 <div class="col-md-2">
                     <h6 class="text-muted">Ngày đặt hàng</h6>
