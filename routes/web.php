@@ -4,6 +4,7 @@
     use App\Http\Controllers\Admin\ProductController as AdminProductController;
     use App\Http\Controllers\Admin\BrandController;
     use App\Http\Controllers\Admin\CategoryController;
+    use App\Http\Controllers\Admin\OrderController;
     use App\Http\Controllers\Client\Auth\LoginController;
     use App\Http\Controllers\Client\Auth\RegisterController;
     use App\Http\Controllers\Client\Auth\VerifyController;
@@ -31,6 +32,12 @@
             Route::resource('products', AdminProductController::class);
             Route::post('/products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
             Route::post('/products/{id}/addVariants', [AdminProductController::class, 'addVariants'])->name('products.addVariants');
+
+            // Đơn hàng (Orders)
+            Route::resource('orders', OrderController::class)
+                ->except(['store', 'create', 'edit', 'destroy']);
+            Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+
 
             // Danh mục (Categories)
             Route::resource('categories', CategoryController::class);

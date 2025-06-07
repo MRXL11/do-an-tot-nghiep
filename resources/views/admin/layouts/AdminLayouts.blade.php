@@ -22,7 +22,6 @@
             <!--end::App Content Header-->
             <!--begin::App Content-->
             <div class="app-content">
-
                 <!--begin::Content-->
                 @yield('content')
                 <!--end::Content-->
