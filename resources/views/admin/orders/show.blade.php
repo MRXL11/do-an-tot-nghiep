@@ -4,6 +4,13 @@
 @section('content')
     <div class="container py-4">
         <div class="card shadow-lg border-0 rounded-4 p-4">
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay lại danh sách đơn hàng
+                    </a>
+                </div>
+            </div>
             <div class="row">
                 @if (session('error'))
                     <div class="alert alert-danger rounded-3">
@@ -38,7 +45,7 @@
                 </div>
             </div>
 
-            <div class="row mb-3">
+            <div class="row mb-2">
                 <div class="col-md-2">
                     <h6 class="text-muted">Đơn hàng</h6>
                     <p class="fw-semibold">#{{ $order->order_code }}</p>
@@ -83,6 +90,53 @@
                     <h6 class="text-muted">Ngày đặt hàng</h6>
                     <p class="fw-semibold">{{ $order->created_at->format('d/m/Y') }}</p>
                 </div>
+            </div>
+
+            <div class="col-md-12 mt-2 mb-2">
+                @if (!in_array($order->status, ['delivered', 'cancelled']))
+                    {{-- Nút Xác nhận tương ứng với trạng thái --}}
+                    @php
+                        // Xác định thông điệp huỷ đơn dựa trên trạng thái
+                        $cancelMessages = [
+                            'pending' => 'Đơn hàng đang chờ xác nhận. Bạn có chắc muốn huỷ không?',
+                            'processing' => 'Đơn hàng đang xử lý. Bạn có chắc muốn huỷ không?',
+                            'shipped' => 'Đơn đã giao cho đơn vị vận chuyển. Bạn có chắc muốn huỷ không?',
+                        ];
+
+                        $cancelMessage = $cancelMessages[$order->status] ?? 'Bạn có chắc muốn huỷ đơn hàng này không?';
+
+                        $statusActions = [
+                            'pending' => [
+                                'label' => 'Xác nhận đơn',
+                                'next_status' => 'processing',
+                            ],
+                            'processing' => [
+                                'label' => 'Bắt đầu giao hàng',
+                                'next_status' => 'shipped',
+                            ],
+                            'shipped' => [
+                                'label' => 'Giao hàng thành công',
+                                'next_status' => 'delivered',
+                            ],
+                        ];
+
+                        $action = $statusActions[$order->status] ?? null;
+                    @endphp
+
+                    @if ($action)
+                        <button class="btn btn-sm btn-success me-1"
+                            onclick="submitStatusUpdate('{{ route('admin.orders.update', $order->id) }}',
+                                                    '{{ $action['next_status'] }}', '{{ $action['label'] }}')">
+                            <i class="bi bi-pencil-square"></i> {{ $action['label'] }}
+                        </button>
+                    @endif
+
+                    {{-- Nút Hủy đơn --}}
+                    <button class="btn btn-sm btn-danger me-1"
+                        onclick="showCancelModal('{{ route('admin.orders.cancel', $order->id) }}', '{{ $cancelMessage }}')">
+                        <i class="bi bi-x-circle"></i> Huỷ đơn
+                    </button>
+                @endif
             </div>
 
             <div class="table-responsive">
@@ -162,6 +216,35 @@
                         </li>
                     </ul>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="statusUpdateForm" method="POST" style="display: none;">
+        @csrf
+        @method('PATCH') {{-- hoặc PATCH nếu bạn muốn --}}
+        <input type="hidden" name="status" id="statusInput">
+    </form>
+
+    <!-- Modal xác nhận huỷ đơn hàng -->
+    <div class="modal fade" id="cancelConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="cancelForm" method="POST">
+                    @csrf
+                    @method('POST') {{-- hoặc DELETE tùy route bạn dùng --}}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Xác nhận huỷ đơn hàng</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="cancelConfirmMessage">Bạn có chắc muốn huỷ đơn hàng này không?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-danger">Xác nhận huỷ</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
