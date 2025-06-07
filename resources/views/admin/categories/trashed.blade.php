@@ -9,7 +9,7 @@
         <div class="col-lg-12">
             <div class="d-flex justify-content-between mb-3">
                 <h2>Danh mục đã xóa</h2>
-                <a href="{{ route('admin.categories') }}" class="btn btn-primary">
+                <a href="{{ route('admin.categories.index') }}" class="btn btn-primary">
                     <i class="bi bi-arrow-left"></i> Quay lại danh sách danh mục
                 </a>
             </div>

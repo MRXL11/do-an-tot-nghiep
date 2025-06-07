@@ -44,7 +44,7 @@ class CategoryController extends Controller
             'status' => $request->status,
         ]);
 
-        return redirect()->route('admin.categories')->with('success', 'Danh mục đã được thêm thành công!');
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục đã được thêm thành công!');
     }
 
     public function show(Category $category): View
@@ -65,17 +65,17 @@ class CategoryController extends Controller
             'status' => $request->status,
         ]);
 
-        return redirect()->route('admin.categories')->with('success', 'Danh mục đã được cập nhật thành công!');
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục đã được cập nhật thành công!');
     }
 
     public function destroy(Category $category): RedirectResponse
     {
         if ($category->products()->exists()) {
-            return redirect()->route('admin.categories')->with('error', 'Không thể xóa danh mục vì vẫn còn sản phẩm liên kết!');
+            return redirect()->route('admin.categories.index')->with('error', 'Không thể xóa danh mục vì vẫn còn sản phẩm liên kết!');
         }
 
         $category->delete(); // Xóa mềm
-        return redirect()->route('admin.categories')->with('success', 'Danh mục đã được xóa thành công!');
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục đã được xóa thành công!');
     }
 
     public function trashed(Request $request): View
