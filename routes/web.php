@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
+use App\Http\Controllers\Admin\ReviewController;
+
 
 // ✅ Route cho Admin
 Route::middleware(['auth'])->group(function () {
@@ -59,6 +61,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reviews', function () {
         return view('admin.others_menu.reviews');
     })->name('reviews');
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
+    Route::post('/reviews/{id}/approve', [ReviewController::class, 'approve'])->name('admin.reviews.approve');
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('admin.reviews.destroy');
+
+
+
 
     // Thông báo (Notifications)
     Route::get('/notifications', function () {
@@ -126,6 +134,9 @@ Route::middleware('web')->group(function () {
     Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'handleRegister'])->name('register.submit');
 });
+    Route::get('/register', function () {
+    return view('client.pages.register');
+})->name('register');
 
 // Xác thực email & đặt lại mật khẩu
 Route::post('/register/otp/send', [RegisterController::class, 'sendOtp'])->name('register.otp.send');
