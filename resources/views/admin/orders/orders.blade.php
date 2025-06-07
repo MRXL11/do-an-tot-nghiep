@@ -1,149 +1,183 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title')
-  <title>Quản lý người dùng</title>
-@endsection
+@section('title-page', 'Quản lý đơn hàng')
 @section('content')
-<div class="container-fluid">
-  <div class="col-lg-12">
-    <div class="row g-4 mb-4">
-    <div class="col-md-12">
-      {{-- tìm kiếm đơn hàng --}}
-            <form class="d-flex mb-1" role="search" action="/timkiem" method="GET">
-        <div class="input-group ">
-          <span class="input-group-text bg-light" id="search-icon">
-            <i class="bi bi-search"></i>
-          </span>
-          <input 
-            type="text" 
-            class="form-control" 
-            placeholder="Tìm kiếm đơn hàng" 
-            aria-label="Tìm kiếm" 
-            aria-describedby="search-icon" 
-            name="q"
-          >
-            <div class="col-auto">
-          <select class="form-select ms-1" name="">
-            <option value="">--Tất cả Trạng thái--</option>
-            <option value="1" >Đã giao hàng</option>
-            <option value="2" >Chờ xác nhận</option>
-            <option value="3" >Đã hủy</option>
-            <option value="4" >Đã thanh toán</option>
-          </select>
+    <div class="container-fluid">
+        <div class="col-lg-12">
+            <div class="row g-4 mb-4">
+                <div class="col-md-12">
+                    {{-- tìm kiếm đơn hàng --}}
+                    <form class="d-flex mb-1" role="search" action="{{ route('admin.orders.index') }}" method="GET">
+                        <div class="input-group ">
+                            <span class="input-group-text bg-light" id="search-icon">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control" placeholder="Tìm kiếm đơn hàng" aria-label="Tìm kiếm"
+                                aria-describedby="search-icon" name="q" value="{{ request('q') }}">
+                            <div class="col-auto">
+                                <select class="form-select ms-1" name="status">
+                                    <option value="">--Tất cả Trạng thái--</option>
+                                    @foreach ($statuses as $key => $status)
+                                        <option value="{{ $key }}"
+                                            {{ request('status') == $key ? 'selected' : '' }}>
+                                            {{ $status }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" type="submit">Tìm</button>
+                        </div>
+                    </form>
+                    {{-- kết thúc tìm kiếm --}}
+
+                    {{-- hiển thị thông báo --}}
+                    <div class="row">
+                        @if (session('error'))
+                            <div class="alert alert-danger rounded-3">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+                        @if (session('success'))
+                            <div class="alert alert-success rounded-3">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- hiển thị danh sách đơn hàng --}}
+                    @if ($noResults)
+                        <div class="alert alert-warning" role="alert">
+                            Không tìm thấy đơn hàng nào.
+                        </div>
+                    @endif
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Mã đơn hàng</th>
+                                <th scope="col">Ngày đặt hàng</th>
+                                <th scope="col">Tên người nhận</th>
+                                <th scope="col">Địa chỉ</th>
+                                <th scope="col">Số điện thoại</th>
+                                <th scope="col">Trạng thái</th>
+                                <th scope="col">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($orders as $order)
+                                <tr>
+                                    <td>{{ $order->order_code }}</td>
+                                    <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
+                                    <td>{{ $order->shippingAddress->name }}</td>
+                                    <td style="overflow-wrap: break-word; max-width: 250px;">
+                                        {{ $order->shippingAddress->full_address }}
+                                    </td>
+                                    <td>{{ $order->shippingAddress->phone_number }}</td>
+                                    <td>
+                                        @php
+                                            $status = $order->getStatusLabel();
+                                        @endphp
+                                        {{-- hiển thị trạng thái đơn hàng --}}
+                                        <span class="badge {{ $status['color'] }}">
+                                            {{ $status['label'] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-sm btn-primary me-1"
+                                            href="{{ route('admin.orders.show', $order->id) }}">
+                                            <i class="bi bi-info-circle"></i> Chi tiết
+                                        </a>
+
+                                        @if (!in_array($order->status, ['delivered', 'cancelled']))
+                                            {{-- Nút Xác nhận tương ứng với trạng thái --}}
+                                            @php
+                                                // Xác định thông điệp huỷ đơn dựa trên trạng thái
+                                                $cancelMessages = [
+                                                    'pending' =>
+                                                        'Đơn hàng đang chờ xác nhận. Bạn có chắc muốn huỷ không?',
+                                                    'processing' => 'Đơn hàng đang xử lý. Bạn có chắc muốn huỷ không?',
+                                                    'shipped' =>
+                                                        'Đơn đã giao cho đơn vị vận chuyển. Bạn có chắc muốn huỷ không?',
+                                                ];
+
+                                                $cancelMessage =
+                                                    $cancelMessages[$order->status] ??
+                                                    'Bạn có chắc muốn huỷ đơn hàng này không?';
+
+                                                $statusActions = [
+                                                    'pending' => [
+                                                        'label' => 'Xác nhận đơn',
+                                                        'next_status' => 'processing',
+                                                    ],
+                                                    'processing' => [
+                                                        'label' => 'Bắt đầu giao hàng',
+                                                        'next_status' => 'shipped',
+                                                    ],
+                                                    'shipped' => [
+                                                        'label' => 'Giao hàng thành công',
+                                                        'next_status' => 'delivered',
+                                                    ],
+                                                ];
+
+                                                $action = $statusActions[$order->status] ?? null;
+                                            @endphp
+
+                                            @if ($action)
+                                                <button class="btn btn-sm btn-success me-1"
+                                                    onclick="submitStatusUpdate('{{ route('admin.orders.update', $order->id) }}',
+                                                    '{{ $action['next_status'] }}', '{{ $action['label'] }}')">
+                                                    <i class="bi bi-pencil-square"></i> {{ $action['label'] }}
+                                                </button>
+                                            @endif
+
+                                            {{-- Nút Hủy đơn --}}
+                                            <button class="btn btn-sm btn-danger me-1"
+                                                onclick="showCancelModal('{{ route('admin.orders.cancel', $order->id) }}', '{{ $cancelMessage }}')">
+                                                <i class="bi bi-x-circle"></i> Huỷ đơn
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+
+                    {{-- đây là paginate phân trang --}}
+                    <!-- Phân trang -->
+                    {{ $orders->links() }}
+                    {{-- kết thúc phân trang --}}
+                </div>
+
+            </div>
         </div>
-          <button class="btn btn-primary" type="submit">Tìm</button>
-        </div>
-      </form>
-      {{-- kết thúc tìm kiếm --}}
-      <table class="table table-bordered table-striped table-hover text-center">
-       <thead>
-        <tr>
-          <th scope="col">Mã đơn hàng</th>
-          <th scope="col">Ngày đặt hàng</th>
-          <th scope="col">Tên người nhận</th>
-          <th scope="col">Địa chỉ</th>
-          <th scope="col">Số điện thoại</th>
-          <th scope="col">Trạng thái</th>
-          <th scope="col">Thao tác</th>
-        </tr>
-       </thead>
-       <tbody>
-        <tr>
-          <td>DH001</td>
-          <td>2023-10-01</td>
-          <td>Nguyễn Văn A</td>
-          <td>123 Đường ABC</td>
-          <td>0123456789</td>
-          <td><span class="badge bg-success">Đã giao hàng</span></td>
-          <td>              
-                            <button class="btn btn-sm btn-primary me-1">
-                                <i class="bi bi-info-circle"></i> Chi tiết
-                            </button>
-                              <button class="btn btn-sm btn-success me-1">
-                                <i class="bi bi-pencil-square"></i> Xác nhân
-                            </button>
-          </td>
-        </tr>
-        <tr>
-          <td>DH002</td>
-          <td>2023-10-02</td>
-          <td>Trần Thị B</td>
-          <td>456 Đường DEF</td>
-          <td>0987654321</td>
-          <td><span class="badge bg-warning">Đang giao hàng</span></td>
-          <td>
-          <button class="btn btn-sm btn-primary me-1">
-                                <i class="bi bi-info-circle"></i> Chi tiết
-                            </button>
-                              <button class="btn btn-sm btn-success me-1">
-                                <i class="bi bi-pencil-square"></i> Xác nhân
-                            </button>
-          </td>
-        </tr>
-        <tr>
-          <td>DH003</td>
-          <td>2023-10-03</td>
-          <td>Nguyễn Thị C</td>
-          <td>789 Đường GHI</td>
-          <td>0123456789</td>
-          <td><span class="badge bg-danger">Chưa giao hàng</span></td>
-          <td>
-            <button class="btn btn-sm btn-primary me-1">
-                                <i class="bi bi-info-circle"></i> Chi tiết
-                            </button>
-                              <button class="btn btn-sm btn-success me-1">
-                                <i class="bi bi-pencil-square"></i> Xác nhân
-                            </button>
-          </td>
-        </tr>
-        <tr>
-          <td>DH004</td>
-          <td>2023-10-04</td>
-          <td>Nguyễn Văn D</td>
-          <td>321 Đường JKL</td>
-          <td>0987654321</td>
-          <td><span class="badge bg-info">Đang xử lý</span></td>
-          <td>
-           <button class="btn btn-sm btn-primary me-1">
-                                <i class="bi bi-info-circle"></i> Chi tiết
-                            </button>
-                              <button class="btn btn-sm btn-success me-1">
-                                <i class="bi bi-pencil-square"></i> Xác nhân
-                            </button>
-          </td>
-        </tr>
-        <tr>
-          <td>DH005</td>
-          <td>2023-10-05</td>
-          <td>Trần Văn E</td>
-          <td>654 Đường MNO</td>
-          <td>0123456789</td>
-          <td><span class="badge bg-secondary">Đã hủy</span></td>
-          <td>
-           <button class="btn btn-sm btn-primary me-1">
-                                <i class="bi bi-info-circle"></i> Chi tiết
-                            </button>
-                              <button class="btn btn-sm btn-success me-1">
-                                <i class="bi bi-pencil-square"></i> Xác nhân
-                            </button>
-          </td>
-        </tr>
-       </tbody>
-      </table>
-      {{-- đây là paginate phân trang --}}
-      <div class="d-flex justify-content-center">
-        <ul class="pagination">
-          <li class="page-item"><a class="page-link" href="#">1</a></li>
-          <li class="page-item"><a class="page-link" href="#">2</a></li>
-          <li class="page-item"><a class="page-link" href="#">3</a></li>
-          <li class="page-item"><a class="page-link" href="#">4</a></li>
-          <li class="page-item"><a class="page-link" href="#">5</a></li>
-        </ul> 
-      </div>
-      {{-- kết thúc phân trang --}}
     </div>
-   
-  </div>
- </div>
-</div>
+
+
+    <form id="statusUpdateForm" method="POST" style="display: none;">
+        @csrf
+        @method('PATCH') {{-- hoặc PATCH nếu bạn muốn --}}
+        <input type="hidden" name="status" id="statusInput">
+    </form>
+
+    <!-- Modal xác nhận huỷ đơn hàng -->
+    <div class="modal fade" id="cancelConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="cancelForm" method="POST">
+                    @csrf
+                    @method('POST') {{-- hoặc DELETE tùy route bạn dùng --}}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Xác nhận huỷ đơn hàng</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="cancelConfirmMessage">Bạn có chắc muốn huỷ đơn hàng này không?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-danger">Xác nhận huỷ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 @endsection
