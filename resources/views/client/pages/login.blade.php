@@ -67,7 +67,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
         </div>
         <div class="modal-body">
-          <p>Nhập email để nhận liên kết đặt lại mật khẩu:</p>
+<p>Nhập email để nhận liên kết đặt lại mật khẩu:</p>
           <input type="email" name="email" class="form-control" placeholder="email@example.com" >
         </div>
         <div class="modal-footer">
