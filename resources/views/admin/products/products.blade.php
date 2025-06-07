@@ -1,6 +1,6 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title')
+@section('title-page')
     <title>Quản lý sản phẩm</title>
 @endsection
 
@@ -71,6 +71,7 @@
                             </form>
                         </div>
 
+                        {{-- Nút thêm sản phẩm --}}
                         <div class="col-md-2 float-end">
                             <a href="{{ route('admin.products.create') }}"
                                 class="btn btn-sm btn-block btn-success mb-2">Thêm
@@ -80,6 +81,7 @@
                         </div>
                     </div>
 
+                    <!-- Thông báo thành công hoặc lỗi -->
                     @if (session('success'))
                         <div class="alert alert-success">
                             {{ session('success') }}
@@ -126,7 +128,8 @@
                                                     class="img-fluid" style="max-width: 50px; height: auto;" />
                                             </td>
                                             <td class="text-center">{{ $product->sku }}</td>
-                                            <td class="text-center">{{ $product->category ? $product->category->name : 'N/A' }}</td>
+                                            <td class="text-center">
+                                                {{ $product->category ? $product->category->name : 'N/A' }}</td>
                                             <td class="text-center">{{ $product->brand ? $product->brand->name : 'N/A' }}
                                             </td>
                                             <td class="text-center">{{ $product->status }}</td>
@@ -168,45 +171,6 @@
                     @endif
                 </div>
 
-                {{-- <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <a href="{{ route('admin.products.create') }}"
-                                class="btn btn-sm btn-block btn-success mb-2">Thêm sản phẩm</a><br>
-                            <h3 class="card-title">Các sản phẩm đã thêm gần đây</h3>
-                            <div class="card-tools">
-                                <button type="button" class="btn btn-sm btn-tool" data-lte-toggle="card-collapse">
-                                    <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
-                                    <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-tool" data-lte-toggle="card-remove">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="px-2">
-                                @foreach ($latestProducts as $product)
-                                    <div class="d-flex border-top py-2 px-1">
-                                        <div class="col-2">
-                                            <img src="{{ Storage::url($product->thumbnail) }}" alt="Product Image"
-                                                class="img-size-50" />
-                                        </div>
-                                        <div class="col-10">
-                                            <a href="{{ route('admin.products.show', $product->id) }}" class="fw-bold"
-                                                style="font-size: 1rem; text-decoration: none; color: ;">
-                                                {{ Str::limit($product->name, 25, '...') }}
-                                                <span class="badge text-bg-warning float-end">
-                                                    {{ $product->getPriceRangeAttribute() }} </span>
-                                            </a>
-                                            <div class="text-truncate">{{ $product->short_description }}</div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                </div> --}}
             </div>
         </div>
     </div>

@@ -4,6 +4,7 @@
 @section('content')
     <div class="container py-4">
         <div class="card shadow-lg border-0 rounded-4 p-4">
+            {{-- quay lại trang danh sách đơn hàng --}}
             <div class="row mb-3">
                 <div class="col-md-12">
                     <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary">
@@ -11,6 +12,8 @@
                     </a>
                 </div>
             </div>
+            
+            {{-- Thông báo lỗi hoặc thành công --}}
             <div class="row">
                 @if (session('error'))
                     <div class="alert alert-danger rounded-3">
@@ -24,6 +27,7 @@
                 @endif
             </div>
 
+            {{-- Thông tin người gửi, người nhận --}}
             <div class="row mb-4">
                 <div class="col-md-6">
                     <h6 class="text-muted">Người gửi</h6>
@@ -45,6 +49,7 @@
                 </div>
             </div>
 
+            {{-- Thông tin đơn hàng --}}
             <div class="row mb-2">
                 <div class="col-md-2">
                     <h6 class="text-muted">Đơn hàng</h6>
@@ -140,6 +145,7 @@
                 @endif
             </div>
 
+            {{-- Bảng chi tiết đơn hàng --}}
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
@@ -183,6 +189,7 @@
                 </table>
             </div>
 
+            {{-- Tổng tiền và ghi chú --}}
             <div class="row mt-4">
                 <div class="col-md-8">
                     @if ($order->note)
