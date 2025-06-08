@@ -1,0 +1,98 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Order;
+use Illuminate\Http\Request;
+
+class OrderController extends Controller
+{
+    //
+    public function index(Request $request)
+    {
+        $query = Order::with(['user', 'shippingAddress', 'orderDetails.productVariant', 'coupon']);
+        $statuses = [
+            'pending' => 'Đang chờ xử lý',
+            'processing' => 'Đang xử lý',
+            'shipped' => 'Đang giao',
+            'delivered' => 'Đã hoàn thành',
+            'cancelled' => 'Đơn đã hủy',
+        ];
+        $q = request()->query('q');
+        $hasSearch = false;
+        // Lọc theo tên sản phẩm
+        if ($request->filled('q')) {
+            $query->where('order_code', 'like', '%' . $request->q . '%');
+            $hasSearch = true;
+        }
+        // Lọc theo trạng thái
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+            $hasSearch = true;
+        }
+
+        // Lấy danh sách sản phẩm với phân trang
+        $orders = $query->orderByDesc('id')->paginate(10);
+
+        // Kiểm tra nếu có tìm kiếm nhưng không có kết quả
+        $noResults = $hasSearch && $orders->isEmpty();
+
+        // dd($orders);
+        return view('admin.orders.orders', compact('orders', 'statuses', 'noResults'));
+    }
+
+    public function show($id)
+    {
+        $order = Order::with('user', 'shippingAddress', 'orderDetails.productVariant.product', 'coupon')
+            ->findOrFail($id);
+
+        $discount = 0;
+        $total = $order->total_price;
+
+        // Tính toán giảm giá nếu có coupon
+        if ($order->coupon) {
+            if ($order->coupon->discount_type === 'fixed') {
+                $discount = $order->coupon->discount_value;
+            } elseif ($order->coupon->discount_type === 'percent') {
+                $discount = round($total * $order->coupon->discount_value / 100);
+            }
+        }
+        return view('admin.orders.show', compact('order', 'discount', 'total'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+        $newStatus = $request->input('status');
+
+        $validTransitions = [
+            'pending' => 'processing',
+            'processing' => 'shipped',
+            'shipped' => 'delivered',
+        ];
+
+        if (!isset($validTransitions[$order->status]) || $validTransitions[$order->status] !== $newStatus) {
+            return redirect()->back()->with('error', 'Chuyển trạng thái không hợp lệ.');
+        }
+
+        $order->status = $newStatus;
+        $order->save();
+
+        return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
+    }
+
+
+
+    public function cancel(Order $order)
+    {
+        if (in_array($order->status, ['delivered', 'cancelled'])) {
+            return redirect()->back()->with('error', 'Không thể huỷ đơn hàng đã hoàn tất hoặc đã huỷ.');
+        }
+
+        $order->status = 'cancelled';
+        $order->save();
+
+        return redirect()->back()->with('success', 'Đã huỷ đơn hàng thành công.');
+    }
+}

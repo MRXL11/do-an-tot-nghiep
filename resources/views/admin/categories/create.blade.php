@@ -48,7 +48,7 @@
                         </div>
 
                         <div class="d-flex justify-content-end">
-                            <a href="{{ route('admin.categories') }}" class="btn btn-secondary me-2">Hủy</a>
+                            <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary me-2">Hủy</a>
                             <button type="submit" class="btn btn-primary">Lưu</button>
                         </div>
                     </form>

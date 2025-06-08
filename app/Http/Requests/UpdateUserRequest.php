@@ -9,10 +9,10 @@ class UpdateUserRequest extends FormRequest
     /**
      * Determine if the user is authorized to make this request.
      */
-    // public function authorize(): bool
-    // {
-    //     return auth()->check() && auth()->user()->role && auth()->user()->role->name === 'admin';
-    // }
+    public function authorize(): bool
+    {
+        return true; // Cho phép mọi user (hoặc chỉnh theo logic quyền nếu cần)
+    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -23,8 +23,8 @@ class UpdateUserRequest extends FormRequest
             'name' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:users,email,' . $this->user->id,
             'phone_number' => 'nullable|string|max:20',
-            // 'address' => 'nullable|string|max:255',
-            // 'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'address' => 'nullable|string|max:255',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:active,inactive,banned',
             'role_id' => 'nullable|exists:roles,id',
         ];
@@ -41,8 +41,8 @@ class UpdateUserRequest extends FormRequest
             'email.email' => 'Email không hợp lệ.',
             'email.unique' => 'Email đã tồn tại.',
             'status.required' => 'Trạng thái là bắt buộc.',
-            // 'avatar.image' => 'File ảnh phải có định dạng jpeg, png, jpg hoặc gif.',
-            // 'avatar.max' => 'Ảnh không được lớn hơn 2MB.',
+            'avatar.image' => 'File ảnh phải có định dạng jpeg, png, jpg hoặc gif.',
+            'avatar.max' => 'Ảnh không được lớn hơn 2MB.',
         ];
     }
 }

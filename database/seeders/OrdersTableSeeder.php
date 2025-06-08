@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Faker\Factory as Faker;
+use Illuminate\Support\Str;
 
 class OrdersTableSeeder extends Seeder
 {
@@ -35,6 +36,7 @@ class OrdersTableSeeder extends Seeder
                 $totalPrice = $faker->randomFloat(2, 100, 5000);
 
                 DB::table('orders')->insert([
+                    'order_code' => 'HN' . strtoupper(Str::random(8)),
                     'user_id' => $userId,
                     'total_price' => $totalPrice,
                     'status' => $faker->randomElement(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),

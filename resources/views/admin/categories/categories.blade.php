@@ -13,8 +13,8 @@
                         <h2>Danh sách danh mục</h2>
                         <ul class="nav nav-tabs mb-3">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.categories') ? 'active' : '' }}"
-                                    href="{{ route('admin.categories') }}">Danh mục</a>
+                                <a class="nav-link {{ request()->routeIs('admin.categories.index') ? 'active' : '' }}"
+                                    href="{{ route('admin.categories.index') }}">Danh mục</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('admin.categories.trashed') ? 'active' : '' }}"
@@ -32,7 +32,7 @@
                     </div>
 
                     {{-- Form tìm kiếm --}}
-                    <form class="d-flex mb-3" role="search" action="{{ route('admin.categories') }}" method="GET">
+                    <form class="d-flex mb-3" role="search" action="{{ route('admin.categories.index') }}" method="GET">
                         <div class="input-group">
                             <span class="input-group-text bg-light" id="search-icon">
                                 <i class="bi bi-search"></i>

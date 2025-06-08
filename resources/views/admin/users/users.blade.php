@@ -13,7 +13,7 @@
                     <form class="d-flex flex-grow-1 me-2" role="search" action="{{ route('admin.users.index') }}" method="GET">
                         <div class="input-group">
                             <span class="input-group-text bg-light" id="search-icon"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" placeholder="Nhập tên hoặc email để tìm kiếm" aria-label="Tìm kiếm" aria-describedby="search-icon" name="q" value="{{ $search }}">
+                            <input type="text" class="form-control" placeholder="Nhập tên hoặc email để tìm kiếm" aria-label="Tìm kiếm" aria-describedby="search-icon" name="search" value="{{ $search }}">
                             <button class="btn btn-primary" type="submit">Tìm</button>
                         </div>
                     </form>
@@ -60,20 +60,22 @@
                                     </span>
                                 </td>
                                 <td class="text-center">
-    <a href="{{ route('admin.users.show', $user) }}" class="btn btn-info btn-sm" title="Xem chi tiết người dùng">
-        <i class="fas fa-info-circle"></i> <!-- Biểu tượng Details -->
-    </a>
-    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning btn-sm" title="Chỉnh sửa người dùng">
-        <i class="fas fa-check"></i> <!-- Biểu tượng checkmark -->
-    </a>
-    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc muốn xóa?')" title="Xóa người dùng">
-            <i class="fas fa-trash"></i> <!-- Biểu tượng thùng rác -->
-        </button>
-    </form>
-</td>
+                                  @if ($user->trashed())
+                                      <form action="{{ route('admin.users.restore', $user->id) }}" method="POST" class="d-inline">
+                                          @csrf
+                                          @method('PATCH')
+                                          <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Khôi phục người dùng này?')" title="Khôi phục người dùng">Khôi phục</button>
+                                      </form>
+                                  @else
+                                      <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-primary btn-sm" title="Chỉnh sửa người dùng">Sửa</a>
+                                      <a href="{{ route('admin.users.show', $user) }}" class="btn btn-info btn-sm" title="Xem chi tiết người dùng">Xem</a>
+                                      <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline">
+                                          @csrf
+                                          @method('DELETE')
+                                          <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc muốn xóa?')" title="Xóa người dùng">Xóa</button>
+                                      </form>
+                                  @endif
+                              </td>
                             </tr>
                         @empty
                             <tr><td colspan="8" class="text-center">Không có người dùng nào.</td></tr>
@@ -107,7 +109,7 @@
                                         style="width: 80px; height: 80px; object-fit: cover;" 
                                         src="{{ $newUser->avatar ? asset('storage/' . $newUser->avatar) : asset('dist/assets/img/user1-128x128.jpg') }}" 
                                         alt="User Image">
-                                    <a class="btn fw-bold fs-7 text-secondary text-truncate w-100 p-0" href="#">{{ $newUser->name }}</a>
+                                    <a class="btn fw-bold fs-7 text-secondary text-truncate w-100 p-0" href="{{ route('admin.users.show', $user) }}">{{ $newUser->name }}</a>
                                     <div class="fs-8">{{ $newUser->created_at->format('d M') }}</div>
                                 </div>
                             @empty
