@@ -1,7 +1,7 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title')
-    <title>Quản lý sản phẩm</title>
+@section('title-page')
+    <h3>Quản lý sản phẩm</h3>
 @endsection
 
 @section('content')
@@ -9,11 +9,11 @@
         <div class="col-lg-12">
             <div class="row g-4 mb-4">
                 <div class="col-md-12">
-                    <div class="row d-flex mb-3">
-                        <div class="col-md-10">
-                            <!-- Form tìm kiếm -->
-                            <form class="row gx-2 align-items-center mb-2" action="{{ route('admin.products.index') }}"
-                                method="GET">
+                    <div class="row mb-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <!-- Cột Form tìm kiếm -->
+                            <form class="row gx-2 align-items-center flex-grow-1 me-3"
+                                action="{{ route('admin.products.index') }}" method="GET">
                                 <!-- Ô tìm kiếm -->
                                 <div class="col-auto">
                                     <div class="input-group">
@@ -67,18 +67,19 @@
                                     <button class="btn btn-primary" type="submit">
                                         Tìm kiếm
                                     </button>
+                                    <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">
+                                        Đặt lại
+                                    </a>
                                 </div>
                             </form>
-                        </div>
 
-                        <div class="col-md-2 float-end">
-                            <a href="{{ route('admin.products.create') }}"
-                                class="btn btn-sm btn-block btn-success mb-2">Thêm
-                                sản
-                                phẩm
+                            <!-- Nút thêm sản phẩm -->
+                            <a href="{{ route('admin.products.create') }}" class="btn btn-success mt-2 mt-md-0">
+                                Thêm sản phẩm
                             </a>
                         </div>
                     </div>
+
 
                     @if (session('success'))
                         <div class="alert alert-success">
@@ -126,7 +127,8 @@
                                                     class="img-fluid" style="max-width: 50px; height: auto;" />
                                             </td>
                                             <td class="text-center">{{ $product->sku }}</td>
-                                            <td class="text-center">{{ $product->category ? $product->category->name : 'N/A' }}</td>
+                                            <td class="text-center">
+                                                {{ $product->category ? $product->category->name : 'N/A' }}</td>
                                             <td class="text-center">{{ $product->brand ? $product->brand->name : 'N/A' }}
                                             </td>
                                             <td class="text-center">{{ $product->status }}</td>
