@@ -1,11 +1,11 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title', 'Thêm sản phẩm')
+@section('title-page', 'Thêm sản phẩm')
 
 @section('content')
     <div class="container-fluid">
-        <h2>Thêm sản phẩm</h2>
 
+        {{-- Thông báo --}}
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -25,12 +25,11 @@
             </div>
         @endif
 
-
+        {{-- Form thêm sản phẩm --}}
         <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
-
             <div class="row g-3 align-items-center mb-3">
-                <!-- Ảnh bên trái -->
+                <!-- Thêm ảnh -->
                 <div class="col-md-5 text-center">
                     <img id="preview_thumbnail" src="https://via.placeholder.com/400x300?text=Preview"
                         class="img-fluid rounded mb-2" style="max-height: 400px; object-fit: cover; cursor: pointer;"
@@ -45,7 +44,7 @@
                     @enderror
                 </div>
 
-                <!-- Thông tin sản phẩm bên phải -->
+                <!-- Thêm thông tin sản phẩm -->
                 <div class="col-md-7">
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -114,7 +113,9 @@
             </div>
 
             <hr>
-            <h4>Thông tin biến thể (tuỳ chọn)</h4>
+
+            {{-- Thông tin biến thể  --}}
+            <h4>Thông tin biến thể</h4>
             <div class="row g-3 align-items-center mb-3">
                 <div class="col-md-12">
                     <div class="row g-3">
@@ -145,14 +146,21 @@
                 </div>
             </div>
 
+            {{-- Nút tạo biến thể (nhấn sau khi đã nhập tất cả thông tin hợp lệ cho biến thể) --}}
             <button type="button" class="btn btn-secondary mb-3" onclick="generateVariants()">Tạo biến thể</button>
 
+            {{-- Danh sách biến thể sẽ được hiển thị ở đây --}}
             <ul id="variantList"></ul>
-            <!-- Sửa name từ variants_json -> variants -->
+
+            {{-- Input ẩn để gửi dữ liệu khi submit (dữ liệu được xử lý ở bên script) --}}
             <input type="hidden" name="variants" id="variants">
 
-
-            <button type="submit" class="btn btn-primary">Lưu sản phẩm</button>
+            <div class="row">
+                <div class="col-md-12">
+                    <a href="{{ route('admin.products.index') }}" class="btn btn-danger">Quay lại</a>
+                    <button type="submit" class="btn btn-primary">Lưu sản phẩm</button>
+                </div>
+            </div>
         </form>
 
 
