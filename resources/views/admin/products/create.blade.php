@@ -155,7 +155,12 @@
             {{-- Input ẩn để gửi dữ liệu khi submit (dữ liệu được xử lý ở bên script) --}}
             <input type="hidden" name="variants" id="variants">
 
-            <button type="submit" class="btn btn-primary">Lưu sản phẩm</button>
+            <div class="row">
+                <div class="col-md-12">
+                    <a href="{{ route('admin.products.index') }}" class="btn btn-danger">Quay lại</a>
+                    <button type="submit" class="btn btn-primary">Lưu sản phẩm</button>
+                </div>
+            </div>
         </form>
 
 

@@ -44,6 +44,8 @@
 
                 <!-- Cột phải: Nút bấm -->
                 <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <a type="button" class="btn btn-secondary me-2" href="{{ route('admin.products.index') }}">
+                        <i class="bi bi-arrow-left"></i> Quay lại</a>
                     <button type="submit" id="saveButton" class="btn btn-success">Lưu</button>
                 </div>
             </div>
