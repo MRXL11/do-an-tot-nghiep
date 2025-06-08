@@ -36,7 +36,7 @@
                              </a>
                          </li>
                          <li class="nav-item">
-                             <a href="{{ route('users') }}"
+                             <a href="{{ route('admin.users.index') }}"
                                  class="nav-link {{ request()->routeIs('users') ? 'active' : '' }}">
                                  <i class="nav-icon bi bi-circle"></i>
                                  <p>Người dùng</p>

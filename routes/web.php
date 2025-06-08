@@ -5,7 +5,8 @@
     use App\Http\Controllers\Admin\BrandController;
     use App\Http\Controllers\Admin\CategoryController;
     use App\Http\Controllers\Admin\OrderController;
-    use App\Http\Controllers\Client\Auth\LoginController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Client\Auth\LoginController;
     use App\Http\Controllers\Client\Auth\RegisterController;
     use App\Http\Controllers\Client\Auth\VerifyController;
     use App\Http\Controllers\Client\AccountController;
@@ -52,9 +53,8 @@
         });
 
         // Người dùng (Users)
-        Route::get('/users', function () {
-            return view('admin.users.users');
-        })->name('users');
+          Route::resource('/users', UserController::class)->names('admin.users');
+          Route::patch('/admin/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
 
         // Đơn hàng (Orders)
         Route::get('/orders', function () {
