@@ -16,6 +16,7 @@
     use Illuminate\Support\Str;
     use Laravel\Socialite\Facades\Socialite;
     use App\Models\User;
+    use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
     // ✅ Route cho Admin
     // Route cho Admin
@@ -70,6 +71,9 @@
         Route::get('/reviews', function () {
             return view('admin.others_menu.reviews');
         })->name('reviews');
+        Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
+        Route::post('/reviews/{id}/approve', [ReviewController::class, 'approve'])->name('admin.reviews.approve');
+        Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('admin.reviews.destroy');
 
         // Thông báo (Notifications)
         Route::get('/notifications', function () {
@@ -138,7 +142,7 @@
         Route::post('/register', [RegisterController::class, 'handleRegister'])->name('register.submit');
     });
 
-    // Xác thực email 
+    // Xác thực email
     Route::post('/register/otp/send', [RegisterController::class, 'sendOtp'])->name('register.otp.send');
     Route::post('/register/otp/submit', [RegisterController::class, 'registerWithOtp'])->name('register.submit.otp');
     Route::post('/verify/send', [VerifyController::class, 'send'])->name('verify.send');
