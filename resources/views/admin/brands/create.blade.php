@@ -13,7 +13,7 @@
         {{-- ở dây chứa nội dung bên trái --}}
         <a href="{{ route('admin.brands.index') }}" class="btn btn-outline-danger mb-2"> <i class="bi bi-arrow-left"></i>Quay lại</a>
          {{-- form này dùng để tạo mới thương hiệu --}}
-         <form action="{{ route('brands.store') }}" method="POST" class="form-control border border-2 p-4"
+         <form action="{{ route('admin.brands.store') }}" method="POST" class="form-control border border-2 p-4"
             {{-- enctype là để upload file --}}
           enctype="multipart/form-data">
             @csrf

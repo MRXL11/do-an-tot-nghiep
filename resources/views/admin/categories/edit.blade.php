@@ -24,7 +24,7 @@
                 @enderror
             </div>
             <button type="submit" class="btn btn-primary">Cập nhật</button>
-            <a href="{{ route('admin.categories') }}" class="btn btn-secondary">Hủy</a>
+            <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">Hủy</a>
         </form>
     </div>
 @endsection

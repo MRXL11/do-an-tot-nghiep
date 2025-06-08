@@ -40,8 +40,9 @@
 
 
             // Danh mục (Categories)
-            Route::resource('categories', CategoryController::class);
             Route::get('/categories/trashed', [CategoryController::class, 'trashed'])->name('categories.trashed');
+            Route::resource('categories', CategoryController::class);
+
             Route::post('/categories/{id}/restore', [CategoryController::class, 'restore'])->name('categories.restore');
             Route::delete('/categories/{id}/force-delete', [CategoryController::class, 'forceDelete'])->name('categories.forceDelete');
 
