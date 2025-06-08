@@ -69,6 +69,7 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
         return view('admin.orders.orders');
     })->name('orders');
 
+    
     // Voucher
 
 
