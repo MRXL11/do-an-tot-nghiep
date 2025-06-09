@@ -2,6 +2,7 @@
 
 
     <?php
+    use App\Http\Controllers\Admin\CouponController;
     use App\Http\Controllers\Admin\ProductController as AdminProductController;
     use App\Http\Controllers\Admin\UserController;
     use App\Http\Controllers\Admin\BrandController;
@@ -56,6 +57,11 @@
             // Thương hiệu (Brands)
             Route::resource('brands', BrandController::class)->except(['show']);
             Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
+            // Voucher
+        Route::get('/coupons/trashed', [CouponController::class, 'trashed'])->name('coupons.trashed');
+        Route::resource('coupons', CouponController::class);
+        Route::post('/coupons/{id}/restore', [CouponController::class, 'restore'])->name('coupons.restore');
+        Route::delete('/coupons/{id}/force-delete', [CouponController::class, 'forceDelete'])->name('coupons.forceDelete');
         });
 
         // Người dùng (Users)
@@ -67,10 +73,7 @@
             return view('admin.orders.orders');
         })->name('orders');
 
-        // Voucher
-        Route::get('/vouchers', function () {
-            return view('admin.vouchers.vouchers');
-        })->name('vouchers');
+        
 
         // Đánh giá (Reviews)
         Route::get('/reviews', function () {
