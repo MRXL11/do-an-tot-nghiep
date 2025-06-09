@@ -1,13 +1,16 @@
 
-    <?php
 
+
+    <?php
     use App\Http\Controllers\Admin\ProductController as AdminProductController;
+    use App\Http\Controllers\Admin\UserController;
     use App\Http\Controllers\Admin\BrandController;
     use App\Http\Controllers\Admin\CategoryController;
     use App\Http\Controllers\Admin\OrderController;
     use App\Http\Controllers\Client\Auth\LoginController;
     use App\Http\Controllers\Client\Auth\RegisterController;
     use App\Http\Controllers\Client\Auth\VerifyController;
+
     use App\Http\Controllers\Client\AccountController;
     use App\Http\Controllers\Client\Auth\Mail\ResetPasswordController;
     use App\Http\Controllers\Client\Auth\Mail\ForgotPasswordController;
@@ -16,8 +19,11 @@
     use Illuminate\Support\Str;
     use Laravel\Socialite\Facades\Socialite;
     use App\Models\User;
+
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
+
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
+
     // ✅ Route cho Admin
     // Route cho Admin
     Route::middleware(['auth', 'restrict.admin'])->group(function () {
@@ -53,9 +59,8 @@
         });
 
         // Người dùng (Users)
-        Route::get('/users', function () {
-            return view('admin.users.users');
-        })->name('users');
+          Route::resource('/users', UserController::class)->names('admin.users');
+          Route::patch('/admin/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
 
         // Đơn hàng (Orders)
         Route::get('/orders', function () {
