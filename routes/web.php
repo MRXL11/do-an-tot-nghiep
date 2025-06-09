@@ -36,7 +36,6 @@
             // Sản phẩm (Products)
             Route::resource('products', AdminProductController::class);
             Route::post('/products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
-            Route::post('/products/{id}/addVariants', [AdminProductController::class, 'addVariants'])->name('products.addVariants');
 
             // Đơn hàng (Orders)
             Route::resource('orders', OrderController::class)
@@ -59,6 +58,8 @@
         // Người dùng (Users)
           Route::resource('/users', UserController::class)->names('admin.users');
           Route::patch('/admin/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
+      
+  
 
         // Đơn hàng (Orders)
         Route::get('/orders', function () {

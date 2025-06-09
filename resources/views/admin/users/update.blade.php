@@ -50,6 +50,10 @@
         justify-content: flex-start;
         gap: 12px;
     }
+
+    .text-danger {
+        font-size: 16px;
+    }
 </style>
 
 <div class="container-fluid">
@@ -61,25 +65,26 @@
                     @csrf
                     @method('PUT')
 
-                    <div class="user-info-container">
-                        {{-- Avatar --}}
-                        <div class="user-info-row">
-                            <div class="user-info-label">Avatar:</div>
-                            <div class="user-info-value">
-                                @if($user->avatar && file_exists(public_path('storage/' . $user->avatar)))
-                                    <img id="preview_avatar" src="{{ asset('storage/' . $user->avatar) }}" class="avatar-image">
-                                @else
-                                    <img id="preview_avatar" src="{{ asset('dist/assets/img/user1-128x128.jpg') }}" class="avatar-image">
-                                @endif
-                                <input type="file" name="avatar" accept="image/*" class="form-control form-control-lg mt-2">
-                            </div>
+                    {{-- Hiển thị lỗi tổng thể --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger mb-4">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
                         </div>
+                    @endif
 
+                    <div class="user-info-container">
                         {{-- Tên --}}
                         <div class="user-info-row">
                             <div class="user-info-label">Tên:</div>
                             <div class="user-info-value">
                                 <input type="text" name="name" value="{{ old('name', $user->name) }}" class="form-control form-control-lg">
+                                @error('name')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
@@ -88,6 +93,9 @@
                             <div class="user-info-label">Email:</div>
                             <div class="user-info-value">
                                 <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control form-control-lg">
+                                @error('email')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
@@ -96,6 +104,9 @@
                             <div class="user-info-label">Số điện thoại:</div>
                             <div class="user-info-value">
                                 <input type="text" name="phone_number" value="{{ old('phone_number', $user->phone_number) }}" class="form-control form-control-lg">
+                                @error('phone_number')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
@@ -104,6 +115,9 @@
                             <div class="user-info-label">Địa chỉ:</div>
                             <div class="user-info-value">
                                 <textarea name="address" rows="2" class="form-control form-control-lg">{{ old('address', $user->address) }}</textarea>
+                                @error('address')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
@@ -113,11 +127,14 @@
                             <div class="user-info-value">
                                 <select name="role_id" class="form-control form-control-lg">
                                     @foreach($roles as $role)
-                                        <option value="{{ $role->id }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
+                                        <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
                                             {{ $role->name }}
                                         </option>
                                     @endforeach
                                 </select>
+                                @error('role_id')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
@@ -126,9 +143,13 @@
                             <div class="user-info-label">Trạng thái:</div>
                             <div class="user-info-value">
                                 <select name="status" class="form-control form-control-lg">
-                                    <option value="active" {{ $user->status == 'active' ? 'selected' : '' }}>Active</option>
-                                    <option value="inactive" {{ $user->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                    <option value="active" {{ old('status', $user->status) == 'active' ? 'selected' : '' }}>Active</option>
+                                    <option value="inactive" {{ old('status', $user->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                    <option value="banned" {{ old('status', $user->status) == 'banned' ? 'selected' : '' }}>Banned</option>
                                 </select>
+                                @error('status')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                     </div>
@@ -143,23 +164,4 @@
         </div>
     </div>
 </div>
-{{-- JS preview avatar --}}
-<script>
-    const avatarInput = document.querySelector('input[name="avatar"]');
-    const previewAvatar = document.getElementById('preview_avatar');
-
-    avatarInput.addEventListener('change', function(){
-        const file = this.files[0];
-        if(file){
-            const reader = new FileReader();
-            reader.onload = function(e){
-                previewAvatar.src = e.target.result;
-            }
-            reader.readAsDataURL(file);
-        } else {
-            previewAvatar.src = "{{ asset('dist/assets/img/user1-128x128.jpg') }}";
-        }
-    });
-</script>
 @endsection
-
