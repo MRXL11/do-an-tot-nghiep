@@ -1,6 +1,6 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title')
+@section('title-page')
     <title>Quản lý sản phẩm</title>
 @endsection
 
@@ -9,11 +9,11 @@
         <div class="col-lg-12">
             <div class="row g-4 mb-4">
                 <div class="col-md-12">
-                    <div class="row d-flex mb-3">
-                        <div class="col-md-10">
-                            <!-- Form tìm kiếm -->
-                            <form class="row gx-2 align-items-center mb-2" action="{{ route('admin.products.index') }}"
-                                method="GET">
+                    <div class="row mb-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <!-- Cột Form tìm kiếm -->
+                            <form class="row gx-2 align-items-center flex-grow-1 me-3"
+                                action="{{ route('admin.products.index') }}" method="GET">
                                 <!-- Ô tìm kiếm -->
                                 <div class="col-auto">
                                     <div class="input-group">
@@ -67,19 +67,20 @@
                                     <button class="btn btn-primary" type="submit">
                                         Tìm kiếm
                                     </button>
+                                    <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">
+                                        Đặt lại
+                                    </a>
                                 </div>
                             </form>
-                        </div>
 
-                        <div class="col-md-2 float-end">
-                            <a href="{{ route('admin.products.create') }}"
-                                class="btn btn-sm btn-block btn-success mb-2">Thêm
-                                sản
-                                phẩm
+                            <!-- Nút thêm sản phẩm -->
+                            <a href="{{ route('admin.products.create') }}" class="btn btn-success mt-2 mt-md-0">
+                                Thêm sản phẩm
                             </a>
                         </div>
                     </div>
-
+                    
+                    <!-- Thông báo thành công hoặc lỗi -->
                     @if (session('success'))
                         <div class="alert alert-success">
                             {{ session('success') }}
@@ -126,7 +127,8 @@
                                                     class="img-fluid" style="max-width: 50px; height: auto;" />
                                             </td>
                                             <td class="text-center">{{ $product->sku }}</td>
-                                            <td class="text-center">{{ $product->category ? $product->category->name : 'N/A' }}</td>
+                                            <td class="text-center">
+                                                {{ $product->category ? $product->category->name : 'N/A' }}</td>
                                             <td class="text-center">{{ $product->brand ? $product->brand->name : 'N/A' }}
                                             </td>
                                             <td class="text-center">{{ $product->status }}</td>
@@ -168,45 +170,6 @@
                     @endif
                 </div>
 
-                {{-- <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <a href="{{ route('admin.products.create') }}"
-                                class="btn btn-sm btn-block btn-success mb-2">Thêm sản phẩm</a><br>
-                            <h3 class="card-title">Các sản phẩm đã thêm gần đây</h3>
-                            <div class="card-tools">
-                                <button type="button" class="btn btn-sm btn-tool" data-lte-toggle="card-collapse">
-                                    <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
-                                    <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-tool" data-lte-toggle="card-remove">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="px-2">
-                                @foreach ($latestProducts as $product)
-                                    <div class="d-flex border-top py-2 px-1">
-                                        <div class="col-2">
-                                            <img src="{{ Storage::url($product->thumbnail) }}" alt="Product Image"
-                                                class="img-size-50" />
-                                        </div>
-                                        <div class="col-10">
-                                            <a href="{{ route('admin.products.show', $product->id) }}" class="fw-bold"
-                                                style="font-size: 1rem; text-decoration: none; color: ;">
-                                                {{ Str::limit($product->name, 25, '...') }}
-                                                <span class="badge text-bg-warning float-end">
-                                                    {{ $product->getPriceRangeAttribute() }} </span>
-                                            </a>
-                                            <div class="text-truncate">{{ $product->short_description }}</div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                </div> --}}
             </div>
         </div>
     </div>

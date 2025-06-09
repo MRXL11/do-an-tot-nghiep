@@ -21,6 +21,7 @@ class OrderController extends Controller
         ];
         $q = request()->query('q');
         $hasSearch = false;
+
         // Lọc theo tên sản phẩm
         if ($request->filled('q')) {
             $query->where('order_code', 'like', '%' . $request->q . '%');
@@ -64,8 +65,11 @@ class OrderController extends Controller
     public function update(Request $request, $id)
     {
         $order = Order::findOrFail($id);
+
+        // Lấy trạng thái mới từ request
         $newStatus = $request->input('status');
 
+        // Mảng trạng thái hợp lệ và chuyển đổi
         $validTransitions = [
             'pending' => 'processing',
             'processing' => 'shipped',
@@ -75,14 +79,12 @@ class OrderController extends Controller
         if (!isset($validTransitions[$order->status]) || $validTransitions[$order->status] !== $newStatus) {
             return redirect()->back()->with('error', 'Chuyển trạng thái không hợp lệ.');
         }
-
+        // Lưu trạng thái mới
         $order->status = $newStatus;
         $order->save();
 
         return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
     }
-
-
 
     public function cancel(Order $order)
     {

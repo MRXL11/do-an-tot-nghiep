@@ -1,9 +1,11 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title', 'Chi tiết & Chỉnh sửa sản phẩm')
+@section('title-page', 'Chi tiết & Chỉnh sửa sản phẩm')
 
 @section('content')
     <div class="container-fluid">
+
+        {{-- Thông báo --}}
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -25,6 +27,7 @@
             </div>
         @endif
 
+        {{-- Form chỉnh sửa sản phẩm --}}
         <form id="productForm" action="{{ route('admin.products.update', $product->id) }}" method="POST"
             enctype="multipart/form-data">
             @csrf
@@ -41,10 +44,13 @@
 
                 <!-- Cột phải: Nút bấm -->
                 <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <a type="button" class="btn btn-secondary me-2" href="{{ route('admin.products.index') }}">
+                        <i class="bi bi-arrow-left"></i> Quay lại</a>
                     <button type="submit" id="saveButton" class="btn btn-success">Lưu</button>
                 </div>
             </div>
-            
+
+            <!-- Thông tin sản phẩm -->
             <div class="row g-3 align-items-center mb-3">
                 <div class="col-md-7">
                     <div class="row g-3">
@@ -129,8 +135,6 @@
                     @enderror
                 </div>
             </div>
-            <!-- Thông tin sản phẩm -->
-
 
             <div class="row align-items-center mb-3">
                 <!-- Cột trái: Tiêu đề và mô tả -->
@@ -237,11 +241,10 @@
                     <div class="alert alert-info">Sản phẩm không có biến thể nào.</div>
                 </div>
             @endforelse
-
-
         </form>
 
 
+        {{-- Nút và form thêm biến thể --}}
         <button type="button" id="add_variant" class="btn btn-primary">-- Thêm biến thể --</button>
         <div id="variant_form_container" class="d-none mt-3">
             <form action="{{ route('admin.products.addVariants', $product->id) }}" method="POST">

@@ -140,7 +140,6 @@
                         </tbody>
                     </table>
 
-                    {{-- đây là paginate phân trang --}}
                     <!-- Phân trang -->
                     {{ $orders->links() }}
                     {{-- kết thúc phân trang --}}
@@ -150,7 +149,7 @@
         </div>
     </div>
 
-
+    {{-- form lấy status mới --}}
     <form id="statusUpdateForm" method="POST" style="display: none;">
         @csrf
         @method('PATCH') {{-- hoặc PATCH nếu bạn muốn --}}
