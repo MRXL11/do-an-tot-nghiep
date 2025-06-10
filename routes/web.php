@@ -1,7 +1,6 @@
 
-
-
     <?php
+    use App\Http\Controllers\Admin\CouponController;
     use App\Http\Controllers\Admin\ProductController as AdminProductController;
     use App\Http\Controllers\Admin\UserController;
     use App\Http\Controllers\Admin\BrandController;
@@ -39,7 +38,6 @@
             // Sản phẩm (Products)
             Route::resource('products', AdminProductController::class);
             Route::post('/products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
-            Route::post('/products/{id}/addVariants', [AdminProductController::class, 'addVariants'])->name('products.addVariants');
 
             // Đơn hàng (Orders)
             Route::resource('orders', OrderController::class)
@@ -57,22 +55,30 @@
             // Thương hiệu (Brands)
             Route::resource('brands', BrandController::class)->except(['show']);
             Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
-        
+
+            // Voucher
+        Route::get('/coupons/trashed', [CouponController::class, 'trashed'])->name('coupons.trashed');
+        Route::resource('coupons', CouponController::class);
+        Route::post('/coupons/{id}/restore', [CouponController::class, 'restore'])->name('coupons.restore');
+        Route::delete('/coupons/{id}/force-delete', [CouponController::class, 'forceDelete'])->name('coupons.forceDelete');
+
         });
 
         // Người dùng (Users)
-          Route::resource('/users', UserController::class)->names('admin.users');
-          Route::patch('/admin/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
+            Route::resource('/users', UserController::class)->names('admin.users');
+            Route::get('/admin/users/banned', [UserController::class, 'banned'])->name('admin.users.banned');
+            Route::patch('/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
+            Route::delete('/users/{id}/force-delete', [UserController::class, 'forceDelete'])->name('admin.users.forceDelete');
+
+      
+  
 
         // Đơn hàng (Orders)
         Route::get('/orders', function () {
             return view('admin.orders.orders');
         })->name('orders');
 
-        // Voucher
-        Route::get('/vouchers', function () {
-            return view('admin.vouchers.vouchers');
-        })->name('vouchers');
+        
 
         // Đánh giá (Reviews)
         Route::get('/reviews', function () {

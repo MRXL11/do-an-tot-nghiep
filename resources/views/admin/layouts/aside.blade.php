@@ -74,11 +74,11 @@
                              </a>
                          </li>
                          <li class="nav-item">
-                             <a href="{{ route('vouchers') }}"
-                                 class="nav-link {{ request()->routeIs('vouchers') ? 'active' : '' }}">
-                                 <i class="nav-icon bi bi-circle"></i>
-                                 <p>Voucher</p>
-                             </a>
+                            <a href="{{ route('admin.coupons.index') }}"
+                            class="nav-link {{ request()->routeIs('coupons') ? 'active' : '' }}">
+                             <i class="nav-icon bi bi-circle"></i>
+                             <p>Voucher</p>
+                          </a>
                          </li>
                          <li class="nav-item">
                              <a href="{{ route('notifications') }}"
