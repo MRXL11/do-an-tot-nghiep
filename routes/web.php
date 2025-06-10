@@ -23,7 +23,8 @@
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
 
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
-
+    use App\Http\Controllers\Admin\AdminNotificationController;//thông báo gửi tới admin
+    use App\Http\Controllers\Admin\CustomerNotificationController;// admin thông báo tới người dùng
     // ✅ Route cho Admin
     // Route cho Admin
     Route::middleware(['auth', 'restrict.admin'])->group(function () {
@@ -56,6 +57,7 @@
             // Thương hiệu (Brands)
             Route::resource('brands', BrandController::class)->except(['show']);
             Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
+        
         });
 
         // Người dùng (Users)
@@ -79,11 +81,15 @@
         Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
         Route::post('/reviews/{id}/approve', [ReviewController::class, 'approve'])->name('admin.reviews.approve');
         Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('admin.reviews.destroy');
+        // thông báo admin: Admin xem nhận thông báo
+        Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications');
+        Route::get('/notifications/{id}/read', [AdminNotificationController::class, 'markAsRead'])->name('admin.notifications.markAsRead');
+        Route::get('/notifications/mark-all-read', [AdminNotificationController::class, 'markAllRead'])->name('admin.notifications.markAllRead');
+        // admin gửi thông báo cho khách hàng
+        Route::get('/customer-notifications', [CustomerNotificationController::class, 'index'])->name('admin.customer-notifications.index');
+        Route::get('/customer-notifications/create', [CustomerNotificationController::class, 'create'])->name('admin.customer-notifications.create');
+        Route::post('/customer-notifications', [CustomerNotificationController::class, 'store'])->name('admin.customer-notifications.store');
 
-        // Thông báo (Notifications)
-        Route::get('/notifications', function () {
-            return view('admin.others_menu.notifications');
-        })->name('notifications');
     });
 
     // ✅ Route cho Khách hàng (Client)

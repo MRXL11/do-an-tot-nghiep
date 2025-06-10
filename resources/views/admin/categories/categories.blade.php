@@ -1,6 +1,6 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title')
+@section('title-page')
     <title>Quản lý danh mục</title>
 @endsection
 
@@ -11,9 +11,11 @@
                 <div class="col-md-9">
                     <div class="d-flex justify-content-between mb-3">
                         <h2>Danh sách danh mục</h2>
-                        <ul class="nav nav-tabs mb-3">
+                        <ul class="nav nav-tabs mb-3"> 
                             <li class="nav-item">
+
                                 <a class="nav-link {{ request()->routeIs('admin.categories.index') ? 'active' : '' }}"
+
                                     href="{{ route('admin.categories.index') }}">Danh mục</a>
                             </li>
                             <li class="nav-item">

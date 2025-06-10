@@ -63,5 +63,9 @@ class User extends Authenticatable
             return $this->belongsTo(Role::class);
         }
 
-   
+   // Thêm quan hệ với Notification
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
 }

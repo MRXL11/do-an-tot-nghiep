@@ -13,7 +13,7 @@
                $table->foreignId('user_id')->constrained()->onDelete('cascade');
                $table->string('title', 100);
                $table->text('message');
-               $table->enum('type', ['email', 'push', 'system']);
+              $table->enum('type', ['system', 'order', 'email', 'push', 'product', 'news', 'promotion', 'other']);//   kiểu thông báo
                $table->boolean('is_read')->default(false);
                $table->foreignId('order_id')->nullable()->constrained()->onDelete('set null');
                $table->timestamp('created_at')->useCurrent();

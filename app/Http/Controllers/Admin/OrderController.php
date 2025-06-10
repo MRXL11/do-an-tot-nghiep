@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
-
+use App\Models\User;
+use App\Models\Notification;
+use Illuminate\Support\Facades\Log;
 class OrderController extends Controller
 {
     //
@@ -97,4 +99,24 @@ class OrderController extends Controller
 
         return redirect()->back()->with('success', 'Đã huỷ đơn hàng thành công.');
     }
+    private function createOrderNotification(Order $order, string $message, string $title = 'Cập nhật đơn hàng')
+{
+    try {
+        $admins = User::where('role_id', 1)->get(); // role_id = 1 là admin
+
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id'   => $admin->id,                // Admin là người nhận
+                'title'     => $title,                    // Tiêu đề có thể tùy chỉnh
+                'message'   => $message,                  // Nội dung động theo tình huống
+                'type'      => 'order',                   // Phân loại là thông báo đơn hàng
+                'is_read'   => false,                     // Mặc định chưa đọc
+                'order_id'  => $order->id,                // Gắn với ID đơn hàng cụ thể
+                'created_at' => now(),                    // Đảm bảo thời gian chính xác
+            ]);
+        }
+    } catch (\Exception $e) {
+        Log::error('Lỗi tạo thông báo đơn hàng: ' . $e->getMessage());
+    }
+}
 }
