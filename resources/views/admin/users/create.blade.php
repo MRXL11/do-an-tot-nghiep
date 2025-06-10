@@ -67,17 +67,6 @@
                     @csrf
 
                     <div class="user-info-container">
-                        {{-- Avatar --}}
-                        <div class="user-info-row">
-                            <div class="user-info-label">Avatar:</div>
-                            <div class="user-info-value">
-                                <img id="preview_avatar" src="{{ asset('dist/assets/img/user1-128x128.jpg') }}" class="avatar-image" alt="Avatar preview">
-                                <input type="file" name="avatar" accept="image/*" class="form-control form-control-lg mt-2">
-                                @error('avatar')
-                                    <span class="text-danger">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
 
                         {{-- Tên --}}
                         <div class="user-info-row">
@@ -148,11 +137,8 @@
                             <div class="user-info-value">
                                 <select name="role_id" class="form-control form-control-lg">
                                     <option value="">-- Chọn quyền --</option>
-                                    @foreach($roles as $role)
-                                        <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
-                                            {{ $role->name }}
-                                        </option>
-                                    @endforeach
+                                    <option value="1" {{ old('role_id') == 1 ? 'selected' : '' }}>Quản trị viên</option>
+                                    <option value="2" {{ old('role_id') == 2 ? 'selected' : '' }}>Khách hàng</option>
                                 </select>
                                 @error('role_id')
                                     <span class="text-danger">{{ $message }}</span>
@@ -160,15 +146,15 @@
                             </div>
                         </div>
 
+
                         {{-- Trạng thái --}}
                         <div class="user-info-row">
                             <div class="user-info-label">Trạng thái:</div>
                             <div class="user-info-value">
                                 <select name="status" class="form-control form-control-lg">
                                     <option value="">-- Chọn trạng thái --</option>
-                                    <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Active</option>
-                                    <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                                    <option value="banned" {{ old('status') == 'banned' ? 'selected' : '' }}>Banned</option>
+                                    <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Hoạt động</option>
+                                    <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Ngừng hoạt động</option>
                                 </select>
                                 @error('status')
                                     <span class="text-danger">{{ $message }}</span>
