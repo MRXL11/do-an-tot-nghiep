@@ -37,7 +37,7 @@
     <!--begin::Script-->
     @include('admin.layouts.scripts')
     <!--end::Script-->
-
+    @yield('scripts')
 </body>
 <!--end::Body-->
 

@@ -4,11 +4,11 @@
          <!--begin::Brand Link-->
          <a href="" class="brand-link">
              <!--begin::Brand Image-->
-             <img src="{{ asset('dist/assets/img/AdminLTELogo.png') }}" alt="AdminLTE Logo"
-                 class="brand-image opacity-75 shadow" />
+             {{-- <img src="" alt="HN-447"
+                 class="brand-image opacity-75 shadow" /> --}}
              <!--end::Brand Image-->
              <!--begin::Brand Text-->
-             <span class="brand-text fw-light">ADMIN</span>
+             <span class="">ADMIN</span>
              <!--end::Brand Text-->
          </a>
          <!--end::Brand Link-->
@@ -43,7 +43,7 @@
                              </a>
                          </li>
 
->>>>>>> origin/main
+
 
                          <li class="nav-item">
                              <a href="{{ route('admin.products.index') }}"
