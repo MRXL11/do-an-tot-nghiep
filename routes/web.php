@@ -56,8 +56,11 @@
         });
 
         // Người dùng (Users)
-          Route::resource('/users', UserController::class)->names('admin.users');
-          Route::patch('/admin/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
+            Route::resource('/users', UserController::class)->names('admin.users');
+            Route::get('/admin/users/banned', [UserController::class, 'banned'])->name('admin.users.banned');
+            Route::patch('/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
+            Route::delete('/users/{id}/force-delete', [UserController::class, 'forceDelete'])->name('admin.users.forceDelete');
+
       
   
 

@@ -126,11 +126,10 @@
                             <div class="user-info-label">Quyền:</div>
                             <div class="user-info-value">
                                 <select name="role_id" class="form-control form-control-lg">
-                                    @foreach($roles as $role)
-                                        <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
-                                            {{ $role->name }}
-                                        </option>
-                                    @endforeach
+                                    <!-- Option Quản trị viên -->
+                                    <option value="1" {{ old('role_id', $user->role_id) == 1 ? 'selected' : '' }}>Quản trị viên</option>
+                                    <!-- Option Khách hàng -->
+                                    <option value="2" {{ old('role_id', $user->role_id) == 2 ? 'selected' : '' }}>Khách hàng</option>
                                 </select>
                                 @error('role_id')
                                     <div class="text-danger mt-1">{{ $message }}</div>
@@ -145,7 +144,6 @@
                                 <select name="status" class="form-control form-control-lg">
                                     <option value="active" {{ old('status', $user->status) == 'active' ? 'selected' : '' }}>Active</option>
                                     <option value="inactive" {{ old('status', $user->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                                    <option value="banned" {{ old('status', $user->status) == 'banned' ? 'selected' : '' }}>Banned</option>
                                 </select>
                                 @error('status')
                                     <div class="text-danger mt-1">{{ $message }}</div>
@@ -156,7 +154,10 @@
 
                     {{-- Buttons --}}
                     <div class="btn-group-left mt-4">
+                        <!-- Nút quay lại danh sách người dùng -->
                         <a href="{{ route('admin.users.index') }}" class="btn btn-secondary btn-lg">Quay lại</a>
+
+                        <!-- Nút cập nhật thông tin -->
                         <button type="submit" class="btn btn-success btn-lg">Cập nhật</button>
                     </div>
                 </form>

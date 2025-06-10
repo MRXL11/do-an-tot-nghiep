@@ -9,7 +9,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\View\View;
 
 class UserController extends Controller
 {
@@ -19,27 +19,20 @@ class UserController extends Controller
     {
         $search = $request->input('search');
 
-        $users = User::withTrashed()
+        $users = User::whereIn('status', ['active', 'inactive'])
             ->whereDoesntHave('role', function ($query) {
-                $query->where('name', 'admin'); // loại bỏ user có role admin
+                $query->where('name', 'admin'); // loại bỏ admin
             })
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                      ->orWhere('email', 'like', "%{$search}%");
                 });
             })
             ->paginate(10)
             ->withQueryString();
 
-        $newUsers = User::whereDoesntHave('role', function ($query) {
-                $query->where('name', 'admin');
-            })
-            ->latest()
-            ->take(6)
-            ->get();
-
-        return view('admin.users.users', compact('users', 'search', 'newUsers'));
+        return view('admin.users.users', compact('users', 'search'));
     }
 
 
@@ -89,20 +82,62 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'Người dùng đã được cập nhật!');
     }
 
-    // Xóa người dùng 
-
     public function destroy(User $user)
     {
+        // Không cho phép cấm admin
+        if ($user->role && $user->role->name === 'admin') {
+            return redirect()->route('admin.users.index')->with('error', 'Không thể cấm quản trị viên');
+        }
+
+        // Đổi trạng thái sang 'banned'
+        $user->status = 'banned';
+        $user->save();
+
+        // Xóa mềm
         $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'Người dùng đã được xóa!');
+
+        return redirect()->route('admin.users.index')->with('success', 'Người dùng đã bị cấm!');
     }
-    // Khôi phục người dùng bị xóa
+    
+    public function banned(Request $request): View
+    {
+        $query = User::onlyTrashed() // lấy user bị xóa mềm
+            ->whereHas('role', function ($q) {
+                $q->where('name', '!=', 'admin'); 
+            });
+
+        // Nếu có tham số tìm kiếm (theo name hoặc email)
+        if ($request->has('q') && !empty($request->q)) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->q . '%')
+                ->orWhere('email', 'like', '%' . $request->q . '%');
+            });
+        }
+
+        $bannedUsers = $query->orderBy('deleted_at', 'desc')->paginate(10);
+
+        return view('admin.users.banned', compact('bannedUsers'));
+    }
+    // Khôi phục
     public function restore($id)
     {
-        $user = User::withTrashed()->findOrFail($id);
-        $user->restore();
+        $user = User::onlyTrashed()->findOrFail($id);
+        $user->restore(); 
+        // Cập nhật trạng thái về 'active'
+        $user->status = 'active';
+        $user->save();
 
-        return redirect()->route('admin.users.index')->with('success', 'Người dùng đã được khôi phục!');
+        return redirect()->route('admin.users.banned')->with('success', 'Người dùng đã được khôi phục thành công!');
+    }
+
+
+    // Xóa vĩnh viễn
+    public function forceDelete($id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        $user->forceDelete();
+
+        return redirect()->route('admin.users.banned')->with('success', 'Đã xóa vĩnh viễn người dùng!');
     }
 
 }
