@@ -38,6 +38,7 @@
             // Sản phẩm (Products)
             Route::resource('products', AdminProductController::class);
             Route::post('/products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
+            Route::post('/products/{id}', [AdminProductController::class, 'addVariants'])->name('products.addVariants');
 
             // Đơn hàng (Orders)
             Route::resource('orders', OrderController::class)
