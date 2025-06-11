@@ -1,5 +1,6 @@
 
     <?php
+
     use App\Http\Controllers\Admin\CouponController;
     use App\Http\Controllers\Admin\ProductController as AdminProductController;
     use App\Http\Controllers\Admin\UserController;
@@ -22,8 +23,8 @@
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
 
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
-    use App\Http\Controllers\Admin\AdminNotificationController;//thông báo gửi tới admin
-    use App\Http\Controllers\Admin\CustomerNotificationController;// admin thông báo tới người dùng
+    use App\Http\Controllers\Admin\AdminNotificationController; //thông báo gửi tới admin
+    use App\Http\Controllers\Admin\CustomerNotificationController; // admin thông báo tới người dùng
     // ✅ Route cho Admin
     // Route cho Admin
     Route::middleware(['auth', 'restrict.admin'])->group(function () {
@@ -58,28 +59,24 @@
             Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
 
             // Voucher
-        Route::get('/coupons/trashed', [CouponController::class, 'trashed'])->name('coupons.trashed');
-        Route::resource('coupons', CouponController::class);
-        Route::post('/coupons/{id}/restore', [CouponController::class, 'restore'])->name('coupons.restore');
-        Route::delete('/coupons/{id}/force-delete', [CouponController::class, 'forceDelete'])->name('coupons.forceDelete');
-
+            Route::get('/coupons/trashed', [CouponController::class, 'trashed'])->name('coupons.trashed');
+            Route::resource('coupons', CouponController::class);
+            Route::post('/coupons/{id}/restore', [CouponController::class, 'restore'])->name('coupons.restore');
+            Route::delete('/coupons/{id}/force-delete', [CouponController::class, 'forceDelete'])->name('coupons.forceDelete');
         });
 
         // Người dùng (Users)
-            Route::resource('/users', UserController::class)->names('admin.users');
-            Route::get('/admin/users/banned', [UserController::class, 'banned'])->name('admin.users.banned');
-            Route::patch('/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
-            Route::delete('/users/{id}/force-delete', [UserController::class, 'forceDelete'])->name('admin.users.forceDelete');
+        Route::resource('/users', UserController::class)->names('admin.users');
+        Route::get('/admin/users/banned', [UserController::class, 'banned'])->name('admin.users.banned');
+        Route::patch('/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
+        Route::delete('/users/{id}/force-delete', [UserController::class, 'forceDelete'])->name('admin.users.forceDelete');
 
-      
-  
 
         // Đơn hàng (Orders)
         Route::get('/orders', function () {
             return view('admin.orders.orders');
         })->name('orders');
 
-        
 
         // Đánh giá (Reviews)
         Route::get('/reviews', function () {
@@ -96,7 +93,6 @@
         Route::get('/customer-notifications', [CustomerNotificationController::class, 'index'])->name('admin.customer-notifications.index');
         Route::get('/customer-notifications/create', [CustomerNotificationController::class, 'create'])->name('admin.customer-notifications.create');
         Route::post('/customer-notifications', [CustomerNotificationController::class, 'store'])->name('admin.customer-notifications.store');
-
     });
 
     // ✅ Route cho Khách hàng (Client)

@@ -17,7 +17,6 @@ class ReviewController extends Controller
         return view('admin.others_menu.reviews', compact('reviews'));
     }
 
-
     public function approve($id)
     {
         $review = Review::findOrFail($id);
