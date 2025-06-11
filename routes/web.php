@@ -13,7 +13,7 @@
     use App\Http\Controllers\Client\Auth\LoginController;
     use App\Http\Controllers\Client\Auth\RegisterController;
     use App\Http\Controllers\Client\Auth\VerifyController;
-
+    use App\Http\Controllers\Client\ClientNotificationController;
     use App\Http\Controllers\Client\AccountController;
     use App\Http\Controllers\Client\Auth\Mail\ResetPasswordController;
     use App\Http\Controllers\Client\Auth\Mail\ForgotPasswordController;
@@ -141,10 +141,10 @@
         return view('client.pages.detail-product');
     })->name('detail-product');
 
-    Route::get('/notifications-client', function () {
-        return view('client.pages.notifications-client');
-    })->name('notifications-client');
-
+    // đây là phần thông báo được gửi tới khách hàng
+    Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
+    Route::post('/client/notifications/mark-all-read', [ClientNotificationController::class, 'markAllRead'])->name('client.notifications.markAllRead');
+    
     // ✅ Route xác thực (Auth)
     Route::middleware('web')->group(function () {
         Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
