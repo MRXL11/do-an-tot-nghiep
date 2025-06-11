@@ -1,7 +1,7 @@
 @extends('admin.layouts.AdminLayouts')
 
 @section('title-page')
-    <title>Quản lý sản phẩm</title>
+    <h3>Quản lý sản phẩm</h3>
 @endsection
 
 @section('content')

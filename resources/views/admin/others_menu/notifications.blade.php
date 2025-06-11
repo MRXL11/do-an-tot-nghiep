@@ -30,7 +30,7 @@
                         <button class="btn btn-success me-2" id="filter-read"><i class="bi bi-pencil-square"></i>Đã đọc</button>
                     </div>
                     <div>
-                        <a href="{{ route('admin.customer-notifications.index') }}" class="btn btn-warning"> <i class="bi bi-bell-fill"></i>Quản lý thông báo khách hàng</a>
+                        <a href="{{ route('customer-notifications') }}" class="btn btn-warning"> <i class="bi bi-bell-fill"></i>Quản lý thông báo khách hàng</a>
                     </div>
                 </div>
 

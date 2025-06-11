@@ -1,6 +1,8 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title-page', 'Thêm sản phẩm')
+@section('title-page')
+    <h3>Thêm sản phẩm</h3>
+@endsection
 
 @section('content')
     <div class="container-fluid">

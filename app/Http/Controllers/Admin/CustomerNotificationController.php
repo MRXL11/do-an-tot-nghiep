@@ -41,7 +41,7 @@ class CustomerNotificationController extends Controller
         ]);
     }
 
-    return redirect()->route('admin.customer-notifications.index')
+    return redirect()->route('customer-notifications')
                      ->with('success', 'Đã gửi thông báo đến ' . $request->target . '.');
 }
 }

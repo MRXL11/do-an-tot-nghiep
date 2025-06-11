@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCouponRequest;
+use App\Http\Requests\UpdateCouponRequest;
 use App\Models\Coupon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class CouponController extends Controller
 {
@@ -17,7 +18,11 @@ class CouponController extends Controller
             $query->where('code', 'like', '%' . $request->search . '%');
         }
 
-        $coupons = $query->paginate(10);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $coupons = $query->orderBy('created_at', 'desc')->paginate(10);
 
         return view('admin.coupons.index', compact('coupons'));
     }
@@ -27,26 +32,9 @@ class CouponController extends Controller
         return view('admin.coupons.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreCouponRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'code' => 'required|string|unique:coupons,code',
-            'discount_type' => 'required|in:percent,fixed',
-            'discount_value' => 'required|numeric|min:0',
-            'min_order_value' => 'nullable|numeric|min:0',
-            'max_discount' => 'nullable|numeric|min:0',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'usage_limit' => 'nullable|integer|min:1',
-            'user_usage_limit' => 'nullable|integer|min:1',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        Coupon::create($request->all());
+        Coupon::create($request->validated());
 
         return redirect()->route('admin.coupons.index')->with('success', 'Thêm coupon thành công!');
     }
@@ -61,26 +49,9 @@ class CouponController extends Controller
         return view('admin.coupons.edit', compact('coupon'));
     }
 
-    public function update(Request $request, Coupon $coupon)
+    public function update(UpdateCouponRequest $request, Coupon $coupon)
     {
-        $validator = Validator::make($request->all(), [
-            'code' => 'required|string|unique:coupons,code,' . $coupon->id,
-            'discount_type' => 'required|in:percent,fixed',
-            'discount_value' => 'required|numeric|min:0',
-            'min_order_value' => 'nullable|numeric|min:0',
-            'max_discount' => 'nullable|numeric|min:0',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'usage_limit' => 'nullable|integer|min:1',
-            'user_usage_limit' => 'nullable|integer|min:1',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $coupon->update($request->all());
+        $coupon->update($request->validated());
 
         return redirect()->route('admin.coupons.index')->with('success', 'Cập nhật coupon thành công!');
     }
@@ -99,7 +70,7 @@ class CouponController extends Controller
             $query->where('code', 'like', '%' . $request->search . '%');
         }
 
-        $coupons = $query->paginate(10);
+        $coupons = $query->orderBy('deleted_at', 'desc')->paginate(10);
 
         return view('admin.coupons.trashed', compact('coupons'));
     }
@@ -109,14 +80,15 @@ class CouponController extends Controller
         $coupon = Coupon::onlyTrashed()->findOrFail($id);
         $coupon->restore();
 
-        return redirect()->route('admin.coupons.trashed')->with('success', 'Khôi phục coupon thành công!');
+        return redirect()->route('admin.admin.coupons.trashed')->with('success', 'Khôi phục coupon thành công!');
     }
 
-    public function forceDelete($id)
-    {
-        $coupon = Coupon::onlyTrashed()->findOrFail($id);
-        $coupon->forceDelete();
+    // public function forceDelete($id)
+    // {
+    //     $coupon = Coupon::onlyTrashed()->findOrFail($id);
+    //     $coupon->forceDelete();
 
-        return redirect()->route('admin.coupons.trashed')->with('success', 'Xóa vĩnh viễn coupon thành công!');
-    }
+    //     return redirect()->route('admin.admin.coupons.trashed')->with('success', 'Xóa vĩnh viễn coupon thành công!');
+    // }
+    // xóa vĩnh viễn coupon không cần thiết
 }

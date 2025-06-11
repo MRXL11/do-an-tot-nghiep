@@ -1,7 +1,7 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title')
-    <title>Quản lý đánh giá</title>
+@section('title-page')
+  <h3>Quản lý đánh giá</h3>
 @endsection
 
 @section('content')
