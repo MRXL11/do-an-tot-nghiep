@@ -1,5 +1,7 @@
 @extends('admin.layouts.AdminLayouts')
-
+@section('title-page')
+    <h3>Thống kê</h3>
+@endsection
 @section('content')
      <div class="container-fluid">
             <!--begin::Row-->

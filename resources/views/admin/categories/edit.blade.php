@@ -1,8 +1,10 @@
 @extends('admin.layouts.AdminLayouts')
-
+@section('title-page')
+    <title>Chỉnh sửa danh mục</title>
+@endsection
 @section('content')
     <div class="container">
-        <h1>Chỉnh sửa danh mục</h1>
+       
         <form action="{{ route('admin.categories.update', $category) }}" method="POST">
             @csrf
             @method('PUT')
