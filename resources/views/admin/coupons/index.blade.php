@@ -1,30 +1,52 @@
 @extends('admin.layouts.AdminLayouts')
+@section('title-page')
+    <h3>Danh sách Coupons</h3>
+@endsection
 @section('content')
 <div class="container-fluid">
     <div class="col-lg-12">
         <div class="card shadow">
             <!-- Phần tìm kiếm -->
             <div class="card-header text-white fw-bold">
-                <div class="row align-items-center">
-                    <div class="col-md-10">
-                        <form class="d-flex" method="GET" action="{{ route('admin.coupons.index') }}">
-                            <input type="text" name="search" class="form-control me-2" placeholder="Tìm kiếm mã giảm giá..." value="{{ request('search') }}">
-                            <button class="btn btn-light text-primary" type="submit">
-                                <i class="bi bi-search"></i>
-                            </button>
-                        </form>
-                    </div>
-                    <div class="col-md-2 text-end">
-                        <a href="{{ route('admin.coupons.create') }}" class="btn btn-success">
-                            <i class="bi bi-plus-circle me-1"></i> Thêm Coupon
-                        </a>
-                    </div>
-                </div>
+             <div class="row align-items-center mb-2">
+             <div class="col-md-8">
+            <form class="d-flex gap-2" method="GET" action="{{ route('admin.coupons.index') }}">
+                <input type="text" name="search" class="form-control" placeholder="Tìm kiếm mã giảm giá..." value="{{ request('search') }}" onkeypress="if(event.key === 'Enter') this.form.submit()">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> 
+                </button>
+                {{-- tìm kiếm thông thường --}}
+                <select name="status" class="form-select w-25 text-center" onchange="this.form.submit()">
+                    <option value="" {{ !request('status') ? 'selected' : '' }}>Trạng thái</option>
+                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                    <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                </select>
+            </form>
+            </div>
+            {{-- lọc trạng thái theo seclect --}}
+        <div class="col-md-2 text-end">
+            <a href="{{ route('admin.coupons.create') }}" class="btn btn-success form-control">
+                <i class="bi bi-plus-circle me-1"></i> Thêm Coupon
+            </a>
+        </div>
+        {{-- router thêm coupon --}}
+        <div class="col-md-2 text-end">
+            <a href="{{ route('admin.admin.coupons.trashed') }}" class="btn btn-outline-danger form-control">
+                <i class="bi bi-trash me-1"></i> Thùng rác
+            </a>
+        </div>
+        {{-- thùng rác --}}
+    </div>
+
             </div>
             <div class="card-body p-0">
                 @if (session('success'))
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
+                @if (session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
+                {{-- kết thúc thông báo --}}
                 <table class="table table-hover table-bordered align-middle mb-0 text-center">
                     <thead class="table-light">
                         <tr>
@@ -52,7 +74,13 @@
                                 </td>
                                 <td>{{ $coupon->start_date->format('Y-m-d') }}</td>
                                 <td>{{ $coupon->end_date->format('Y-m-d') }}</td>
-                                <td>{!! $coupon->status_badge !!}</td>
+                                <td>
+                                    @if ($coupon->status == 'active')
+                                        <span class="badge bg-success">Active</span>
+                                    @else
+                                        <span class="badge bg-danger">Inactive</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <a href="{{ route('admin.coupons.edit', $coupon) }}" class="btn btn-sm btn-warning me-1">
                                         <i class="bi bi-pencil-square"></i> Sửa
@@ -61,8 +89,8 @@
                                     <form action="{{ route('admin.coupons.destroy', $coupon) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa coupon này?')">
-                                            <i class="bi bi-trash"></i> Xóa
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Coupon này sau khi xóa sẽ chuyển vào thùng rác?')">
+                                            Chuyển vào <i class="bi bi-trash"></i> 
                                         </button>
                                     </form>
                                 </td>
