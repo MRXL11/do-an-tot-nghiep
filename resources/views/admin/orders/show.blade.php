@@ -1,6 +1,8 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title-page', 'Chi tiết đơn hàng #' . $order->order_code)
+@section('title-page')
+    <h3>Chi tiết đơn hàng <strong class="text-primary">#{{ $order->order_code }}</strong></h3>
+@endsection
 @section('content')
     <div class="container py-4">
         <div class="card shadow-lg border-0 rounded-4 p-4">

@@ -1,6 +1,8 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title-page', 'Chi tiết & Chỉnh sửa sản phẩm')
+@section('title-page')
+    <h3>Chi tiết & Chỉnh sửa sản phẩm   <strong class="text-primary">{{ $product->name }}</strong></h3>        
+@endsection
 
 @section('content')
     <div class="container-fluid">
@@ -35,8 +37,7 @@
 
             <div class="row align-items-center mb-3">
                 <!-- Cột trái: Tiêu đề và mô tả -->
-                <div class="col-md-6">
-                    <h3>Thông tin sản phẩm</h3>
+                <div class="col-md-6">                 
                     <p class="text-muted mb-0">
                         Bạn có thể chỉnh sửa thông tin sản phẩm ở đây!
                     </p>

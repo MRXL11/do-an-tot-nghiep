@@ -1,6 +1,6 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title')
+@section('title-page')
     <title>Danh mục đã xóa</title>
 @endsection
 

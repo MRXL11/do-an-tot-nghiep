@@ -1,6 +1,6 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title')
+@section('title-page')
     <title>Danh sách người dùng bị cấm</title>
 @endsection
 
