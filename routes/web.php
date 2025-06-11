@@ -8,6 +8,8 @@
     use App\Http\Controllers\Admin\BrandController;
     use App\Http\Controllers\Admin\CategoryController;
     use App\Http\Controllers\Admin\OrderController;
+    use App\Http\Controllers\Admin\AdminNotificationController;
+    use App\Http\Controllers\Admin\CustomerNotificationController;
     use App\Http\Controllers\Client\Auth\LoginController;
     use App\Http\Controllers\Client\Auth\RegisterController;
     use App\Http\Controllers\Client\Auth\VerifyController;
@@ -58,9 +60,9 @@
             Route::resource('brands', BrandController::class)->except(['show']);
             Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
             // Voucher được câoj nhật lại
-        Route::get('/coupons/trashed', [CouponController::class, 'trashed'])->name('admin.coupons.trashed');
-        Route::resource('coupons', CouponController::class);
-        Route::post('/coupons/{id}/restore', [CouponController::class, 'restore'])->name('admin.coupons.restore');
+            Route::get('/coupons/trashed', [CouponController::class, 'trashed'])->name('admin.coupons.trashed');
+            Route::resource('coupons', CouponController::class);
+            Route::post('/coupons/{id}/restore', [CouponController::class, 'restore'])->name('admin.coupons.restore');
             
         });
 
@@ -83,10 +85,14 @@
         Route::post('/reviews/{id}/approve', [ReviewController::class, 'approve'])->name('admin.reviews.approve');
         Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('admin.reviews.destroy');
 
-        // Thông báo (Notifications)
-        Route::get('/notifications', function () {
-            return view('admin.others_menu.notifications');
-        })->name('notifications');
+        // thông báo admin: Admin xem nhận thông báo
+        Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications');
+        Route::get('/notifications/{id}/read', [AdminNotificationController::class, 'markAsRead'])->name('admin.notifications.markAsRead');
+        Route::get('/notifications/mark-all-read', [AdminNotificationController::class, 'markAllRead'])->name('admin.notifications.markAllRead');
+        // admin gửi thông báo cho khách hàng
+        Route::get('/customer-notifications', [CustomerNotificationController::class, 'index'])->name('customer-notifications');
+        Route::get('/customer-notifications/create', [CustomerNotificationController::class, 'create'])->name('admin.customer-notifications.create');
+        Route::post('/customer-notifications', [CustomerNotificationController::class, 'store'])->name('admin.customer-notifications.store');
     });
 
     // ✅ Route cho Khách hàng (Client)
