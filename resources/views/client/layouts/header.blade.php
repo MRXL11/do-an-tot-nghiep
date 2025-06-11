@@ -76,9 +76,12 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ url('/client/notifications') }}" class="{{ Request::is('client.notifications') ? 'active' : '' }}">
-                                        <i class="bi bi-bell-fill me-1 text-warning"></i> Thông báo  <span class="badge bg-danger unread-count">{{ $unreadCount }}</span>
-                                    </a>
+                                       <a href="{{ url('/client/notifications') }}" class="{{ Request::is('client.notifications') ? 'active' : '' }}">
+                                            <i class="bi bi-bell-fill me-1 text-warning"></i> Thông báo  
+                                            @isset($unreadCount)
+                                                <span class="badge bg-danger unread-count">{{ $unreadCount }}</span>
+                                            @endisset
+                                        </a>
                                 </li>
                                 <li>
                                     <a href="{{ route('logout') }}">

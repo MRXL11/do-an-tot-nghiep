@@ -39,6 +39,12 @@
     </div>
 
     <!-- Danh sách thông báo -->
+    @guest
+    <div class="alert alert-info text-center">
+        <i class="bi bi-inbox me-2"></i> Hãy đăng nhập để nhận các thông báo ưu đãi dành riêng cho thành viên bạn nhé!!
+    </div>
+    @endguest
+    @auth
     <div class="accordion" id="notificationAccordion">
         @forelse ($notifications as $notification)
             <div class="accordion-item notification-card mb-3 {{ $notification->is_read ? 'notification-item-read' : 'notification-item-unread' }} bg-white shadow-sm border rounded" 
@@ -71,12 +77,13 @@
                 </div>
             </div>
         @empty
-            <div class="alert alert-info text-center">
-                <i class="bi bi-inbox me-2"></i> Hãy đăng nhập để nhận các thông báo ưu đãi dành riêng cho thành viên bạn nhé!!.
-            </div>
+            <div class="alert alert-secondary text-center">
+            <i class="bi bi-bell-slash me-2"></i> Bạn chưa có thông báo nào.
+         </div>
         @endforelse
+        
     </div>
-
+    @endauth
     <!-- Phân trang -->
     <div class="text-center mt-4">
         {{ $notifications->links() }}
