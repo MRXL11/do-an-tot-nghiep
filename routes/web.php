@@ -1,6 +1,3 @@
-
-
-
     <?php
 
     use App\Http\Controllers\Admin\CouponController;
@@ -27,6 +24,8 @@
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
 
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
+    use App\Http\Controllers\Client\ProductController;
+    use App\Http\Controllers\Client\WishlistController;
 
     // ✅ Route cho Admin
     // Route cho Admin
@@ -67,7 +66,6 @@
         });
 
         // Người dùng (Users)
-        // Người dùng (Users)
         Route::resource('/users', UserController::class)->names('admin.users');
         Route::get('/admin/users/banned', [UserController::class, 'banned'])->name('admin.users.banned');
         Route::patch('/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
@@ -77,8 +75,6 @@
         Route::get('/orders', function () {
             return view('admin.orders.orders');
         })->name('orders');
-
-
 
         // Đánh giá (Reviews)
         Route::get('/reviews', function () {
@@ -98,7 +94,15 @@
         Route::post('/customer-notifications', [CustomerNotificationController::class, 'store'])->name('admin.customer-notifications.store');
     });
 
-    // ✅ Route cho Khách hàng (Client)
+    // ✅ Route riêng cho Khách hàng (Client) đã đăng nhập
+    Route::middleware('auth')->prefix('client')->group(function () {
+        Route::post('/wishlist/store', [WishlistController::class, 'store'])
+            ->name('wishlist.store');
+        Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])
+            ->name('wishlist.destroy');
+    });
+
+    // ✅ Route cho Khách hàng (Client) chung (không cần đăng nhập cũng được)
     Route::get('/', function () {
         return view('client.layouts.index');
     })->name('home');
@@ -127,9 +131,11 @@
         return view('client.pages.contact');
     })->name('contact');
 
-    Route::get('/wishlist', function () {
-        return view('client.pages.wishlist');
-    })->name('wishlist');
+    // Route hiển thị danh sách yêu thích
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
+    // Route đồng bộ hóa wishlist lên server khi người dùng đăng nhập
+    Route::post('/wishlist/sync', [WishlistController::class, 'sync'])->name('wishlist.sync');
+
 
     Route::get('/account', function () {
         return view('client.pages.account');
@@ -137,9 +143,8 @@
 
     Route::post('/account', [AccountController::class, 'update'])->name('account.update');
 
-    Route::get('/detail-product', function () {
-        return view('client.pages.detail-product');
-    })->name('detail-product');
+    Route::get('/detail-product/{id}', [ProductController::class, 'show'])->name('detail-product');
+
 
     // đây là phần thông báo được gửi tới khách hàng
     Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
