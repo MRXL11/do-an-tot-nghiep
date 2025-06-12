@@ -72,7 +72,9 @@
         {{-- Nếu người dùng chưa đăng nhập -> hiển thị wishlist từ localStorage (nếu có) --}}
         {{-- Phần hiển thị được xử lý bằng js --}}
         @guest
-            <div id="wishlist-container">Đang tải...</div>
+            <div id="wishlist-container">
+                <p>Đang tải danh sách yêu thích...</p>
+            </div>
         @endguest
 
         <!-- Sản phẩm liên quan -->
@@ -140,71 +142,102 @@
 @endsection
 
 @section('scripts')
+    {{-- Đồng bộ wishlist từ localStorage lên server --}}
+    {{-- Chỉ chạy khi người dùng đã đăng nhập --}}
     @if (Auth::check())
-        {{-- Đồng bộ wishlist từ localStorage lên server khi người dùng đã đăng nhập
-             Chỉ chạy khi trang đã tải xong
-             và người dùng đã đăng nhập
-             và có dữ liệu trong localStorage --}}
         <script>
+            // 🟢 Đồng bộ wishlist từ localStorage lên server khi người dùng đăng nhập
             document.addEventListener("DOMContentLoaded", function() {
-                // Lấy dữ liệu wishlist từ localStorage
-                const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+                const userId = {{ Auth::id() }}; // Lấy ID người dùng hiện tại
+                const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+                const syncedKey = `wishlist_synced_user_${userId}`; // khóa riêng theo user
 
-                // Nếu có dữ liệu wishlist thì gửi yêu cầu đồng bộ lên server
-                // Chỉ gửi yêu cầu nếu wishlist không rỗng
-                if (wishlist.length > 0) {
-                    if (wishlist.length > 0 && !localStorage.getItem('wishlist_synced')) {
-                        fetch("{{ route('wishlist.sync') }}", {
-                                method: "POST",
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                },
-                                body: JSON.stringify({
-                                    wishlist: JSON.stringify(
-                                        wishlist) // <-- truyền chuỗi JSON đúng như controller yêu cầu
-                                })
+                // Nếu có wishlist và chưa đồng bộ cho người dùng hiện tại, tiến hành đồng bộ
+                if (wishlist.length > 0 && !localStorage.getItem(syncedKey)) {
+                    const productIds = wishlist.map(item => item.id); // chỉ lấy id
+
+                    // Gửi yêu cầu đồng bộ wishlist lên server
+                    fetch("{{ route('wishlist.sync') }}", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-TOKEN": '{{ csrf_token() }}',
+                            },
+                            body: JSON.stringify({
+                                wishlist: productIds
                             })
-                            // Chuyển đổi phản hồi từ server sang JSON
-                            .then(response => response.json())
-                            // Xử lý kết quả trả về từ server
-                            .then(data => {
-                                if (data.success) {
-                                    localStorage.removeItem('wishlist'); // ✅ chỉ xóa khi thật sự lưu được vào DB
-                                    localStorage.setItem('wishlist_synced', 'true'); // ✅ gắn cờ đã sync
-                                    console.log("✅ Đồng bộ thành công");
-                                    location.reload(); // Tải lại trang để cập nhật wishlist
-                                } else {
-                                    console.warn("⚠️ Lỗi khi đồng bộ wishlist:", data.message);
-                                }
-                            })
-                            .catch(error => {
-                                console.error("❌ Lỗi kết nối đồng bộ wishlist:", error);
-                            });
-                    }
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                // ✅ Đồng bộ thành công: xoá wishlist local + đánh dấu đã sync theo user
+                                localStorage.removeItem("wishlist");
+                                localStorage.setItem(syncedKey, "true");
+                                console.log("✅ Đồng bộ thành công:", data.message);
+                                location.reload(); // Tải lại để cập nhật danh sách từ server
+                            } else {
+                                console.warn("⚠️ Đồng bộ thất bại:", data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error("❌ Lỗi kết nối:", error);
+                        });
                 }
+
+                // 🧹 Nếu đang dùng session của người dùng khác, xoá dấu `wishlist_synced` cũ
+                // Dọn dẹp `wishlist_synced_user_...` không trùng với user hiện tại
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith("wishlist_synced_user_") && key !== syncedKey) {
+                        localStorage.removeItem(key);
+                    }
+                });
             });
         </script>
     @endif
 
-    {{-- xử lý lưu sản phẩm vào localStorage cho người dùng chưa đăng nhập --}}
-    <script>
-        // Xử lý hiển thị danh sách yêu thích từ localStorage
-        // Chỉ chạy khi người dùng chưa đăng nhập
-        document.addEventListener("DOMContentLoaded", function() {
-            // Lấy container và dữ liệu từ localStorage
-            const container = document.getElementById("wishlist-container");
-            const wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 
-            // Kiểm tra nếu wishlist rỗng
-            if (wishlist.length === 0) {
-                container.innerHTML = "<p>Chưa có sản phẩm nào trong danh sách yêu thích.</p>";
-                return;
-            }
 
-            // Tạo HTML cho danh sách yêu thích
-            let html =
-                `<div class="table-responsive mb-4 shadow-sm">
+    {{-- cho người dùng chưa đăng nhập --}}
+    @guest
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const container = document.getElementById("wishlist-container");
+                if (!container) {
+                    console.error("❌ Không tìm thấy phần tử #wishlist-container trong DOM.");
+                    return;
+                }
+
+                // Lấy danh sách ID sản phẩm từ localStorage (chỉ lấy id thôi)
+                const wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+                const ids = wishlist.map(item => item.id);
+
+                if (ids.length === 0) {
+                    container.innerHTML = "<p>Chưa có sản phẩm nào trong danh sách yêu thích.</p>";
+                    return;
+                }
+
+                // Gửi POST request lên server để lấy thông tin đầy đủ của sản phẩm
+                fetch("{{ route('wishlist.guest') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name=\"csrf-token\"]').getAttribute(
+                                "content")
+                        },
+                        body: JSON.stringify({
+                            ids
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(products => {
+                        // Kiểm tra xem có sản phẩm nào không
+                        if (!products || products.length === 0) {
+                            container.innerHTML = "<p>Không có sản phẩm hợp lệ trong danh sách yêu thích.</p>";
+                            return;
+                        }
+
+                        let html = `
+            <div class="table-responsive mb-4 shadow-sm">
                 <table class="table table-hover align-middle bg-white rounded text-center">
                     <thead class="table-success">
                         <tr>
@@ -215,61 +248,69 @@
                             <th scope="col">Hành động</th>
                         </tr>
                     </thead>
-        `;
+                    <tbody>`;
 
-            // Duyệt qua từng sản phẩm trong wishlist
-            wishlist.forEach(item => {
-                html +=
-                    `
-                    <tbody>
-                        <tr>
-                            <td style="width: 100px;">
-                                <img src="${item.thumbnail}" alt="Product"
-                                    class="img-thumbnail" style="max-width: 50px;">
-                            </td>
-                            <td style="vertical-align: middle">${item.category}</td>
-                            <td style="vertical-align: middle">${item.brand}</td>
-                            <td style="vertical-align: middle">
-                                <strong class="text-primary">
-                                    ${item.name}
-                                </strong>
-                            </td>
-                            <td style="vertical-align: middle">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <button class="btn btn-outline-danger btn-sm me-2" onclick="removeFromWishlist(${item.id})">
-                                        <i class="bi bi-x-circle"></i> Xoá
-                                    </button>
-                                    <a class="btn btn-outline-primary btn-sm" href="/detail-product/${item.id}">
-                                        <i class="bi bi-eye"></i> Chi tiết
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                `;
+                        products.forEach(item => {
+                            // Kiểm tra trạng thái sản phẩm
+                            const isInactive = item.status !== 'active';
+
+                            html += `
+                    <tr>
+    <td style="width: 100px;">
+        <img src="/storage/${item.thumbnail}" alt="Product" class="img-thumbnail" style="max-width: 50px;">
+    </td>
+    <td style="vertical-align: middle">${item.category}</td>
+    <td style="vertical-align: middle">${item.brand}</td>
+    <td style="vertical-align: middle">
+        <strong class="text-primary">${item.name}</strong>
+    </td>
+    <td style="vertical-align: middle">
+        <div class="d-flex align-items-center justify-content-center position-relative">
+            <!-- Nút Xoá luôn hoạt động -->
+            <button class="btn btn-danger btn-sm me-2" onclick="removeFromWishlist(${item.id})" style="${item.status !== 'active' ? 'z-index: 20;' : ''}">
+                <i class="bi bi-x-circle"></i> Xoá
+            </button>
+
+            <!-- Nút Chi tiết bị vô hiệu hoá nếu không active -->
+            <a class="btn btn-outline-primary btn-sm" style="${item.status !== 'active' ? 'display: none;' : ''}"
+               href="/detail-product/${item.id}" >
+                <i class="bi bi-eye"></i> Chi tiết
+            </a>
+        </div>
+    </td>
+</tr>`
+
+                        });
+
+                        html += ` </tbody> 
+                    </table> 
+                    </div>`;
+                        container.innerHTML = html;
+                    })
+
+                    .catch(error => {
+                        console.error("❌ Lỗi khi lấy dữ liệu wishlist:", error);
+                        container.innerHTML =
+                            "<p class='text-danger'>Không thể tải danh sách yêu thích.</p>";
+                    });
             });
 
-            // Kết thúc HTML
-            html += `</table>
-        </div>
-        `;
+            // Hàm xoá sản phẩm khỏi wishlist
+            // Chỉ chạy khi người dùng chưa đăng nhập
+            function removeFromWishlist(productId) {
+                let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 
-            // Chèn HTML vào container
-            container.innerHTML = html;
-        });
+                // Lọc ra các sản phẩm khác với ID muốn xoá
+                wishlist = wishlist.filter(item => item.id !== productId);
 
-        // Hàm xoá sản phẩm khỏi wishlist
-        // Chỉ chạy khi người dùng chưa đăng nhập
-        function removeFromWishlist(productId) {
-            let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-            wishlist = wishlist.filter(item => item.id !== productId);
-            if (confirm("Bạn có chắc muốn xoá sản phẩm này khỏi danh sách yêu thích?")) {
-                localStorage.setItem("wishlist", JSON.stringify(wishlist));
-                alert("✅ Sản phẩm đã được xoá khỏi danh sách yêu thích.");
-                location.reload(); // Tải lại trang để cập nhật danh sách
+                if (confirm("Bạn có chắc muốn xoá sản phẩm này khỏi danh sách yêu thích?")) {
+                    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+                    alert("✅ Sản phẩm đã được xoá khỏi danh sách yêu thích.");
+                    location.reload(); // Tải lại trang để cập nhật danh sách
+                }
             }
-        }
-    </script>
+        </script>
+    @endguest
 
     @if (session('success'))
         <script>

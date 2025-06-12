@@ -6,13 +6,14 @@ use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 
 class WishlistController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         //
         if (Auth::check()) {
@@ -21,10 +22,40 @@ class WishlistController extends Controller
                 ->paginate(5);
         } else {
             // Nếu người dùng chưa đăng nhập, lấy wishlist từ localStorage
-            // $wishlistItems = collect(json_decode(request()->cookie('wishlist', '[]'), true));
             $wishlistItems = [];
         }
+
         return view('client.pages.wishlist', compact('wishlistItems'));
+    }
+
+    // Trong WishlistController
+    public function getGuestWishlist(Request $request)
+    {
+        // Lấy danh sách ID sản phẩm từ localStorage
+        $ids = $request->input('ids');
+
+        if (!is_array($ids) || empty($ids)) {
+            return response()->json([], 200); // trả mảng rỗng thay vì lỗi
+        }
+
+        // Lấy sản phẩm từ cơ sở dữ liệu dựa trên ID
+        $products = Product::with(['category', 'brand'])
+            ->whereIn('id', $ids)
+            ->get()
+            ->map(function ($product) {
+                // Chỉ lấy các trường cần thiết để trả về
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'thumbnail' => $product->thumbnail,
+                    'category' => $product->category->name,
+                    'brand' => $product->brand->name,
+                    'status' => $product->status,
+                ];
+            });
+
+        // Trả về danh sách sản phẩm dưới dạng JSON
+        return response()->json($products);
     }
 
     /**
@@ -106,40 +137,38 @@ class WishlistController extends Controller
         return back()->with('success', 'Đã xoá khỏi danh sách yêu thích.');
     }
 
-
     public function sync(Request $request)
     {
         if (!Auth::check()) {
-            return redirect()->back()->with('error', 'Bạn cần đăng nhập để đồng bộ wishlist.');
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập.']);
         }
 
-        // Kiểm tra xem dữ liệu wishlist có được gửi qua request hay không
-        $data = json_decode($request->input('wishlist'), true);
+        $wishlist = $request->input('wishlist', []);
 
-        // Nếu không có dữ liệu hoặc dữ liệu không hợp lệ, trả về lỗi
-        if (!is_array($data)) {
-            return redirect()->back()->with('error', 'Dữ liệu truyền vào wishlist không hợp lệ.');
+        if (!is_array($wishlist) || empty($wishlist)) {
+            return response()->json(['success' => false, 'message' => 'Dữ liệu wishlist không hợp lệ.']);
         }
 
-        // Xử lý dữ liệu để chèn vào bảng wishlist
-        // Lọc ra các sản phẩm có id và chuẩn bị dữ liệu để chèn vào bảng wishlist
+        $validProductIds = Product::whereIn('id', $wishlist)
+            ->where('status', 'active')
+            ->pluck('id')
+            ->toArray();
+
         $insertData = [];
-        foreach ($data as $item) {
-            if (isset($item['id'])) {
-                $insertData[] = [
-                    'user_id' => Auth::id(),
-                    'product_id' => $item['id'],
-                    'created_at' => now(),
-                ];
-            }
+        foreach ($validProductIds as $productId) {
+            $insertData[] = [
+                'user_id' => Auth::id(),
+                'product_id' => $productId,
+                'created_at' => now(),
+            ];
         }
 
-        // Chèn hoặc cập nhật dữ liệu vào bảng wishlist
         Wishlist::insertOrIgnore($insertData);
 
         return response()->json([
             'success' => true,
-            'message' => 'Đồng bộ wishlist thành công.'
+            'message' => 'Đồng bộ wishlist thành công.',
+            'inserted' => count($insertData)
         ]);
     }
 }
