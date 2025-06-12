@@ -29,9 +29,8 @@ class User extends Authenticatable
         'reset_password_token',
         'reset_password_expires_at',
         'role_id',
-        'create_at',
-        'update_at',
-        'delete_at',
+        'created_at',
+        'updated_at',
         'address',
     ];
 
@@ -51,14 +50,11 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
         'email_verified_at' => 'datetime',
         'reset_password_expires_at' => 'datetime',
         'status' => 'string',
-        ];
-    }
+    ];
 
      public function role()
         {
@@ -69,5 +65,11 @@ class User extends Authenticatable
     public function notifications()
     {
         return $this->hasMany(Notification::class);
+    }
+
+    // Thêm quan hệ với Order
+    public function orders() 
+    {
+        return $this->hasMany(Order::class);
     }
 }

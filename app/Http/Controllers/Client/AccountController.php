@@ -35,4 +35,17 @@ class AccountController extends Controller
 
         return back()->with('success', '✅ Cập nhật tài khoản thành công!');
     }
+
+    public function index()
+    {
+        $user = Auth::user();
+
+        // Nạp đơn hàng cùng chi tiết sản phẩm
+        $orders = $user->orders()
+            ->with(['orderDetails.productVariant.product']) // nạp toàn bộ sản phẩm, màu, size, v.v.
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('client.pages.account', compact('user', 'orders'));
+    }
 }

@@ -131,15 +131,10 @@
         return view('client.pages.wishlist');
     })->name('wishlist');
 
-    Route::get('/account', function () {
-        return view('client.pages.account');
-    })->name('account');
+    Route::get('/account', [AccountController::class, 'index'])->name('account');
 
     Route::post('/account', [AccountController::class, 'update'])->name('account.update');
 
-    Route::get('/detail-product', function () {
-        return view('client.pages.detail-product');
-    })->name('detail-product');
 
     // đây là phần thông báo được gửi tới khách hàng
     Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
