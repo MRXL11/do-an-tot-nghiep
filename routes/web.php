@@ -138,12 +138,10 @@
     Route::post('/wishlist/sync', [WishlistController::class, 'sync'])->name('wishlist.sync');
 
 
-    Route::get('/account', function () {
-        return view('client.pages.account');
-    })->name('account');
-
-    Route::post('/account', [AccountController::class, 'update'])->name('account.update');
-
+    // Route cho tài khoản khách hàng
+    Route::get('/account', [AccountController::class, 'show'])->name('account.show');
+    Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
+    
     Route::get('/detail-product/{id}', [ProductController::class, 'show'])->name('detail-product');
 
 
