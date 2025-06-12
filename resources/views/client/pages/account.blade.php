@@ -11,17 +11,9 @@
           </div>
         @if(session('success'))
           <div class="alert alert-success alert-dismissible fade show" role="alert">
-              <p>{{ session('success') }}</p>
+              {{ session('success') }}
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-      @else
-          <div class="alert alert-danger alert-dismissible fade show" role="alert">
-              <div class="d-flex flex-column text-center">
-                  <span>Bạn đã nhập sai thông tin.</span>
-                  <span>Vui lòng nhập lại!!</span>
-              </div>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
+          </div>    
       @endif
           {{-- nôi dung trên là thông báo khi có lỗi --}}
        
