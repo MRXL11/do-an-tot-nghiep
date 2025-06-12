@@ -66,7 +66,7 @@
                         <ul>
                             @auth
                                 <li>
-                                    <a href="{{ url('/account') }}" class="{{ Request::is('account') ? 'active' : '' }}">
+                                    <a href="{{ route('account.show') }}" class="{{ Request::route()->named('account.show') ? 'active' : '' }}">
                                         <i class="bi bi-person-lines-fill me-1"></i> Trang cá nhân
                                     </a>
                                 </li>
