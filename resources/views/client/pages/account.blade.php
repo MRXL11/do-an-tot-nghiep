@@ -135,10 +135,10 @@
                       </tbody>
                     </table>
 
-                    {{-- Nút "Hủy đơn" chỉ hiển thị khi trạng thái là 'pending' }}
+                    {{-- Nút "Hủy đơn" chỉ hiển thị khi trạng thái là 'pending' --}}
                     <div class="text-end mt-2">
                       @if($order->status === 'pending')
-                        <form method="POST" action=""> 
+                        <form method="POST" action="{{ route('orders.cancel', $order->id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn này?');">
                           @csrf
                           @method('PATCH')
                           <button class="btn btn-danger">Hủy đơn hàng</button>
