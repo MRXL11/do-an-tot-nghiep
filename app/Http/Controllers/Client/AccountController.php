@@ -30,12 +30,13 @@ class AccountController extends Controller
                 return back()->withErrors(['old_password' => 'Mật khẩu cũ không đúng']);
             }
             $user->password = Hash::make($request->new_password);
-        }
+         
+        }else{
 
     $user->save();
    
     return redirect()->back()->with('success', '✅ Cập nhật tài khoản thành công!');
         
-    
+    }
     }
 }
