@@ -141,7 +141,7 @@
     // Route cho tài khoản khách hàng
     Route::get('/account', [AccountController::class, 'show'])->name('account.show');
     Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
-    
+
     Route::get('/detail-product/{id}', [ProductController::class, 'show'])->name('detail-product');
 
 
