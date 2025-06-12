@@ -44,17 +44,6 @@ class ProductController extends Controller
         sau đó dùng JS để xử lý thêm vào localStorage để lưu wishlist cho user chưa đăng nhập */
         $productData = [
             'id' => $product->id,
-            'name' => $product->name,
-            'category_id' => $product->category_id,
-            'category' => $product->category->name,
-            'brand' => $product->brand->name,
-            'brand_id' => $product->brand_id,
-            'sku' => $product->sku,
-            'thumbnail' => $product->thumbnail,
-            'description' => $product->description,
-            'short_description' => $product->short_description,
-            'slug' => $product->slug,
-            'status' => $product->status,
         ];
 
         return view('client.pages.detail-product', compact('product', 'productData'));

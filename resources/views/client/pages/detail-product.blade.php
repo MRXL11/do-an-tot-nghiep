@@ -209,6 +209,7 @@
 @endsection
 
 @section('scripts')
+
     @if (!Auth::check())
         <script>
             // Thêm sự kiện click cho nút "Thêm vào danh sách yêu thích" 
