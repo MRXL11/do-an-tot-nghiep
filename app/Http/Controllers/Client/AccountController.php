@@ -2,7 +2,6 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -10,10 +9,7 @@ use App\Http\Requests\UpdateAccountClientRequest;
 
 class AccountController extends Controller
 {   
-
-    // Đổi mật khẩu
-    public function update(Request $request)
-
+    public function show()
     {
         return view('client.pages.account'); // Đường dẫn tới view hiển thị form
     }
@@ -43,36 +39,4 @@ class AccountController extends Controller
         
     }
     }
-
-    //Lịch sử đơn hàng
-    public function index()
-    {
-        $user = Auth::user();
-        $orders = $user->orders()
-            ->with(['orderDetails.productVariant.product'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('client.pages.account', compact('user', 'orders'));
-    }
-
-    public function cancel(Order $order)
-    {
-        // Kiểm tra: chỉ chủ sở hữu mới được hủy và chỉ khi đơn đang 'pending'
-        if ($order->user_id !== auth()->id()) {
-            return back()->with('error', 'Bạn không có quyền hủy đơn này.');
-        }
-
-        if ($order->status !== 'pending') {
-            return back()->with('error', 'Chỉ có thể hủy đơn đang chờ xử lý.');
-        }
-
-        // Cập nhật trạng thái đơn hàng
-        $order->status = 'cancelled';
-        $order->save();
-
-        return back()->with('success', 'Đơn hàng đã được hủy thành công.');
-    }
-
 }
-
