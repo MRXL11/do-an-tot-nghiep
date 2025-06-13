@@ -131,13 +131,11 @@
         return view('client.pages.wishlist');
     })->name('wishlist');
 
-    // Route cho tài khoản khách hàng
-    Route::get('/account', [AccountController::class, 'show'])->name('account.show');
-    Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
-    
-    Route::get('/detail-product', function () {
-        return view('client.pages.detail-product');
-    })->name('detail-product');
+
+    Route::get('/account', [AccountController::class, 'index'])->name('account');
+    Route::post('/account', [AccountController::class, 'update'])->name('account.update');
+    Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+
 
     // đây là phần thông báo được gửi tới khách hàng
     Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');

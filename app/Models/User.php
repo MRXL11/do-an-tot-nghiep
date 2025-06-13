@@ -21,11 +21,9 @@ class User extends Authenticatable
         'reset_password_token',
         'reset_password_expires_at',
         'role_id',
+        'created_at',
+        'updated_at',
         'address',
-        'avatar',
-        'remember_token',
-        'verification_code',
-        'google_id',
     ];
 
     protected $hidden = [
@@ -33,14 +31,17 @@ class User extends Authenticatable
         'reset_password_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'reset_password_expires_at' => 'datetime',
-            'status' => 'string',
-        ];
-    }
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'reset_password_expires_at' => 'datetime',
+        'status' => 'string',
+    ];
+
 
     public function role()
     {
@@ -51,4 +52,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class);
     }
+
+    // Thêm quan hệ với Order
+    public function orders() 
+    {
+        return $this->hasMany(Order::class);
+    }
 }
+
