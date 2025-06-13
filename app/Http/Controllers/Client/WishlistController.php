@@ -19,6 +19,7 @@ class WishlistController extends Controller
         if (Auth::check()) {
             $wishlistItems = Wishlist::with('product')
                 ->where('user_id', Auth::user()->id)
+                ->orderBy('created_at', 'desc')
                 ->paginate(5);
         } else {
             // Nếu người dùng chưa đăng nhập, lấy wishlist từ localStorage
@@ -82,6 +83,12 @@ class WishlistController extends Controller
             return back()->with('error', 'Sản phẩm đã có trong danh sách yêu thích.');
         }
 
+        // Kiểm tra xem sản phẩm có tồn tại và đang hoạt động không
+        $product = Product::find($productId);
+        if (!$product || $product->status !== 'active') {
+            return back()->with('error', 'Sản phẩm không tồn tại hoặc đã ngừng kinh doanh.');
+        }
+
         // Nếu chưa có, thì thêm vào
         Wishlist::create([
             'user_id' => Auth::id(),
@@ -123,11 +130,13 @@ class WishlistController extends Controller
     public function destroy($id)
     {
         $wishlistItem = Wishlist::find($id);
+
         // Kiểm tra xem sản phẩm có trong wishlist của người dùng hiện tại không
         // Nếu không có hoặc không phải của người dùng hiện tại, trả về lỗi
         if (!$wishlistItem || $wishlistItem->user_id !== Auth::id()) {
             return back()->with('error', 'Không tìm thấy sản phẩm trong danh sách yêu thích.');
         }
+
         // Xoá sản phẩm khỏi wishlist
         // Chỉ xoá nếu sản phẩm thuộc về người dùng hiện tại
         Wishlist::where('user_id', Auth::id())
@@ -150,7 +159,7 @@ class WishlistController extends Controller
         }
 
         $validProductIds = Product::whereIn('id', $wishlist)
-            ->where('status', 'active')
+            ->where('status', 'active') // Chỉ lấy sản phẩm đang hoạt động
             ->pluck('id')
             ->toArray();
 
@@ -169,6 +178,22 @@ class WishlistController extends Controller
             'success' => true,
             'message' => 'Đồng bộ wishlist thành công.',
             'inserted' => count($insertData)
+        ]);
+    }
+
+    public function check($id)
+    {
+        // Kiểm tra xem sản phẩm có tồn tại không
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json(['error' => 'Không tìm thấy sản phẩm'], 404);
+        }
+
+        // Trả về trạng thái của sản phẩm dưới dạng JSON
+        return response()->json([
+            'id' => $product->id,
+            'status' => $product->status
         ]);
     }
 }

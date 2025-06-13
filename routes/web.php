@@ -134,9 +134,13 @@
     // Route hiển thị danh sách yêu thích
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
     Route::post('/wishlist/guest', [WishlistController::class, 'getGuestWishlist'])->name('wishlist.guest');
+
     // Route đồng bộ hóa wishlist lên server khi người dùng đăng nhập
     Route::post('/wishlist/sync', [WishlistController::class, 'sync'])->name('wishlist.sync');
 
+    // Route kiểm tra status sản phẩm trước khi thêm vào wishlist
+    Route::get('/wishlist/check/product/{id}', [WishlistController::class, 'check'])
+        ->name('wishlist.check');
 
     // Route cho tài khoản khách hàng
     Route::get('/account', [AccountController::class, 'show'])->name('account.show');

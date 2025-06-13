@@ -195,8 +195,6 @@
         </script>
     @endif
 
-
-
     {{-- cho người dùng chưa đăng nhập --}}
     @guest
         <script>
@@ -221,7 +219,7 @@
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name=\"csrf-token\"]').getAttribute(
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
                                 "content")
                         },
                         body: JSON.stringify({
@@ -236,62 +234,72 @@
                             return;
                         }
 
+                        // 🔴 Kiểm tra nếu có sản phẩm ngưng bán
+                        const inactiveProducts = products.filter(p => p.status !== 'active');
+                        if (inactiveProducts.length > 0) {
+                            const warning = `
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Lưu ý:</strong> Có ${inactiveProducts.length} sản phẩm trong danh sách yêu thích của bạn đã ngưng kinh doanh.
+                        Vui lòng xoá chúng nếu không còn cần thiết.
+                    </div>
+                `;
+                            container.insertAdjacentHTML('beforebegin', warning);
+                        }
+
                         let html = `
-            <div class="table-responsive mb-4 shadow-sm">
-                <table class="table table-hover align-middle bg-white rounded text-center">
-                    <thead class="table-success">
-                        <tr>
-                            <th scope="col">Hình ảnh</th>
-                            <th scope="col">Danh mục</th>
-                            <th scope="col">Thương hiệu</th>
-                            <th scope="col">Tên sản phẩm</th>
-                            <th scope="col">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
+                <div class="table-responsive mb-4 shadow-sm">
+                    <table class="table table-hover align-middle bg-white rounded text-center">
+                        <thead class="table-success">
+                            <tr>
+                                <th scope="col">Hình ảnh</th>
+                                <th scope="col">Danh mục</th>
+                                <th scope="col">Thương hiệu</th>
+                                <th scope="col">Tên sản phẩm</th>
+                                <th scope="col">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
 
                         products.forEach(item => {
-                            // Kiểm tra trạng thái sản phẩm
                             const isInactive = item.status !== 'active';
 
                             html += `
-                    <tr>
-    <td style="width: 100px;">
-        <img src="/storage/${item.thumbnail}" alt="Product" class="img-thumbnail" style="max-width: 50px;">
-    </td>
-    <td style="vertical-align: middle">${item.category}</td>
-    <td style="vertical-align: middle">${item.brand}</td>
-    <td style="vertical-align: middle">
-        <strong class="text-primary">${item.name}</strong>
-    </td>
-    <td style="vertical-align: middle">
-        <div class="d-flex align-items-center justify-content-center position-relative">
-            <!-- Nút Xoá luôn hoạt động -->
-            <button class="btn btn-danger btn-sm me-2" onclick="removeFromWishlist(${item.id})" style="${item.status !== 'active' ? 'z-index: 20;' : ''}">
-                <i class="bi bi-x-circle"></i> Xoá
-            </button>
+                    <tr style="${isInactive ? 'opacity: 0.5; position: relative;' : ''}">
+                        <td style="width: 100px;">
+                            <img src="/storage/${item.thumbnail}" alt="Product" class="img-thumbnail" style="max-width: 50px;">
+                        </td>
+                        <td style="vertical-align: middle">${item.category}</td>
+                        <td style="vertical-align: middle">${item.brand}</td>
+                        <td style="vertical-align: middle">
+                            <strong class="text-primary">${item.name}</strong>
+                            ${isInactive ? '<div class="text-danger small mt-1">Sản phẩm đã ngưng kinh doanh</div>' : ''}
+                        </td>
+                        <td style="vertical-align: middle">
+                            <div class="d-flex align-items-center justify-content-center position-relative">
+                                <!-- Nút Xoá luôn hoạt động -->
+                                <button class="btn btn-danger btn-sm me-2" onclick="removeFromWishlist(${item.id})" style="${isInactive ? 'z-index: 20;' : ''}">
+                                    <i class="bi bi-x-circle"></i> Xoá
+                                </button>
 
-            <!-- Nút Chi tiết bị vô hiệu hoá nếu không active -->
-            <a class="btn btn-outline-primary btn-sm" style="${item.status !== 'active' ? 'display: none;' : ''}"
-               href="/detail-product/${item.id}" >
-                <i class="bi bi-eye"></i> Chi tiết
-            </a>
-        </div>
-    </td>
-</tr>`
-
+                                <!-- Nút Chi tiết bị ẩn nếu không active -->
+                                <a class="btn btn-outline-primary btn-sm" style="${isInactive ? 'display: none;' : ''}"
+                                   href="/detail-product/${item.id}" >
+                                    <i class="bi bi-eye"></i> Chi tiết
+                                </a>
+                            </div>
+                        </td>
+                    </tr>`;
                         });
 
-                        html += ` </tbody> 
-                    </table> 
-                    </div>`;
+                        html += `
+                        </tbody>
+                    </table>
+                </div>`;
                         container.innerHTML = html;
                     })
-
                     .catch(error => {
                         console.error("❌ Lỗi khi lấy dữ liệu wishlist:", error);
-                        container.innerHTML =
-                            "<p class='text-danger'>Không thể tải danh sách yêu thích.</p>";
+                        container.innerHTML = "<p class='text-danger'>Không thể tải danh sách yêu thích.</p>";
                     });
             });
 
@@ -304,6 +312,7 @@
                 wishlist = wishlist.filter(item => item.id !== productId);
 
                 if (confirm("Bạn có chắc muốn xoá sản phẩm này khỏi danh sách yêu thích?")) {
+                    // Cập nhật lại localStorage
                     localStorage.setItem("wishlist", JSON.stringify(wishlist));
                     alert("✅ Sản phẩm đã được xoá khỏi danh sách yêu thích.");
                     location.reload(); // Tải lại trang để cập nhật danh sách

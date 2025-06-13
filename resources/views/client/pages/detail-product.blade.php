@@ -209,29 +209,58 @@
 @endsection
 
 @section('scripts')
-
     @if (!Auth::check())
         <script>
-            // Thêm sự kiện click cho nút "Thêm vào danh sách yêu thích" 
-            // Chỉ chạy khi người dùng chưa đăng nhập 
+            // Thêm sự kiện click cho nút "Thêm vào danh sách yêu thích"
+            // Chỉ chạy khi người dùng chưa đăng nhập
             document.addEventListener("DOMContentLoaded", function() {
-                // Lấy tất cả các nút "Thêm vào danh sách yêu thích" 
+                // Lấy tất cả các nút "Thêm vào danh sách yêu thích"
                 document.querySelectorAll('.add-to-wishlist').forEach(button => {
-                    // Thêm sự kiện click cho từng nút 
+                    // Thêm sự kiện click cho từng nút
                     button.addEventListener('click', function() {
-                        // Lấy dữ liệu sản phẩm từ thuộc tính data-product 
-                        // Chuyển đổi chuỗi JSON thành đối tượng JavaScript 
-                        const product = JSON.parse(this.dataset.product);
-                        let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+                        const wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 
-                        // Kiểm tra trùng ID 
-                        if (!wishlist.find(item => item.id === product.id)) {
-                            wishlist.push(product);
-                            localStorage.setItem("wishlist", JSON.stringify(wishlist));
-                            alert("✅ Đã thêm vào danh sách yêu thích!");
-                        } else {
-                            alert("📌 Sản phẩm đã có trong wishlist.");
-                        }
+                        // 🔍 Lấy ID sản phẩm từ URL hiện tại
+                        const productId = window.location.pathname.split("/").pop();
+
+                        // 🟡 Gửi request lên server để kiểm tra trạng thái thật của sản phẩm
+                        fetch(`/wishlist/check/product/${productId}`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error("Không tìm thấy sản phẩm hoặc lỗi máy chủ.");
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                // ❌ Nếu sản phẩm không tồn tại hoặc không còn active
+                                if (!data.status || data.status !== 'active') {
+                                    alert(
+                                        "❌ Sản phẩm này hiện không còn kinh doanh và không thể thêm vào wishlist."
+                                    );
+                                    window.location.href = "{{ route('home') }}";
+                                    return;
+                                }
+
+                                // ✅ Nếu sản phẩm hợp lệ, tiến hành thêm vào wishlist
+                                const product = {
+                                    id: parseInt(productId),
+                                    status: data.status
+                                };
+
+                                if (!wishlist.find(item => item.id === product.id)) {
+                                    wishlist.push(product);
+                                    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+                                    alert("✅ Đã thêm vào danh sách yêu thích!");
+                                    location.reload();
+                                } else {
+                                    alert("📌 Sản phẩm đã có trong wishlist.");
+                                    location.reload();
+                                }
+                            })
+                            .catch(error => {
+                                console.error("❌ Lỗi kiểm tra trạng thái sản phẩm:", error);
+                                alert("⚠️ Không thể kiểm tra trạng thái sản phẩm lúc này.");
+                            });
                     });
                 });
             });

@@ -38,12 +38,25 @@ class ProductController extends Controller
     public function show(string $id)
     {
         // lấy sản phẩm theo id và kèm theo các quan hệ category, brand, variants
-        $product = Product::with('category', 'brand', 'variants')->findOrFail($id);
+        $product = Product::with('category', 'brand', 'variants')
+            ->where('status', 'active') // chỉ lấy sản phẩm đang hoạt động
+            ->find($id);
+
+        // nếu không tìm thấy sản phẩm thì trả về lỗi
+        if (!$product) {
+            // clear localStorage nếu sản phẩm không tồn tại
+            echo "<script>
+                localStorage.removeItem('wishlist');
+            </script>";
+
+            return redirect()->back()->with('error', 'Sản phẩm không tồn tại hoặc đã ngừng kinh doanh.');
+        }
 
         /* lấy data sản phẩm để truyền vào view,
         sau đó dùng JS để xử lý thêm vào localStorage để lưu wishlist cho user chưa đăng nhập */
         $productData = [
             'id' => $product->id,
+            'status' => $product->status,
         ];
 
         return view('client.pages.detail-product', compact('product', 'productData'));
