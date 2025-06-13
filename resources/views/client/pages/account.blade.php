@@ -54,7 +54,7 @@
               <input type="text" name="address" class="form-control" value="{{ Auth::user()->address ?? '' }}" placeholder="Nhập địa chỉ">
             </div>
 
-            <button type="submit" class="btn btn-success w-100">Cập nhật</button>
+                  
 
             {{-- Hiển thị thông báo cập nhật thành công --}}
             @if(session('success'))
@@ -64,6 +64,7 @@
             @endif
           </form>
         </div>
+
       </div>
     </div>
 

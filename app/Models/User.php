@@ -1,8 +1,6 @@
 <?php
-
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,14 +9,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -34,12 +26,6 @@ class User extends Authenticatable
         'address',
     ];
 
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'reset_password_token',
@@ -56,12 +42,12 @@ class User extends Authenticatable
         'status' => 'string',
     ];
 
-     public function role()
-        {
-            return $this->belongsTo(Role::class);
-        }
 
-   // Thêm quan hệ với Notification
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
     public function notifications()
     {
         return $this->hasMany(Notification::class);
@@ -73,3 +59,4 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 }
+

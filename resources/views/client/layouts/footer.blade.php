@@ -4,7 +4,7 @@
                 <div class="col-lg-3">
                     <div class="first-item">
                         <div class="logo">
-                            <img src="assets/images/white-logo.png" alt="logo" height="70">
+                            <img src="{{ asset('assets/images/white-logo.png') }}" alt="logo" height="70">
                         </div>
                         <ul>
                             <li><a href="#">Số 1 Trịnh Văn Bô, Hà Nội</a></li>
