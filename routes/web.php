@@ -63,7 +63,7 @@
             Route::get('/coupons/trashed', [CouponController::class, 'trashed'])->name('admin.coupons.trashed');
             Route::resource('coupons', CouponController::class);
             Route::post('/coupons/{id}/restore', [CouponController::class, 'restore'])->name('admin.coupons.restore');
-            
+
         });
 
         // Người dùng (Users)
@@ -78,7 +78,7 @@
                 return view('admin.orders.orders');
             })->name('orders');
 
-        
+
 
         // Đánh giá (Reviews)
         Route::get('/reviews', function () {
@@ -144,7 +144,7 @@
     // đây là phần thông báo được gửi tới khách hàng
     Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
     Route::post('/client/notifications/mark-all-read', [ClientNotificationController::class, 'markAllRead'])->name('client.notifications.markAllRead');
-    
+
     // ✅ Route xác thực (Auth)
     Route::middleware('web')->group(function () {
         Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
