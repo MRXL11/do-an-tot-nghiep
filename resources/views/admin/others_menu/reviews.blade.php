@@ -1,7 +1,7 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title-page')
-  <h3>Quản lý đánh giá</h3>
+@section('title')
+  <title>Quản lý đánh giá</title>
 @endsection
 
 @section('content')
@@ -10,6 +10,27 @@
     <div class="row g-4 mb-4">
       <!-- Cột đánh giá -->
       <div class="col-md-8">
+        <!-- Bộ lọc -->
+        <form method="GET" class="mb-3 d-flex gap-2">
+        <select name="rating" class="form-select" style="width: 120px;">
+            <option value="">Tất cả sao</option>
+            @for ($i = 1; $i <= 5; $i++)
+            <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }} sao</option>
+            @endfor
+        </select>
+
+        <select name="status" class="form-select" style="width: 140px;">
+            <option value="">Tất cả trạng thái</option>
+            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Đã duyệt</option>
+            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chưa duyệt</option>
+        </select>
+
+        <input type="date" name="date" class="form-control" style="width: 170px;" value="{{ request('date') }}">
+
+        <button type="submit" class="btn btn-primary">Lọc</button>
+        <a href="{{ route('reviews') }}" class="btn btn-secondary">Reset</a>
+        </form>
+
         @foreach ($reviews as $review)
         <div class="card card-success collapsed-card">
           <div class="card-header">

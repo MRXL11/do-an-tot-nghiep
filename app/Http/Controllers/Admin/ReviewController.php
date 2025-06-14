@@ -8,14 +8,27 @@ use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $reviews = Review::with(['user', 'product.category']) // Load quan hệ để tránh lỗi N+1
-                        ->latest()
-                        ->paginate(5);
+        $query = Review::with(['user', 'product.category']);
+
+        if ($request->filled('rating')) {
+            $query->where('rating', $request->rating);
+        }
+
+        if ($request->filled('status')) {
+            $query->whereRaw('LOWER(status) = ?', [strtolower($request->status)]);
+        }
+
+        if ($request->filled('date')) {
+            $query->whereDate('created_at', $request->date);
+        }
+
+        $reviews = $query->latest()->paginate(5)->appends($request->query());
 
         return view('admin.others_menu.reviews', compact('reviews'));
     }
+
 
 
     public function approve($id)
