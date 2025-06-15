@@ -21,11 +21,11 @@
     use Illuminate\Support\Facades\Auth;
     use Illuminate\Support\Str;
     use Laravel\Socialite\Facades\Socialite;
-    use App\Models\User;
+
 
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
-
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
+    use App\Http\Controllers\Client\CartController;  // Giỏ hàng
 
     // ✅ Route cho Admin
     // Route cho Admin
@@ -111,9 +111,16 @@
         return view('client.pages.products-client');
     })->name('products-client');
 
-    Route::get('/cart', function () {
-        return view('client.pages.cart');
-    })->name('cart');
+    //Giỏ hàng
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+
+    // Các chức năng thêm/xóa/cập nhật mã giảm giá - cần đăng nhập
+    Route::middleware(['auth'])->group(function () {
+        Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+        Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+        Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+        Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.applyCoupon');
+    });
 
     Route::get('/checkout', function () {
         return view('client.pages.checkout');
