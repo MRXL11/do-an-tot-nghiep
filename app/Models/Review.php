@@ -17,7 +17,9 @@ class Review extends Model
         'comment',
         'status'
     ];
-
+    protected $casts = [
+        'status' => 'string', // Can use enum cast if needed: 'enum' => ['pending', 'approved', 'rejected']
+    ];
     public function user()
     {
         return $this->belongsTo(User::class);
