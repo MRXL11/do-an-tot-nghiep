@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ProductVariant extends Model
 {
-    //
+    use HasFactory;
     protected $fillable = [
         'product_id',
         'color',
@@ -17,7 +18,9 @@ class ProductVariant extends Model
         'sku',
         'image',
     ];
-
+    protected $casts = [
+        'status' => 'string', // Can use enum cast if needed: 'enum' => ['active', 'inactive']
+    ];
     public function product()
     {
         return $this->belongsTo(Product::class);
