@@ -146,8 +146,10 @@
     Route::get('/account', [AccountController::class, 'show'])->name('account.show');
     Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
 
+    // Chi tiết sản phẩm và review
     Route::get('/detail-product/{id}', [ProductController::class, 'show'])->name('detail-product');
-
+    Route::get('/detail-product/{id}/variants', [ProductController::class, 'getVariants'])->name('detail-product.variants');
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
     // đây là phần thông báo được gửi tới khách hàng
     Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
