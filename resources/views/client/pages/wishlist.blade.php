@@ -77,31 +77,35 @@
             </div>
         @endguest
 
-        <!-- Sản phẩm liên quan -->
+        <!-- Sản phẩm mới nhất -->
         <div class="mt-5">
-            <h5 class="mb-4"><i class="bi bi-stars text-warning me-2"></i>Sản phẩm liên quan</h5>
+            <h5 class="mb-4"><i class="bi bi-stars text-warning me-2"></i>Sản phẩm mới nhất</h5>
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-                @for ($i = 0; $i < 4; $i++)
+                @foreach ($latestProducts as $product)
                     <div class="col">
                         <div class="card h-100 border-0 shadow-sm">
-                            <img src="https://bizweb.dktcdn.net/thumb/1024x1024/100/347/092/products/nike-air-jordan-1-low-gs-553560-141.jpg"
-                                class="card-img-top" alt="Product">
+                            <img src="{{ Storage::url($product->thumbnail) }}" loading="lazy" class="card-img-top"
+                                alt="Product">
                             <div class="card-body">
-                                <h6 class="card-title mb-1">Giày chạy bộ nam</h6>
-                                <p class="card-text text-primary fw-semibold">$299.00</p>
+                                <h6 class="card-title mb-1">{{ $product->name }}</h6>
+
+                                {{-- lấy khoảng giá của sản phẩm dựa trên variants --}}
+                                <p class="card-text text-primary fw-semibold">
+                                    {{ $product->getPriceRangeAttribute() }}</p>
                             </div>
                             <div class="card-footer bg-white border-0">
-                                <button class="btn btn-sm btn-outline-success w-100"><i class="bi bi-eye"></i> Xem chi
-                                    tiết</button>
+                                <a href="{{ route('detail-product', $product->id) }}"
+                                    class="btn btn-sm btn-outline-success w-100"><i class="bi bi-eye"></i> Xem chi
+                                    tiết</a>
                             </div>
                         </div>
                     </div>
-                @endfor
+                @endforeach
             </div>
         </div>
     </div>
 
-    <!-- Wishlist Success Modal -->
+    <!-- modal thông báo thành công -->
     <div class="modal fade" id="wishlistModal" tabindex="-1" aria-labelledby="wishlistModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow rounded-4">
@@ -120,7 +124,7 @@
         </div>
     </div>
 
-    <!-- Wishlist Error Modal -->
+    <!-- modal báo lỗi -->
     <div class="modal fade" id="wishlistErrorModal" tabindex="-1" aria-labelledby="wishlistErrorModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
