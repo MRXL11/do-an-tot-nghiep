@@ -26,7 +26,14 @@ class WishlistController extends Controller
             $wishlistItems = [];
         }
 
-        return view('client.pages.wishlist', compact('wishlistItems'));
+        // Lấy danh sách sản phẩm mới nhất để hiển thị
+        $latestProducts = Product::with(['category', 'brand'])
+            ->where('status', 'active')
+            ->orderBy('created_at', 'desc')
+            ->take(4)
+            ->get();
+
+        return view('client.pages.wishlist', compact('wishlistItems', 'latestProducts'));
     }
 
     // Trong WishlistController

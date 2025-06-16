@@ -38,19 +38,17 @@ class ProductController extends Controller
     public function show(string $id)
     {
         // lấy sản phẩm theo id và kèm theo các quan hệ category, brand, variants
-        $product = Product::with('category', 'brand', 'variants')
-            ->where('status', 'active') // chỉ lấy sản phẩm đang hoạt động
-            ->find($id);
+        $product = Product::with(['variants', 'reviews' => function ($query) {
+            $query->where('status', 'approved')->with('user');
+        }])->where('status', 'active')->find($id);
 
         // nếu không tìm thấy sản phẩm thì trả về lỗi
         if (!$product) {
-            // clear localStorage nếu sản phẩm không tồn tại
-            echo "<script>
-                localStorage.removeItem('wishlist');
-            </script>";
-
-            return redirect()->back()->with('error', 'Sản phẩm không tồn tại hoặc đã ngừng kinh doanh.');
+            return back()->with('error', 'Sản phẩm không tồn tại hoặc đã ngừng kinh doanh.');
         }
+
+        $selectedVariant = $product->variants->first();
+        $reviews = $product->reviews; // Gán reviews từ quan hệ
 
         /* lấy data sản phẩm để truyền vào view,
         sau đó dùng JS để xử lý thêm vào localStorage để lưu wishlist cho user chưa đăng nhập */
@@ -59,7 +57,10 @@ class ProductController extends Controller
             'status' => $product->status,
         ];
 
-        return view('client.pages.detail-product', compact('product', 'productData'));
+        return view(
+            'client.pages.detail-product',
+            compact('product', 'productData', 'selectedVariant', 'reviews')
+        );
     }
 
     /**
@@ -84,5 +85,15 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    // Get variants for a specific color via AJAX
+    public function getVariants(Request $request, $id)
+    {
+        $color = $request->query('color');
+        $product = Product::findOrFail($id);
+        $variants = $product->variants()->where('color', $color)->get();
+
+        return response()->json(['variants' => $variants]);
     }
 }
