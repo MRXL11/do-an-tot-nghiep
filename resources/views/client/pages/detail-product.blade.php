@@ -8,13 +8,8 @@
             <div id="productCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
                 <div class="carousel-inner rounded shadow">
                     <div class="carousel-item active">
-                        <img src="{{asset('assets/images/single-product-01.jpg')}}" class="d-block w-100" alt="Ảnh chính">
-
+                        <img src="{{ asset('storage/' . $product->image) }}" class="d-block w-100" alt="{{ $product->name }}">
                     </div>
-                    <div class="carousel-item">
-                        <img src="assets/images/single-product-02.jpg" class="d-block w-100" alt="Ảnh phụ">
-                    </div>
-                    <!-- Thêm ảnh nếu có -->
                 </div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
@@ -24,22 +19,20 @@
                 </button>
             </div>
 
-              <div class="mb-3">
-                <img src="{{asset('assets/images/single-product-01.jpg')}}" class="img-fluid rounded mb-2" alt="Main product image">
+            <div class="mb-3">
+                <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid rounded mb-2" alt="{{ $product->name }}">
             </div>
         </div>
 
         <!-- Chi tiết sản phẩm -->
         <div class="col-md-6">
-            <h2>Giày thể thao</h2>
-            <p class="text-muted">Mã sản phẩm: 421987</p>
-            <h4 class="text-danger fw-bold">$75.00</h4>
+            <h2>{{ $product->name }}</h2>
+            <p class="text-muted">Mã sản phẩm: {{ $product->id }}</p>
+            <h4 class="text-danger fw-bold">{{ number_format($product->price, 0, ',', '.') }} đ</h4>
 
-            <p class="mt-3">
-                Áo khoác nam với thiết kế tối giản, chất liệu vải nhẹ, thoáng khí, giữ ấm tốt. Phù hợp sử dụng hàng ngày hoặc khi đi du lịch.
-            </p>
+            <p class="mt-3">{{ $product->description }}</p>
 
-            <!-- Màu sắc -->
+            <!-- Màu sắc (giả lập nếu chưa có dữ liệu thực) -->
             <div class="mb-3">
                 <label class="form-label fw-semibold">Màu sắc:</label><br>
                 <button class="btn btn-outline-success btn-sm me-2">Xanh Rêu</button>
@@ -118,11 +111,10 @@
             @for ($i = 0; $i < 4; $i++)
             <div class="col">
                 <div class="card h-100 border-0 shadow-sm">
-                    <img src="{{asset('assets/images/single-product-01.jpg')}}"
-                         class="card-img-top" alt="Product">
+                    <img src="{{ asset('assets/images/single-product-01.jpg') }}" class="card-img-top" alt="Product">
                     <div class="card-body">
                         <h6 class="card-title">Áo Polo Nam</h6>
-                        <p class="text-primary fw-semibold">$45.00</p>
+                        <p class="text-primary fw-semibold">45.000 đ</p>
                     </div>
                     <div class="card-footer bg-white border-0">
                         <a href="#" class="btn btn-outline-primary w-100 btn-sm"><i class="bi bi-eye"></i> Xem chi tiết</a>
@@ -137,9 +129,7 @@
     <div class="mt-5">
         <h4 class="mb-3"><i class="bi bi-tags me-2"></i>Danh mục liên quan</h4>
         <div class="d-flex flex-wrap gap-2">
-            <a href="#" class="btn btn-outline-secondary btn-sm"><i class="bi bi-tag"></i> Áo khoác</a>
-            <a href="#" class="btn btn-outline-secondary btn-sm"><i class="bi bi-tag"></i> Đồ thu đông</a>
-            <a href="#" class="btn btn-outline-secondary btn-sm"><i class="bi bi-tag"></i> Thời trang nam</a>
+            <a href="#" class="btn btn-outline-secondary btn-sm"><i class="bi bi-tag"></i> {{ $product->category->name ?? 'Thời trang' }}</a>
         </div>
     </div>
 </div>

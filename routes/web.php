@@ -22,6 +22,7 @@
     use Illuminate\Support\Str;
     use Laravel\Socialite\Facades\Socialite;
     use App\Models\User;
+    use App\Http\Controllers\Client\ProductController;
 
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
 
@@ -110,6 +111,9 @@
     Route::get('/products-client', function () {
         return view('client.pages.products-client');
     })->name('products-client');
+    Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
+    Route::get('/', [ProductController::class, 'homepage'])->name('home');
+
 
     Route::get('/cart', function () {
         return view('client.pages.cart');

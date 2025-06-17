@@ -27,6 +27,18 @@
 
         <input type="date" name="date" class="form-control" style="width: 170px;" value="{{ request('date') }}">
 
+        <select name="date_range" class="form-select" style="width: 170px;">
+            <option value="">Tất cả thời gian</option>
+            <option value="today" {{ request('date_range') == 'today' ? 'selected' : '' }}>Hôm nay</option>
+            <option value="yesterday" {{ request('date_range') == 'yesterday' ? 'selected' : '' }}>Hôm qua</option>
+            <option value="last_7_days" {{ request('date_range') == 'last_7_days' ? 'selected' : '' }}>7 ngày qua</option>
+            <option value="last_30_days" {{ request('date_range') == 'last_30_days' ? 'selected' : '' }}>30 ngày qua</option>
+            <option value="this_month" {{ request('date_range') == 'this_month' ? 'selected' : '' }}>Tháng này</option>
+            <option value="this_year" {{ request('date_range') == 'this_year' ? 'selected' : '' }}>Năm nay</option>
+        </select>
+
+
+
         <button type="submit" class="btn btn-primary">Lọc</button>
         <a href="{{ route('reviews') }}" class="btn btn-secondary">Reset</a>
         </form>
