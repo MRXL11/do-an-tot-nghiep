@@ -15,16 +15,18 @@
     use App\Http\Controllers\Client\AccountController;
     use App\Http\Controllers\Client\Auth\Mail\ResetPasswordController;
     use App\Http\Controllers\Client\Auth\Mail\ForgotPasswordController;
+    use App\Http\Controllers\Client\ProductController;
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Facades\Auth;
     use Illuminate\Support\Str;
     use Laravel\Socialite\Facades\Socialite;
     use App\Models\User;
 
+    use App\Http\Controllers\Client\ProductClientController; // Sản phẩm phía khách hàng- làm riêng vì sau này dễ backup (Products)
+
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
 
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
-    use App\Http\Controllers\Client\ProductController;
     use App\Http\Controllers\Client\WishlistController;
 
     // ✅ Route cho Admin
@@ -76,6 +78,8 @@
             return view('admin.orders.orders');
         })->name('orders');
 
+
+
         // Đánh giá (Reviews)
         Route::get('/reviews', function () {
             return view('admin.others_menu.reviews');
@@ -111,9 +115,13 @@
         return view('client.pages.page-layout');
     })->name('page');
 
-    Route::get('/products-client', function () {
-        return view('client.pages.products-client');
-    })->name('products-client');
+
+    Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
+    Route::get('/', [ProductController::class, 'homepage'])->name('home');
+
+
+    Route::get('/products-client', [ProductClientController::class, 'index'])->name('products-client');
+
 
     Route::get('/cart', function () {
         return view('client.pages.cart');
@@ -145,7 +153,6 @@
     // Route cho tài khoản khách hàng
     Route::get('/account', [AccountController::class, 'show'])->name('account.show');
     Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
-
     // Chi tiết sản phẩm và review
     Route::get('/detail-product/{id}', [ProductController::class, 'show'])->name('detail-product');
     Route::get('/detail-product/{id}/variants', [ProductController::class, 'getVariants'])->name('detail-product.variants');

@@ -1,44 +1,74 @@
 @extends('admin.layouts.AdminLayouts')
 
-@section('title-page')
-  <h3>Quản lý đánh giá</h3>
+@section('title')
+  <title>Quản lý đánh giá</title>
 @endsection
 
 @section('content')
-    <div class="container-fluid">
-        <div class="col-lg-12">
-            <div class="row g-4 mb-4">
-                <!-- Cột đánh giá -->
-                <div class="col-md-8">
-                    @foreach ($reviews as $review)
-                        <div class="card card-success collapsed-card">
-                            <div class="card-header">
-                                <h3 class="card-title">
-                                    <i class="bi bi-chat-left-text me-2"></i>{{ $review->product->name ?? 'Sản phẩm' }}
-                                    @if ($review->status !== 'approved')
-                                        <span class="badge bg-danger ms-2 d-flex align-items-center">
-                                            <i class="bi bi-exclamation-circle me-1"></i> Chưa duyệt
-                                        </span>
-                                    @endif
-                                </h3>
-                                <div class="card-tools">
-                                    <button type="button" class="btn btn-tool" data-lte-toggle="card-collapse">
-                                        <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
-                                        <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex align-items-center mb-3">
-                                    <img src="{{ $review->product->image ?? '#' }}" alt="Ảnh sản phẩm" height="50px"
-                                        class="rounded me-2 border">
-                                    <div>
-                                        <a href="#"
-                                            class="fw-semibold text-decoration-none">{{ $review->product->name ?? 'Tên sản phẩm' }}</a><br>
-                                        <span class="badge bg-primary"><i
-                                                class="bi bi-tags me-1"></i>{{ $review->product->category->name ?? 'Danh mục' }}</span>
-                                    </div>
-                                </div>
+<div class="container-fluid">
+  <div class="col-lg-12">
+    <div class="row g-4 mb-4">
+      <!-- Cột đánh giá -->
+      <div class="col-md-8">
+        <!-- Bộ lọc -->
+        <form method="GET" class="mb-3 d-flex gap-2">
+        <select name="rating" class="form-select" style="width: 120px;">
+            <option value="">Tất cả sao</option>
+            @for ($i = 1; $i <= 5; $i++)
+            <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }} sao</option>
+            @endfor
+        </select>
+
+        <select name="status" class="form-select" style="width: 140px;">
+            <option value="">Tất cả trạng thái</option>
+            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Đã duyệt</option>
+            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chưa duyệt</option>
+        </select>
+
+        <input type="date" name="date" class="form-control" style="width: 170px;" value="{{ request('date') }}">
+
+        <select name="date_range" class="form-select" style="width: 170px;">
+            <option value="">Tất cả thời gian</option>
+            <option value="today" {{ request('date_range') == 'today' ? 'selected' : '' }}>Hôm nay</option>
+            <option value="yesterday" {{ request('date_range') == 'yesterday' ? 'selected' : '' }}>Hôm qua</option>
+            <option value="last_7_days" {{ request('date_range') == 'last_7_days' ? 'selected' : '' }}>7 ngày qua</option>
+            <option value="last_30_days" {{ request('date_range') == 'last_30_days' ? 'selected' : '' }}>30 ngày qua</option>
+            <option value="this_month" {{ request('date_range') == 'this_month' ? 'selected' : '' }}>Tháng này</option>
+            <option value="this_year" {{ request('date_range') == 'this_year' ? 'selected' : '' }}>Năm nay</option>
+        </select>
+
+
+
+        <button type="submit" class="btn btn-primary">Lọc</button>
+        <a href="{{ route('reviews') }}" class="btn btn-secondary">Reset</a>
+        </form>
+
+        @foreach ($reviews as $review)
+        <div class="card card-success collapsed-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-chat-left-text me-2"></i>{{ $review->product->name ?? 'Sản phẩm' }}
+              @if($review->status !== 'approved')
+              <span class="badge bg-danger ms-2 d-flex align-items-center">
+                <i class="bi bi-exclamation-circle me-1"></i> Chưa duyệt
+              </span>
+              @endif
+            </h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-lte-toggle="card-collapse">
+                <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
+                <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <img src="{{ $review->product->image ?? '#' }}" alt="Ảnh sản phẩm" height="50px" class="rounded me-2 border">
+              <div>
+                <a href="#" class="fw-semibold text-decoration-none">{{ $review->product->name ?? 'Tên sản phẩm' }}</a><br>
+                <span class="badge bg-primary"><i class="bi bi-tags me-1"></i>{{ $review->product->category->name ?? 'Danh mục' }}</span>
+              </div>
+            </div>
 
                                 <div class="mb-3 border-bottom pb-2">
                                     <div class="d-flex justify-content-between">

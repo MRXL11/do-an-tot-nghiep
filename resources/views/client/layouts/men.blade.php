@@ -1,15 +1,16 @@
- <section class="section" id="men">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="section-heading">
-                        <h2>Thời trang nam mới nhất</h2>
-                        <span>Chú trọng đến từng chi tiết chính là điều khiến HN_447 khác biệt so với các chủ đề khác.</span>
-                    </div>
+<section class="section" id="men">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="section-heading">
+                    <h2>Thời trang nam mới nhất</h2>
+                    <span>Chú trọng đến từng chi tiết chính là điều khiến HN_447 khác biệt so với các chủ đề khác.</span>
                 </div>
             </div>
         </div>
-        <div class="container">
+    </div>
+
+    <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="men-item-carousel">
@@ -111,4 +112,4 @@
                 </div>
             </div>
         </div>
-    </section>
+</section>
