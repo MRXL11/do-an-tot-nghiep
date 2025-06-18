@@ -5,56 +5,79 @@
   <div class="row">
     <!-- Cột trái: Thông tin người dùng -->
     <div class="col-md-4 mb-4">
-      <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white text-center">
-          <h5 class="mb-0">Thông tin người dùng</h5>
-        </div>
-        <div class="card-body">
-          {{-- FORM CẬP NHẬT --}}
-          <form method="POST" action="{{ route('account.update') }}">
-            @csrf
-            <div class="mb-3 text-center">
-              <img src="https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Hinh-dai-dien-hai-huoc-cam-dep-duoi-ai-do.jpg?1704789789335" class="rounded-circle mb-2" width="100" height="100" alt="Avatar">
-              <h6 class="card-title">{{ Auth::user()->name }}</h6>
-              <p class="card-text text-muted">{{ Auth::user()->email }}</p>
-              <input type="file" class="form-control form-control-sm mt-2" accept="image/*">
-            </div>
+     <div class="card shadow-sm">
+          <div class="card-header bg-dark text-white text-center">
+              <h5 class="mb-0">Thông tin người dùng</h5>
+          </div>
+        @if(session('success'))
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+              {{ session('success') }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>    
+      @endif
+          {{-- nôi dung trên là thông báo khi có lỗi --}}
+       
+          <div class="card-body">
+              <form method="POST" action="{{ route('account.update') }}">
+                  @csrf
+                  <div class="mb-3 text-center">
+                      <img src="{{ Auth::user()->avatar ?? 'https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp' }}" class="rounded-circle mb-2" width="100" height="100" alt="Avatar">
+                      <h6 class="card-title">{{ Auth::user()->name }}</h6>
+                      <p class="card-text text-muted">{{ Auth::user()->email }}</p>
+                  </div>
 
-            <div class="mb-3">
-              <label class="form-label">Họ tên</label>
-              <input type="text" name="name" class="form-control" value="{{ Auth::user()->name }}" placeholder="Nhập họ tên">
-            </div>
+                  <div class="mb-3">
+                      <label class="form-label">Họ tên</label>
+                      <input type="text" name="name" class="form-control" value="{{ Auth::user()->name }}" placeholder="Nhập họ tên">
+                      @error('name')
+                          <small class="text-danger">{{ $message }}</small>
+                      @enderror
+                  </div>
 
-            <div class="mb-3">
-              <label class="form-label">Email</label>
-              <input type="email" class="form-control" value="{{ Auth::user()->email }}" disabled>
-              <small class="text-success d-block mt-1">Đã xác minh ✅</small>
-            </div>
+                  <div class="mb-3">
+                      <label class="form-label">Email</label>
+                      <input type="email" class="form-control" value="{{ Auth::user()->email }}" disabled>
+                      <small class="text-success d-block mt-1">Đã xác minh ✅</small>
+                  </div>
+                  <div class="mb-3">
+                      <label class="form-label">Số điện thoại</label>
+                      <input type="text" name="phone_number" class="form-control" value="{{ Auth::user()->phone_number ?? '' }}" placeholder="Nhập số điện thoại">
+                      @error('phone_number')
+                          <small class="text-danger">{{ $message }}</small>
+                      @enderror
+                  </div>
 
-            <div class="mb-3">
-              <label class="form-label">Mật khẩu cũ</label>
-              <input type="password" name="old_password" class="form-control" placeholder="Nhập mật khẩu cũ">
-            </div>
+                  @if(!Auth::user()->google_id)
+                      <div class="mb-3">
+                          <label class="form-label">Mật khẩu cũ</label>
+                          <input type="password" name="old_password" class="form-control" placeholder="Nhập mật khẩu cũ" >
+                          @error('old_password')
+                              <small class="text-danger">{{ $message }}</small>
+                          @enderror
+                      </div>
 
-            <div class="mb-3">
-              <label class="form-label">Mật khẩu mới</label>
-              <input type="password" name="new_password" class="form-control" placeholder="Nhập mật khẩu mới">
-            </div>
+                      <div class="mb-3">
+                          <label class="form-label">Mật khẩu mới</label>
+                          <input type="password" name="new_password" class="form-control" placeholder="Nhập mật khẩu mới">
+                          @error('new_password')
+                              <small class="text-danger">{{ $message }}</small>
+                          @enderror
+                      </div>
+                  @endif
 
-            <div class="mb-3">
-              <label class="form-label">Địa chỉ</label>
-              <input type="text" name="address" class="form-control" value="{{ Auth::user()->address ?? '' }}" placeholder="Nhập địa chỉ">
-            </div>
+                  <div class="mb-3">
+                      <label class="form-label">Địa chỉ</label>
+                      <input type="text" name="address" class="form-control" value="{{ Auth::user()->address ?? '' }}" placeholder="Nhập địa chỉ">
+                      @error('address')
+                          <small class="text-danger">{{ $message }}</small>
+                      @enderror
+                  </div>
 
-            <button type="submit" class="btn btn-success w-100">Cập nhật</button>
+                  
 
-            @if(session('success'))
-              <div class="alert alert-success mt-2">
-                {{ session('success') }}
-              </div>
-            @endif
-          </form>
-        </div>
+                  <button type="submit" class="btn btn-success w-100">Cập nhật</button>
+              </form>
+          </div>
       </div>
     </div>
 

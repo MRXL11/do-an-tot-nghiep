@@ -22,7 +22,10 @@
     use Illuminate\Support\Str;
     use Laravel\Socialite\Facades\Socialite;
     use App\Models\User;
+
     use App\Http\Controllers\Client\ProductController;
+
+    use App\Http\Controllers\Client\ProductClientController; // Sản phẩm phía khách hàng- làm riêng vì sau này dễ backup (Products)
 
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
 
@@ -108,11 +111,12 @@
         return view('client.pages.page-layout');
     })->name('page');
 
-    Route::get('/products-client', function () {
-        return view('client.pages.products-client');
-    })->name('products-client');
+
     Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
     Route::get('/', [ProductController::class, 'homepage'])->name('home');
+
+
+    Route::get('/products-client', [ProductClientController::class, 'index'])->name('products-client');
 
 
     Route::get('/cart', function () {
@@ -135,12 +139,10 @@
         return view('client.pages.wishlist');
     })->name('wishlist');
 
-    Route::get('/account', function () {
-        return view('client.pages.account');
-    })->name('account');
-
-    Route::post('/account', [AccountController::class, 'update'])->name('account.update');
-
+    // Route cho tài khoản khách hàng
+    Route::get('/account', [AccountController::class, 'show'])->name('account.show');
+    Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
+    
     Route::get('/detail-product', function () {
         return view('client.pages.detail-product');
     })->name('detail-product');

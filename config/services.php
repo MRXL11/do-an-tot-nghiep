@@ -38,6 +38,13 @@ return [
     'client_id' => env('GOOGLE_CLIENT_ID'),
     'client_secret' => env('GOOGLE_CLIENT_SECRET'),
     'redirect' => env('GOOGLE_REDIRECT'),
-],
+    ],
+    // để sử dụng Google reCAPTCHA
+    // 'twilio' => [
+    //     'sid' => env('TWILIO_SID'),
+    //     'token' => env('TWILIO_TOKEN'),
+    //     'from' => env('TWILIO_FROM'),
+    // ],
+    // để sử dụng SMS service
 
 ];

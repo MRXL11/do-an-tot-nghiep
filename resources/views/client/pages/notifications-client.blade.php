@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h4 class="mb-4"><i class="bi bi-bell-fill text-warning me-2"></i>Thông báo của bạn</h4>
+    <h4 class="mb-4"><i class="bi bi-bell-fill text-warning me-2"></i>Thông báo của bạn   <span class="badge bg-danger unread-count">{{ $unreadCount }}</span></h4>
     @if(session('success'))
     <div class="alert alert-success">
        <i class="bi bi-check-circle-fill"></i>  {{ session('success') }}
@@ -26,14 +26,14 @@
             </div>
             <div class="form-check">
                 <input class="form-check-input filter-checkbox" type="checkbox" id="filter-unread">
-                <label class="form-check-label" for="filter-unread">Chưa đọc <span class="badge bg-danger unread-count">{{ $unreadCount }}</span></label>
+                <label class="form-check-label" for="filter-unread">Chưa đọc</label>
             </div>
         </div>
 
         <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">         
            <form action="{{ route('client.notifications.markAllRead') }}" method="POST" style="display: inline;">
             @csrf
-            <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-eye me-1"></i> Đánh dấu đã đọc</button>
+            <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-eye me-1"></i> Đánh dấu tất cả đã đọc</button>
          </form>
         </div>
     </div>
