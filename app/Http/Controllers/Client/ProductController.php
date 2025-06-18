@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
@@ -8,21 +7,25 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index()
+    // Display product details
+    public function show($id)
     {
-        $products = Product::latest()->paginate(12);
-        return view('client.pages.products-client', compact('products'));
+        $product = Product::with(['variants', 'reviews' => function ($query) {
+            $query->where('status', 'approved')->with('user');
+        }])->findOrFail($id);
+        $selectedVariant = $product->variants->first();
+        $reviews = $product->reviews; // Gán reviews từ quan hệ
+
+        return view('client.pages.detail-product', compact('product', 'selectedVariant', 'reviews'));
     }
 
-    public function show($slug)
+    // Get variants for a specific color via AJAX
+    public function getVariants(Request $request, $id)
     {
-        $product = Product::with('category', 'brand')->where('slug', $slug)->firstOrFail();
-        return view('client.pages.detail-product', compact('product'));
+        $color = $request->query('color');
+        $product = Product::findOrFail($id);
+        $variants = $product->variants()->where('color', $color)->get();
+
+        return response()->json(['variants' => $variants]);
     }
-    public function homepage()
-{
-    // Lấy 8 sản phẩm mới nhất
-    $products = Product::latest()->take(8)->get();
-    return view('client.layouts.index', compact('products'));
-}
 }

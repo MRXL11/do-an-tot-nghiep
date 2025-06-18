@@ -47,10 +47,12 @@ class Product extends Model
     {
         return $this->hasMany(Review::class);
     }
+
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class);
     }
+
     public function getPriceRangeAttribute()
     {
         if ($this->variants()->exists()) {
@@ -64,7 +66,7 @@ class Product extends Model
             return number_format($minPrice) . ' - ' . number_format($maxPrice) . ' VNĐ';
         }
 
-        return number_format($this->price) . ' VNĐ';
+        return '0 VNĐ'; // Fallback if no variants
     }
 }
 

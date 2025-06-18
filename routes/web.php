@@ -17,6 +17,7 @@
     use App\Http\Controllers\Client\AccountController;
     use App\Http\Controllers\Client\Auth\Mail\ResetPasswordController;
     use App\Http\Controllers\Client\Auth\Mail\ForgotPasswordController;
+    use App\Http\Controllers\Client\ProductController;
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Facades\Auth;
     use Illuminate\Support\Str;
@@ -142,10 +143,10 @@
     // Route cho tài khoản khách hàng
     Route::get('/account', [AccountController::class, 'show'])->name('account.show');
     Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
-    
-    Route::get('/detail-product', function () {
-        return view('client.pages.detail-product');
-    })->name('detail-product');
+    // Chi tiết sản phẩm và review
+    Route::get('/detail-product/{id}', [ProductController::class, 'show'])->name('detail-product');
+    Route::get('/detail-product/{id}/variants', [ProductController::class, 'getVariants'])->name('detail-product.variants');
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
     // đây là phần thông báo được gửi tới khách hàng
     Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
