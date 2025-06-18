@@ -24,6 +24,10 @@
     use Laravel\Socialite\Facades\Socialite;
     use App\Models\User;
 
+    use App\Http\Controllers\Client\ProductController;
+
+    use App\Http\Controllers\Client\ProductClientController; // Sản phẩm phía khách hàng- làm riêng vì sau này dễ backup (Products)
+
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
 
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
@@ -64,7 +68,7 @@
             Route::get('/coupons/trashed', [CouponController::class, 'trashed'])->name('admin.coupons.trashed');
             Route::resource('coupons', CouponController::class);
             Route::post('/coupons/{id}/restore', [CouponController::class, 'restore'])->name('admin.coupons.restore');
-            
+
         });
 
         // Người dùng (Users)
@@ -79,7 +83,7 @@
                 return view('admin.orders.orders');
             })->name('orders');
 
-        
+
 
         // Đánh giá (Reviews)
         Route::get('/reviews', function () {
@@ -108,9 +112,13 @@
         return view('client.pages.page-layout');
     })->name('page');
 
-    Route::get('/products-client', function () {
-        return view('client.pages.products-client');
-    })->name('products-client');
+
+    Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
+    Route::get('/', [ProductController::class, 'homepage'])->name('home');
+
+
+    Route::get('/products-client', [ProductClientController::class, 'index'])->name('products-client');
+
 
     Route::get('/cart', function () {
         return view('client.pages.cart');
@@ -143,7 +151,7 @@
     // đây là phần thông báo được gửi tới khách hàng
     Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
     Route::post('/client/notifications/mark-all-read', [ClientNotificationController::class, 'markAllRead'])->name('client.notifications.markAllRead');
-    
+
     // ✅ Route xác thực (Auth)
     Route::middleware('web')->group(function () {
         Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
