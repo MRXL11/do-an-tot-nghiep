@@ -22,7 +22,7 @@
     use Illuminate\Support\Str;
     use Laravel\Socialite\Facades\Socialite;
     use App\Models\User;
-
+    use App\Http\Controllers\Client\ProductClientController; // Sản phẩm phía khách hàng- làm riêng vì sau này dễ backup (Products)
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
 
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
@@ -107,9 +107,7 @@
         return view('client.pages.page-layout');
     })->name('page');
 
-    Route::get('/products-client', function () {
-        return view('client.pages.products-client');
-    })->name('products-client');
+    Route::get('/products-client', [ProductClientController::class, 'index'])->name('products-client');
 
     Route::get('/cart', function () {
         return view('client.pages.cart');
