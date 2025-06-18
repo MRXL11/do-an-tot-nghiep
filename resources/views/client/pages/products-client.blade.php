@@ -210,7 +210,8 @@
                         <div class="col-md-4 mb-4">
                             <div class="card h-100 border">
                                 <div class="position-relative py-2">
-                                    <img src="https://khoinguonsangtao.vn/wp-content/uploads/2022/08/hinh-nen-gai-xinh.jpg" class="card-img-top img-fluid px-2" alt="{{ $product->name }}" style="height: 250px; object-fit: cover;">
+                                    <img src="{{ asset('storage/' . $product->thumbnail) }}" class="card-img-top img-fluid px-2" alt="{{ $product->name }}" style="height: 250px; object-fit: cover;">
+
                                     <button class="btn btn-danger position-absolute top-0 end-0 m-2"><i class="bi bi-heart"></i></button>
                                     @if($product->variants->whereNotNull('discount_price')->count() > 0)
                                         <span class="badge bg-danger position-absolute top-0 start-0 m-2" style="z-index:1;">Sale</span>
