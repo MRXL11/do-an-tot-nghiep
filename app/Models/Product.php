@@ -21,7 +21,7 @@ class Product extends Model
         'short_description',
         'slug',
         'status',
-        
+
     ];
 
     protected $casts = [
@@ -53,20 +53,38 @@ class Product extends Model
         return $this->hasMany(Wishlist::class);
     }
 
+    /**
+     * Lấy khoảng giá của sản phẩm dựa trên các biến thể (variants).
+     *
+     * - Nếu sản phẩm có biến thể:
+     *     + Lấy giá thấp nhất và cao nhất trong các biến thể.
+     *     + Nếu giống nhau → hiển thị 1 mức giá, ví dụ: "100.000 VNĐ".
+     *     + Nếu khác nhau → hiển thị khoảng giá, ví dụ: "100.000 - 200.000 VNĐ".
+     * - Nếu không có biến thể → trả về "Liên hệ".
+     *
+     * @return string Chuỗi định dạng giá, có phân cách hàng nghìn và đơn vị VNĐ.
+     */
     public function getPriceRangeAttribute()
     {
         if ($this->variants()->exists()) {
+            // Lấy giá thấp nhất từ các biến thể
             $minPrice = $this->variants()->min('price');
+
+            // Lấy giá cao nhất từ các biến thể
             $maxPrice = $this->variants()->max('price');
 
-            if ($minPrice == $maxPrice) {
-                return number_format($minPrice) . ' VNĐ';
-            }
+            // Định dạng giá theo dạng 100.000 VNĐ 
+            $format = fn($price) => number_format($price, 0, ',', '.') . ' VNĐ';
 
-            return number_format($minPrice) . ' - ' . number_format($maxPrice) . ' VNĐ';
+            // Nếu giá thấp nhất và cao nhất giống nhau, trả về một mức giá
+            // Nếu khác nhau, trả về khoảng giá
+            // Ví dụ: "100.000 VNĐ" hoặc "100.000 - 200.000 VNĐ"
+            return $minPrice == $maxPrice
+                ? $format($minPrice)
+                : $format($minPrice) . ' - ' . $format($maxPrice);
         }
 
-        return '0 VNĐ'; // Fallback if no variants
+        // Trả về "Liên hệ" nếu không có biến thể
+        return 'Liên hệ';
     }
 }
-

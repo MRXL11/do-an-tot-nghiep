@@ -10,23 +10,25 @@
                 <div class="col-md-12">
                     {{-- tìm kiếm đơn hàng --}}
                     <form class="d-flex mb-1" role="search" action="{{ route('admin.orders.index') }}" method="GET">
-                        <div class="input-group ">
+                        <div class="input-group">
                             <span class="input-group-text bg-light" id="search-icon">
                                 <i class="bi bi-search"></i>
                             </span>
+
                             <input type="text" class="form-control" placeholder="Tìm kiếm đơn hàng" aria-label="Tìm kiếm"
                                 aria-describedby="search-icon" name="q" value="{{ request('q') }}">
-                            <div class="col-auto">
-                                <select class="form-select ms-1" name="status">
-                                    <option value="">--Tất cả Trạng thái--</option>
-                                    @foreach ($statuses as $key => $status)
-                                        <option value="{{ $key }}"
-                                            {{ request('status') == $key ? 'selected' : '' }}>
-                                            {{ $status }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <button class="btn btn-primary" type="submit">Tìm</button>
+
+                            <select class="form-select ms-1" name="status" style="max-width: 200px;">
+                                <option value="">--Tất cả Trạng thái--</option>
+                                @foreach ($statuses as $key => $status)
+                                    <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>
+                                        {{ $status }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <button class="btn btn-primary ms-2" type="submit">Tìm</button>
+                            <a class="btn btn-secondary ms-2" href="{{ route('admin.orders.index') }}">Đặt lại</a>
                         </div>
                     </form>
                     {{-- kết thúc tìm kiếm --}}

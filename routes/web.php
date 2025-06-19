@@ -1,7 +1,5 @@
-
-
-
     <?php
+
     use App\Http\Controllers\Admin\CouponController;
     use App\Http\Controllers\Admin\ProductController as AdminProductController;
     use App\Http\Controllers\Admin\UserController;
@@ -24,13 +22,12 @@
     use Laravel\Socialite\Facades\Socialite;
     use App\Models\User;
 
-    use App\Http\Controllers\Client\ProductController;
-
     use App\Http\Controllers\Client\ProductClientController; // Sản phẩm phía khách hàng- làm riêng vì sau này dễ backup (Products)
 
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
 
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
+    use App\Http\Controllers\Client\WishlistController;
 
     // ✅ Route cho Admin
     // Route cho Admin
@@ -68,20 +65,18 @@
             Route::get('/coupons/trashed', [CouponController::class, 'trashed'])->name('admin.coupons.trashed');
             Route::resource('coupons', CouponController::class);
             Route::post('/coupons/{id}/restore', [CouponController::class, 'restore'])->name('admin.coupons.restore');
-
         });
 
         // Người dùng (Users)
-           // Người dùng (Users)
-            Route::resource('/users', UserController::class)->names('admin.users');
-            Route::get('/admin/users/banned', [UserController::class, 'banned'])->name('admin.users.banned');
-            Route::patch('/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
-            Route::delete('/users/{id}/force-delete', [UserController::class, 'forceDelete'])->name('admin.users.forceDelete');
+        Route::resource('/users', UserController::class)->names('admin.users');
+        Route::get('/admin/users/banned', [UserController::class, 'banned'])->name('admin.users.banned');
+        Route::patch('/users/{id}/restore', [UserController::class, 'restore'])->name('admin.users.restore');
+        Route::delete('/users/{id}/force-delete', [UserController::class, 'forceDelete'])->name('admin.users.forceDelete');
 
-            // Đơn hàng (Orders)
-            Route::get('/orders', function () {
-                return view('admin.orders.orders');
-            })->name('orders');
+        // Đơn hàng (Orders)
+        Route::get('/orders', function () {
+            return view('admin.orders.orders');
+        })->name('orders');
 
 
 
@@ -103,7 +98,15 @@
         Route::post('/customer-notifications', [CustomerNotificationController::class, 'store'])->name('admin.customer-notifications.store');
     });
 
-    // ✅ Route cho Khách hàng (Client)
+    // ✅ Route riêng cho Khách hàng (Client) đã đăng nhập
+    Route::middleware('auth')->prefix('client')->group(function () {
+        Route::post('/wishlist/store', [WishlistController::class, 'store'])
+            ->name('wishlist.store');
+        Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])
+            ->name('wishlist.destroy');
+    });
+
+    // ✅ Route cho Khách hàng (Client) chung (không cần đăng nhập cũng được)
     Route::get('/', function () {
         return view('client.layouts.index');
     })->name('home');
@@ -136,9 +139,16 @@
         return view('client.pages.contact');
     })->name('contact');
 
-    Route::get('/wishlist', function () {
-        return view('client.pages.wishlist');
-    })->name('wishlist');
+    // Route hiển thị danh sách yêu thích
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
+    Route::post('/wishlist/guest', [WishlistController::class, 'getGuestWishlist'])->name('wishlist.guest');
+
+    // Route đồng bộ hóa wishlist lên server khi người dùng đăng nhập
+    Route::post('/wishlist/sync', [WishlistController::class, 'sync'])->name('wishlist.sync');
+
+    // Route kiểm tra status sản phẩm trước khi thêm vào wishlist
+    Route::get('/wishlist/check/product/{id}', [WishlistController::class, 'check'])
+        ->name('wishlist.check');
 
     // Route cho tài khoản khách hàng
     Route::get('/account', [AccountController::class, 'show'])->name('account.show');
