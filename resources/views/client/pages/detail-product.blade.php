@@ -95,9 +95,14 @@
 
                 <!-- Action buttons -->
                 <div class="d-grid gap-2 d-md-block">
-                    <button class="btn btn-outline-success btn-lg me-2" id="add-to-cart">
+                    <button 
+                        type="button"
+                        class="btn btn-outline-success btn-lg me-2 btn-add-cart" 
+                        data-qty="1"
+                    >
                         <i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ
                     </button>
+
                     @if (Auth::check())
                         <form action="{{ route('wishlist.store') }}" method="POST" class="d-inline">
                             @csrf

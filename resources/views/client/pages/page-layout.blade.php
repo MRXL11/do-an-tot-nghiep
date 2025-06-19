@@ -22,5 +22,6 @@
     @include('client.layouts.scripts')
     <!-- ***** Footer End ***** -->
     @yield('scripts')
+    <script src="{{ asset('assets/js/cart.js') }}"></script>
   </body>
 </html>
