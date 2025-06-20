@@ -61,6 +61,12 @@
             // Thương hiệu (Brands)
             Route::resource('brands', BrandController::class)->except(['show']);
             Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
+            Route::get('/brands/trashed', [BrandController::class, 'trashed'])->name('brands.trashed');
+            Route::post('/brands/{id}/restore', [BrandController::class, 'restore'])->name('brands.restore');
+          
+
+            // Voucher (Coupons)
+            Route::get('/coupons', [CouponController::class, 'index'])->name('admin.coupons.index');
             // Voucher được câoj nhật lại
             Route::get('/coupons/trashed', [CouponController::class, 'trashed'])->name('admin.coupons.trashed');
             Route::resource('coupons', CouponController::class);
