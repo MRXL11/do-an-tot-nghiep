@@ -106,18 +106,10 @@
             ->name('wishlist.destroy');
     });
 
-    // ✅ Route cho Khách hàng (Client) chung (không cần đăng nhập cũng được)
-    Route::get('/', function () {
-        return view('client.layouts.index');
-    })->name('home');
-
-    Route::get('/page', function () {
-        return view('client.pages.page-layout');
-    })->name('page');
 
 
     Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
-    Route::get('/', [ProductController::class, 'homepage'])->name('home');
+    
 
 
     Route::get('/products-client', [ProductClientController::class, 'index'])->name('products-client');

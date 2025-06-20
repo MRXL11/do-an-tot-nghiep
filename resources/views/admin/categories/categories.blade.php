@@ -61,6 +61,7 @@
                                 <th scope="col">STT</th>
                                 <th scope="col">Tên danh mục</th>
                                 <th scope="col">Slug</th>
+                                <th scope="col">Nhóm</th>
                                 <th scope="col">Trạng thái</th>
                                 <th scope="col">Ngày tạo</th>
                                 <th scope="col">Ngày cập nhật</th>
@@ -73,6 +74,7 @@
                                     <td scope="row">{{ $categories->firstItem() + $index }}</td>
                                     <td>{{ $category->name }}</td>
                                     <td>{{ $category->slug }}</td>
+                                    <td>{{ optional($category->group)->name }}</td>
                                     <td>
                                         <span
                                             class="badge {{ $category->status == 'active' ? 'bg-success' : 'bg-danger' }}">

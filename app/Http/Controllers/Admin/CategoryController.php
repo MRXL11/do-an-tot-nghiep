@@ -9,7 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-
+use App\Models\CategoryGroup;
 class CategoryController extends Controller
 {
     public function index(Request $request): View
@@ -33,7 +33,8 @@ class CategoryController extends Controller
 
     public function create(): View
     {
-        return view('admin.categories.create');
+        $groups = CategoryGroup::all();
+        return view('admin.categories.create', compact('groups'));
     }
 
     public function store(CategoryRequest $request): RedirectResponse
@@ -42,6 +43,8 @@ class CategoryController extends Controller
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'status' => $request->status,
+            'group_id' => $request->group_id, 
+            // đây đủ thông tin nhóm danh mục và có thể là null nếu không chọn nhóm
         ]);
 
         return redirect()->route('admin.categories.index')->with('success', 'Danh mục đã được thêm thành công!');
@@ -54,7 +57,8 @@ class CategoryController extends Controller
 
     public function edit(Category $category): View
     {
-        return view('admin.categories.edit', compact('category'));
+        $groups = CategoryGroup::all();
+        return view('admin.categories.edit', compact('category', 'groups'));
     }
 
     public function update(CategoryRequest $request, Category $category): RedirectResponse
@@ -63,6 +67,7 @@ class CategoryController extends Controller
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'status' => $request->status,
+            'group_id' => $request->group_id,
         ]);
 
         return redirect()->route('admin.categories.index')->with('success', 'Danh mục đã được cập nhật thành công!');
