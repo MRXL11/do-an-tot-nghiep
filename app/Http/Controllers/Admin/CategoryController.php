@@ -75,8 +75,10 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): RedirectResponse
     {
+        // Nếu còn sản phẩm liên kết với danh mục thì không cho xóa và thông báo ra màn hình
         if ($category->products()->exists()) {
-            return redirect()->route('admin.categories.index')->with('error', 'Không thể xóa danh mục vì vẫn còn sản phẩm liên kết!');
+            return redirect()->route('admin.categories.index')
+            ->with('error', 'Không thể xóa danh mục vì vẫn còn sản phẩm liên kết!');
         }
 
         $category->delete(); // Xóa mềm

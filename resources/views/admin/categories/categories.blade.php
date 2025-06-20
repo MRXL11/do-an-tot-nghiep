@@ -32,7 +32,18 @@
                             </a>
                         </div>
                     </div>
-
+                           @if (session('success'))
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <strong>Thành công!</strong> {{ session('success') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+                        @if (session('error'))
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Thất bại!</strong> {{ session('error') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
                     {{-- Form tìm kiếm --}}
                     <form class="d-flex mb-3" role="search" action="{{ route('admin.categories.index') }}" method="GET">
                         <div class="input-group">
@@ -61,7 +72,7 @@
                                 <th scope="col">STT</th>
                                 <th scope="col">Tên danh mục</th>
                                 <th scope="col">Slug</th>
-                                <th scope="col">Nhóm</th>
+                                <th scope="col">Nhóm danh mục</th>
                                 <th scope="col">Trạng thái</th>
                                 <th scope="col">Ngày tạo</th>
                                 <th scope="col">Ngày cập nhật</th>
