@@ -13,4 +13,8 @@ class Brand extends Model
     use HasFactory;
     // Cho phép gán giá trị hàng loạt cho các trường này (nếu cần)
     protected $fillable = ['name', 'slug', 'status', 'image'];
+    public function products()
+{
+    return $this->hasMany(Product::class, 'brand_id');
+}
 }

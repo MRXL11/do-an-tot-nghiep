@@ -54,7 +54,6 @@
                         </div>
                     @endif
                 {{-- Kết thúc tìm kiếm --}}
-
                 <table class="table table-bordered table-striped table-hover text-center">
                     <thead>
                         <tr>
