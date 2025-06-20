@@ -249,6 +249,17 @@
                                     <img src="{{ asset('storage/' . $product->thumbnail) }}"
                                         class="card-img-top img-fluid px-2" alt="{{ $product->name }}"
                                         style="height: 250px; object-fit: cover;">
+                                    </img>
+
+
+                                    @php
+                                        /* lấy data sản phẩm để truyền vào view,
+ sau đó dùng JS để xử lý thêm vào localStorage để lưu wishlist cho user chưa đăng nhập */
+                                        $productData = [
+                                            'id' => $product->id,
+                                            'status' => $product->status,
+                                        ];
+                                    @endphp
 
                                     {{-- Hiển thị nút yêu thích theo trạng thái người dùng hiện tại --}}
                                     @if (Auth::check())
@@ -259,9 +270,11 @@
                                                 type="submit"><i class="bi bi-heart"></i></button>
                                         </form>
                                     @else
-                                        <button class="btn btn-outline-danger btn-lg add-to-wishlist"
+                                        {{-- Hiển thị nút yêu thích cho khách chưa đăng nhập --}}
+                                        {{-- dữ liệu sẽ được lấy  --}}
+                                        <button class="btn btn-danger position-absolute top-0 end-0 m-2 add-to-wishlist"
                                             data-product='@json($productData)'>
-                                            <i class="bi bi-heart-fill me-1"></i>Yêu thích
+                                            <i class="bi bi-heart"></i>
                                         </button>
                                     @endif
 
@@ -321,6 +334,45 @@
                 <!-- Phân trang -->
                 <div class="d-flex justify-content-center">
                     {{ $products->appends(request()->query())->links() }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- modal thông báo thành công -->
+    <div class="modal fade" id="wishlistModal" tabindex="-1" aria-labelledby="wishlistModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header bg-success text-white rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="wishlistModalLabel">
+                        <i class="bi bi-heart-fill me-2"></i> Thông báo
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <i class="bi bi-check-circle-fill text-success display-4 mb-3"></i>
+                    <p class="mb-0 fs-5">{{ session('success') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- modal báo lỗi -->
+    <div class="modal fade" id="wishlistErrorModal" tabindex="-1" aria-labelledby="wishlistErrorModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header bg-danger text-white rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="wishlistErrorModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Lỗi
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <i class="bi bi-x-circle-fill text-danger display-4 mb-3"></i>
+                    <p class="mb-0 fs-5">{{ session('error') }}</p>
                 </div>
             </div>
         </div>
@@ -409,8 +461,9 @@
                     button.addEventListener('click', function() {
                         const wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 
-                        // 🔍 Lấy ID sản phẩm từ URL hiện tại
-                        const productId = window.location.pathname.split("/").pop();
+                        // ✅ Lấy sản phẩm từ data attribute
+                        const product = JSON.parse(this.dataset.product);
+                        const productId = product.id;
 
                         // 🟡 Gửi request lên server để kiểm tra trạng thái thật của sản phẩm
                         fetch(`/wishlist/check/product/${productId}`)
@@ -453,6 +506,34 @@
                             });
                     });
                 });
+            });
+        </script>
+    @endif
+
+    @if (session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = new bootstrap.Modal(document.getElementById('wishlistModal'));
+                modal.show();
+
+                // Auto close sau 3 giây
+                setTimeout(() => {
+                    modal.hide();
+                }, 3000);
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = new bootstrap.Modal(document.getElementById('wishlistErrorModal'));
+                modal.show();
+
+                // Tự đóng sau 4 giây
+                setTimeout(() => {
+                    modal.hide();
+                }, 4000);
             });
         </script>
     @endif
