@@ -46,7 +46,21 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
+                        {{-- // nhóm danh mục  --}}
+                        <div class="mb-3">
+                            <label for="group_id" class="form-label">Nhóm danh mục</label>
+                            <select name="group_id" id="group_id" class="form-select">
+                                <option value="">-- Chọn nhóm --</option>
+                                @foreach ($groups as $group)
+                                    <option value="{{ $group->id }}" {{ old('group_id') == $group->id ? 'selected' : '' }}>
+                                        {{ $group->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('group_id')
+                                <div class="text-danger">{{ $message }}</div>
+                            @enderror
+                        </div>
                         <div class="d-flex justify-content-end">
                             <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary me-2">Hủy</a>
                             <button type="submit" class="btn btn-primary">Lưu</button>

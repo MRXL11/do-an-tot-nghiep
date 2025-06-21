@@ -84,13 +84,30 @@ class BrandController extends Controller
     $brand->status = $brand->status == 'active' ? 'inactive' : 'active';
     $brand->save();
     return redirect()->route('admin.brands.index')->with('success', 'Trạng thái thương hiệu đã đổi');
-}
-    // Xóa thương hiệu
+}   
     public function destroy($id)
     {
         $brand = Brand::findOrFail($id);
+        // Kiểm tra xem thương hiệu có sản phẩm nào không
+        if ($brand->products()->count() > 0) {
+            return redirect()->route('admin.brands.index')->with('error', 'Không thể xóa thương hiệu này vì nó đang được sử dụng bởi một hoặc nhiều sản phẩm');
+        }
         $brand->delete();
-        return redirect()->route('admin.brands.index')->with('success', 'Thương hiệu đã được xóa');
+        return redirect()->route('admin.brands.index')->with('success', 'Thương hiệu đã được chuyển vào thùng rác');
     }
+    // Xóa thương hiệu thêm vào thùng rác trashed
+    public function trashed(){
+        $trashedBrands = Brand::onlyTrashed()->paginate(10);
+        return view('admin.brands.trashed', compact('trashedBrands'));
+    }
+    //restore
+    public function restore($id)
+    {
+        $brand = Brand::withTrashed()->findOrFail($id);
+        $brand->restore();
+        return redirect()->route('admin.brands.trashed')->with('success', 'Thương hiệu đã được khôi phục thành công');
+    }
+   
+    
 
 }

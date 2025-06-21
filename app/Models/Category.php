@@ -11,7 +11,7 @@ class Category extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'slug', 'status'];
+    protected $fillable = ['name', 'slug', 'status', 'group_id'];
 
     protected $casts = [
         'status' => 'string',
@@ -19,7 +19,11 @@ class Category extends Model
 
     public function products()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(Product::class, 'category_id');
+    }
+    public function group()
+    {
+        return $this->belongsTo(CategoryGroup::class, 'group_id');
     }
 }
 

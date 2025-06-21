@@ -25,6 +25,17 @@
                     <span class="text-danger">{{ $message }}</span>
                 @enderror
             </div>
+            <div class="mb-3">
+                <label for="group_id" class="form-label">Nhóm danh mục</label>
+                <select name="group_id" id="group_id" class="form-select">    
+                    <option value="">-- Chọn nhóm --</option>              
+                    @foreach($groups as $group)
+                        <option value="{{ $group->id }}" {{ old('group_id', $category->group_id) == $group->id ? 'selected' : '' }}>
+                            {{ $group->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <button type="submit" class="btn btn-primary">Cập nhật</button>
             <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">Hủy</a>
         </form>
