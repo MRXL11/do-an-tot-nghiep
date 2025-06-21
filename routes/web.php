@@ -115,7 +115,9 @@
 
 
     Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
-    
+
+    // Route::get('/', [ProductController::class, 'homepage'])->name('home');
+
 
 
     Route::get('/products-client', [ProductClientController::class, 'index'])->name('products-client');
