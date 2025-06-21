@@ -316,10 +316,11 @@
                                             {{ number_format($product->variants->min('price')) }} đ</p>
                                     @endif
                                     <div class="d-flex gap-2 mt-auto justify-content-center">
-                                        <a href="" class="btn btn-outline-primary"><i class="bi bi-eye"></i>
-                                            Xem</a>
-                                        <a href="" class="btn btn-outline-danger"><i class="bi bi-cart"></i>
-                                            Thêm</a>
+
+                                        <a href="{{ route('detail-product', ['id' => $product->id]) }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Xem
+                                        </a>
+                                        <a href="" class="btn btn-outline-danger"><i class="bi bi-cart"></i> Thêm</a>  
                                     </div>
                                 </div>
                             </div>
