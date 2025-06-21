@@ -103,7 +103,11 @@
         Route::get('/customer-notifications/create', [CustomerNotificationController::class, 'create'])->name('admin.customer-notifications.create');
         Route::post('/customer-notifications', [CustomerNotificationController::class, 'store'])->name('admin.customer-notifications.store');
     });
-
+    // trang chủ Khách hàng (Client)
+    Route::get('/', function () {
+        return view('client.layouts.index');
+    })->name('home');    
+    
     // ✅ Route riêng cho Khách hàng (Client) đã đăng nhập
     Route::middleware('auth')->prefix('client')->group(function () {
         Route::post('/wishlist/store', [WishlistController::class, 'store'])
