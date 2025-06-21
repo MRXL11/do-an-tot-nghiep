@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Client;
+
 use App\Http\Controllers\Controller;
 
 use App\Models\Product;
@@ -53,7 +54,7 @@ class ProductClientController extends Controller
         if ($searchTerm) {
             $productsQuery->where(function ($query) use ($searchTerm) {
                 $query->where('name', 'like', '%' . $searchTerm . '%')
-                      ->orWhere('description', 'like', '%' . $searchTerm . '%');
+                    ->orWhere('description', 'like', '%' . $searchTerm . '%');
             });
         }
 
@@ -99,10 +100,10 @@ class ProductClientController extends Controller
                      WHERE reviews.product_id = products.id 
                      AND reviews.status = "approved") as avg_rating
                 ')])
-                ->whereHas('reviews', function ($query) {
-                    $query->where('status', 'approved');
-                })
-                ->orderByRaw('avg_rating DESC NULLS LAST');
+                    ->whereHas('reviews', function ($query) {
+                        $query->where('status', 'approved');
+                    })
+                    ->orderByRaw('avg_rating DESC NULLS LAST');
                 break;
         }
 
