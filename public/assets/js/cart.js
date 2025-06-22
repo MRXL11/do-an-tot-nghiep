@@ -1,35 +1,48 @@
+// Thêm vào giỏ hàng bằng Ajax
 $(document).on('click', '.btn-add-cart', function(e) {
     e.preventDefault();
 
-    var variantId = $('#size-select').val();
+    var variantOption = $('#size-select option:selected');
+    var variantId = variantOption.val();
     var quantity = $('#quantity-input').val();
+    var image = variantOption.data('image'); // lấy ảnh từ data-image của option
 
+    // Gửi Ajax POST lên server
     $.ajax({
         url: '/cart/add-ajax',
         type: 'POST',
         data: {
             _token: $('meta[name="csrf-token"]').attr('content'),
             product_variant_id: variantId,
-            quantity: quantity
+            quantity: quantity,
+            image: image // gửi kèm ảnh
         },
+
+        //Xử lý kết quả từ server
         success: function(res) {
             if(res.success) {
-                // Thông báo ở giữa màn hình
                 Swal.fire({
-                    position: 'center', // hiện giữa
+                    position: 'center',
                     icon: 'success',
-                    title: res.message, // hoặc 'Sản phẩm đã được thêm vào Giỏ hàng'
+                    title: res.message,
                     showConfirmButton: false,
-                    timer: 1500 // tự tắt sau 1.5s
+                    timer: 1500,
+                    scrollbarPadding: false
                 });
 
-                $('#cart-count').text(res.cart_count);
-
+                $('#cart-count')
+                    .removeClass('d-none')
+                    .text(res.cart_count);
             } else {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Lỗi!',
-                    text: res.message
+                    title: 'Thông báo',
+                    text: res.message,
+                    scrollbarPadding: false
+                }).then(() => {
+                    if(res.message.includes('Vui lòng đăng nhập')) {
+                        window.location.href = '/login';
+                    }
                 });
             }
         },
@@ -37,7 +50,8 @@ $(document).on('click', '.btn-add-cart', function(e) {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi!',
-                text: 'Có lỗi xảy ra khi thêm vào giỏ hàng!'
+                text: 'Có lỗi xảy ra khi thêm vào giỏ hàng!',
+                scrollbarPadding: false
             });
         }
     });

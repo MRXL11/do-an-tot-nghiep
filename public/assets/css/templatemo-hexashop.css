@@ -113,12 +113,15 @@ p {
 global styles
 --------------------------------------------- 
 */
+
 html,
 body {
   padding-top: 10px;
   background: #fff;
   font-family: 'Be Vietnam Pro', sans-serif;
+  overflow-x: hidden;
 }
+
 
 ::selection {
   background: #2a2a2a;

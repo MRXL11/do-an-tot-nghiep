@@ -134,6 +134,7 @@ use App\Http\Controllers\Client\WishlistController;
         Route::post('/cart/remove-selected', [CartController::class, 'removeSelected'])->name('cart.removeSelected');
         Route::post('/cart/add-ajax', [CartController::class, 'addAjax'])->name('cart.addAjax');
     });
+    
 
     Route::get('/checkout', function () {
         return view('client.pages.checkout');

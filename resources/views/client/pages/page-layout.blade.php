@@ -3,17 +3,16 @@
 
    @include('client.layouts.head')
     {{-- end head --}}
-    <body>
+    <body class="d-flex flex-column min-vh-100">
     <!-- ***** Header Area Start ***** -->
     @include('client.layouts.header')
     <!-- Header Area End -->    
     <!-- ***** Header Area End ***** -->
-    <div class="container mt-5 pt-5">
-     
-      @yield('content')
-       
-      
-   </div>
+    <main class="flex-fill">
+        <div class="container mt-5 pt-5">
+            @yield('content')
+        </div>
+    </main>
     
     <!-- ***** Footer Start ***** -->
     @include('client.layouts.footer')
