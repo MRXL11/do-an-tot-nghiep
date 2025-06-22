@@ -4,14 +4,7 @@
 @endsection
 @section('content')
 <div class="container-fluid">
-    <div class="col-lg-12">
-        {{-- ở đây sẽ là các thông báo thành công success --}}
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <strong class="me-2">Thành công!</strong> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
+    <div class="col-lg-12">       
         <div class="row g-4 mb-4">
             <!-- Cột trái: Danh sách Brands với bảng và paginate -->
             <div class="col-md-9">
@@ -44,9 +37,23 @@
                             </button>
                         </div>
                     </div>
+                    
                 </div>
+                {{-- ở đây sẽ là các thông báo thành công success --}}
+                    @if(session('success'))
+                        <div class="alert alert-success alert-dismissible fade show mt-1" role="alert">
+                            <strong class="me-2">Thành công!</strong> {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+                    {{-- Thông báo lỗi --}}
+                    @if(session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show mt-1" role="alert">
+                            <strong class="me-2">Lỗi!</strong> {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
                 {{-- Kết thúc tìm kiếm --}}
-
                 <table class="table table-bordered table-striped table-hover text-center">
                     <thead>
                         <tr>
@@ -91,14 +98,15 @@
                                            
                                         </button>
                                     </form>
-                                    <!-- Nút xóa -->
-                                    <form action="{{ route('admin.brands.destroy', $brand->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa thương hiệu này?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i> Xóa
-                                        </button>
-                                    </form>
+                                    <!-- Nút xóa mềm chuyển vào thùng rác -->
+                                <form action="{{ route('admin.brands.destroy', $brand->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn chuyển thương hiệu này vào thùng rác?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i> Thùng rác
+                                    </button>
+                                </form>
+                                    
                                     </td>
                                 </tr>
                             @endforeach
@@ -118,6 +126,10 @@
 
             <!-- Cột phải: TOP Nhãn hàng bán chạy -->
             <div class="col-md-3">
+               {{-- route trash --}}
+            <a href="{{ route('admin.brands.trashed') }}" class="btn btn-danger mb-2">
+                <i class="bi bi-trash"></i> Thùng rác
+            </a>
                 <div class="card">
                     <div class="card-header mb-2">
                         <strong>
