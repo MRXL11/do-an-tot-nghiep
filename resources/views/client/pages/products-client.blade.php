@@ -446,7 +446,10 @@
             }
         }
     </style>
+
+    <script src="{{ asset('assets/js/cart.js') }}"></script>
 @endsection
+
 
 @section('scripts')
     {{-- đoạn này chỉ chạy khi người dùng chưa đăng nhập --}}
@@ -539,3 +542,4 @@
         </script>
     @endif
 @endsection
+

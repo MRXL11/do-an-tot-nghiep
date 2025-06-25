@@ -27,7 +27,8 @@
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
 
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
-    use App\Http\Controllers\Client\WishlistController;
+use App\Http\Controllers\Client\CartController;
+use App\Http\Controllers\Client\WishlistController;
 
     // ✅ Route cho Admin
     // Route cho Admin
@@ -119,17 +120,24 @@
 
 
     Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
-
-    // Route::get('/', [ProductController::class, 'homepage'])->name('home');
+    //Route::get('/', [ProductController::class, 'homepage'])->name('home');
 
 
 
     Route::get('/products-client', [ProductClientController::class, 'index'])->name('products-client');
 
+    // Router hiển thị giỏ hàng
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 
-    Route::get('/cart', function () {
-        return view('client.pages.cart');
-    })->name('cart');
+    // Các chức năng thêm/xóa/cập nhật mã giảm giá - cần đăng nhập
+    Route::middleware(['auth'])->group(function () {
+        Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+        Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+        Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+        Route::post('/cart/remove-selected', [CartController::class, 'removeSelected'])->name('cart.removeSelected');
+        Route::post('/cart/add-ajax', [CartController::class, 'addAjax'])->name('cart.addAjax');
+    });
+    
 
     Route::get('/checkout', function () {
         return view('client.pages.checkout');

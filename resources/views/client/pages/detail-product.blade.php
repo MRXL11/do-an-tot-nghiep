@@ -95,9 +95,21 @@
 
                 <!-- Action buttons -->
                 <div class="d-grid gap-2 d-md-block">
-                    <button class="btn btn-outline-success btn-lg me-2" id="add-to-cart">
-                        <i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ
-                    </button>
+                    @if (Auth::check())
+                        <button 
+                            type="button"
+                            class="btn btn-outline-success btn-lg me-2 btn-add-cart" 
+                            data-qty="1"
+                            data-image="{{ asset($selectedVariant->image ?? $product->thumbnail) }}"
+                        >
+                            <i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ
+                        </button>
+                    @else
+                        <div class="alert alert-warning mt-3" role="alert">
+                            <i class="bi bi-exclamation-circle me-2"></i> Bạn cần <a href="{{ route('login') }}">đăng nhập</a> để mua sắm.
+                        </div>
+                    @endif
+
                     @if (Auth::check())
                         <form action="{{ route('wishlist.store') }}" method="POST" class="d-inline">
                             @csrf
@@ -396,17 +408,9 @@
         </script>
     @endif
 
-    @if (session('error'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const modal = new bootstrap.Modal(document.getElementById('wishlistErrorModal'));
-                modal.show();
+</script>
 
-                // Tự đóng sau 4 giây
-                setTimeout(() => {
-                    modal.hide();
-                }, 4000);
-            });
-        </script>
-    @endif
+
+</script>
+
 @endsection
