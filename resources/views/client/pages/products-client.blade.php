@@ -53,7 +53,7 @@
                             <div class="card border-0 shadow-sm rounded-3 ">
                                 <div class="card-heading p-3 bg-light rounded-top-3">
                                     <a data-bs-toggle="collapse" href="#collapseBrand" aria-expanded="true" class="text-dark fw-bold text-uppercase d-flex justify-content-between align-items-center">
-                                      <i class="bi bi-tags"></i>  Thương hiệu
+                                      <i class="bi bi-tags"></i> Thương hiệu
                                         <i class="bi bi-chevron-down"></i>
                                     </a>
                                 </div>
@@ -155,7 +155,7 @@
                             </div>
 
                             {{-- Tags --}}     {{-- chưa có tags --}}
-                            {{-- <div class="card border-0 shadow-sm rounded-3 ">
+                            <div class="card border-0 shadow-sm rounded-3 ">
                                 <div class="card-heading p-3 bg-light rounded-top-3">
                                     <a data-bs-toggle="collapse" href="#collapseTags" aria-expanded="true" class="text-dark fw-bold text-uppercase d-flex justify-content-between align-items-center">
                                     <i class="bi bi-badge"></i>  Tags
@@ -169,7 +169,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div> --}}
+                            </div>
                         </div>
                     </div>
                 </div>
