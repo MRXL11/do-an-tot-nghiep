@@ -22,6 +22,7 @@ class ProductClientController extends Controller
         $brands = Brand::where('status', 'active')->get();
         $sizes = ProductVariant::select('size')->distinct()->pluck('size');
         $colors = ProductVariant::select('color')->distinct()->pluck('color');
+        
 
         // Hứng sản phẩm truy vấn 
         $productsQuery = Product::with(['variants', 'reviews']);

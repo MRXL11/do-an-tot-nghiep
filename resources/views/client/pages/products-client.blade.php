@@ -298,14 +298,18 @@
                                             <i class="bi bi-heart"></i> {{ $product->likes_count }} yêu thích
                                         </div>
                                     </div>
-                                    @if ($product->variants->whereNotNull('discount_price')->count() > 0)
-                                        <p class="text-danger fw-bold mb-0">
-                                            {{ number_format($product->variants->min('discount_price')) }} đ</p>
-                                        <p class="text-muted text-decoration-line-through">
-                                            {{ number_format($product->variants->min('price')) }} đ</p>
+                                    @php
+                                    $effectivePrices = $product->variants->map(function ($variant) {
+                                        return $variant->discount_price ?? $variant->price;
+                                    });
+                                    $minPrice = $effectivePrices->min();
+                                    $maxPrice = $effectivePrices->max();
+                                    @endphp
+
+                                    @if ($minPrice == $maxPrice)
+                                        <p class="text-danger fw-bold mb-3">{{ number_format($minPrice) }} đ</p>
                                     @else
-                                        <p class="text-danger fw-bold mb-3">
-                                            {{ number_format($product->variants->min('price')) }} đ</p>
+                                        <p class="text-danger fw-bold mb-3">{{ number_format($minPrice) }} đ - {{ number_format($maxPrice) }} đ</p>
                                     @endif
                                     <div class="d-flex gap-2 mt-auto justify-content-center">
                                         <a href="{{ route('detail-product', ['id' => $product->id]) }}" class="btn btn-outline-primary">

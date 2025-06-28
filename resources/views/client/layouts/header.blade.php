@@ -39,7 +39,7 @@
 
                         <!-- Giỏ hàng -->
                         <li class="scroll-to-section position-relative">
-                            <a href="{{ route('cart') }}" class="{{ Request::routeIs('cart') ? 'active' : '' }}" data-bs-toggle="tooltip" title="Giỏ hàng">
+                            <a href="{{ route('cart.index') }}" class="{{ Request::routeIs('cart.index') ? 'active' : '' }}" data-bs-toggle="tooltip" title="Giỏ hàng">
                                 <i class="bi bi-cart3 fs-5 text-dark position-relative">
                                     <span id="cart-count" 
                                         class="position-absolute top-0 start-75 translate-middle badge rounded-pill bg-danger {{ $cartCount == 0 ? 'd-none' : '' }}" 
