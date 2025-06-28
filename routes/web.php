@@ -127,7 +127,7 @@ use App\Http\Controllers\Client\WishlistController;
     Route::get('/products-client', [ProductClientController::class, 'index'])->name('products-client');
 
     // Router hiển thị giỏ hàng
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::get('/cart', [CartController::class, 'index'])->name('cart');
 
     // Các chức năng thêm/xóa/cập nhật mã giảm giá - cần đăng nhập
     Route::middleware(['auth'])->group(function () {
