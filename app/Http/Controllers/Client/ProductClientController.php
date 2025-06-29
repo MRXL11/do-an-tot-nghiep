@@ -109,7 +109,7 @@ class ProductClientController extends Controller
         }
 
         // Paginate
-        $products = $productsQuery->where('products.status', 'active')->paginate(15)->appends($request->query());
+        $products = $productsQuery->where('products.status', 'active')->paginate(9)->appends($request->query());
 
         // nếu không có sản phẩm nào và có bộ lọc hoặc tìm kiếm trả lại 
         $noResults = $products->isEmpty() && $request->hasAny(['category', 'brand', 'size', 'color', 'price_min', 'price_max', 'search', 'sort']);
