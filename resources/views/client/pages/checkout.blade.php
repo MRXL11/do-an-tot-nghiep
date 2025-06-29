@@ -34,7 +34,7 @@
                                 <div class="card mb-3 border-0 shadow-sm">
                                     <div class="card-body d-flex justify-content-between align-items-center">
                                         <div class="d-flex align-items-center">
-                                            <img src="{{ asset($item->productVariant->image ?? 'path/to/default.jpg') }}"
+                                            <img src="{{ asset($item->productVariant->image ?? 'images/default-product.jpg') }}"
                                                 alt="Product" class="img-thumbnail" style="width: 60px;">
                                             <div class="ms-3">
                                                 <h6 class="mb-1">{{ $item->productVariant->product->name }}</h6>
@@ -118,26 +118,24 @@
                                 <div class="alert alert-info py-2 mb-3">
                                     <i class="bi bi-credit-card-2-front me-2"></i> Thanh toán bằng thẻ tín dụng/ghi nợ
                                 </div>
-                                <form>
-                                    <div class="mb-2">
-                                        <label class="form-label">Tên chủ thẻ</label>
-                                        <input type="text" class="form-control" placeholder="Nguyễn Văn A">
+                                <div class="mb-2">
+                                    <label class="form-label">Tên chủ thẻ</label>
+                                    <input type="text" class="form-control" placeholder="Nguyễn Văn A">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Số thẻ</label>
+                                    <input type="text" class="form-control" placeholder="1234 5678 9012 3456">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label">Ngày hết hạn</label>
+                                        <input type="text" class="form-control" placeholder="MM/YY">
                                     </div>
-                                    <div class="mb-2">
-                                        <label class="form-label">Số thẻ</label>
-                                        <input type="text" class="form-control" placeholder="1234 5678 9012 3456">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label">Mã CVV</label>
+                                        <input type="password" class="form-control" placeholder="***">
                                     </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Ngày hết hạn</label>
-                                            <input type="text" class="form-control" placeholder="MM/YY">
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Mã CVV</label>
-                                            <input type="password" class="form-control" placeholder="***">
-                                        </div>
-                                    </div>
-                                </form>
+                                </div>
                             </div>
 
                             <!-- Mã giảm giá -->
@@ -309,6 +307,7 @@
                 e.preventDefault();
                 alert('Bạn cần đồng ý với chính sách mua hàng để tiếp tục.');
             }
+            return;
         });
     </script>
 

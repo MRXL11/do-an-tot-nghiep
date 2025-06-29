@@ -59,7 +59,7 @@
                                                 data-quantity="{{ $item->quantity }}">
                                         </td>
                                         <td>
-                                            <img src="{{ asset($item->productVariant->image ?? 'path/to/default.jpg') }}"
+                                            <img src="{{ asset($item->productVariant->image ?? 'images/default-product.jpg') }}"
                                                 alt="Ảnh" width="60">
                                         </td>
                                         <td>
@@ -183,7 +183,7 @@
                         cart_id: id,
                         quantity: qty
                     }, res => {
-                        $('#item-total-' + id).text('$' + res.itemTotal.toFixed(2));
+                        $('#item-total-' + id).text(total.toLocaleString('vi-VN') + ' ₫');
                         updateSummary();
                     });
                 }, 800);
@@ -196,7 +196,7 @@
                     cart_id: id,
                     quantity: qty
                 }, res => {
-                    $('#item-total-' + id).text('$' + res.itemTotal.toFixed(2));
+                    $('#item-total-' + id).text(total.toLocaleString('vi-VN') + ' ₫');
                     updateSummary();
                 });
             }
