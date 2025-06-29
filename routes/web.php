@@ -144,7 +144,7 @@
     // Route xử lý thanh toán, thêm đơn hàng vào db nhưng mà chưa chạy được đâu
     // Chưa có controller
     Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
-
+    Route::get('/pay', [ClientOrderController::class, 'pay'])->name('pay');
 
     Route::get('/about', function () {
         return view('client.pages.about');
