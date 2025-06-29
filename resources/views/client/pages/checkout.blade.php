@@ -102,18 +102,6 @@
                                 </div>
                             </div>
 
-                            <div id="momo-details" class="payment-method-details" style="display: none;">
-                                <div class="alert alert-warning py-2 mb-3">
-                                    <i class="bi bi-qr-code me-2"></i> Quét mã QR để thanh toán qua Momo
-                                </div>
-                                <div class="text-center mb-2">
-                                    <img src="https://tse2.mm.bing.net/th?id=OIP.yNhEU48kUAE37NleMUMZMwHaHS&pid=Api&P=0&h=180"
-                                        alt="Momo QR" class="img-fluid rounded shadow" style="max-height: 180px;">
-                                </div>
-                                <p class="text-center small">(Vui lòng kiểm tra kỹ thông tin trước khi xác nhận thanh toán)
-                                </p>
-                            </div>
-
                             <div id="card-details" class="payment-method-details" style="display: none;">
                                 <div class="alert alert-info py-2 mb-3">
                                     <i class="bi bi-credit-card-2-front me-2"></i> Thanh toán bằng thẻ tín dụng/ghi nợ
@@ -173,7 +161,6 @@
                                 <p class="mb-1"><strong>Số điện thoại:</strong> <span id="detail-phone"></span></p>
                                 <p class="mb-0"><strong>Địa chỉ:</strong> <span id="detail-address"></span></p>
                             </div>
-
 
                             <!-- THÔNG TIN GIAO HÀNG -->
                             <div class="mb-4 mt-4">
@@ -242,7 +229,7 @@
                             </div>
 
                             <!-- Nút thanh toán -->
-                            <button type="submit" class="btn btn-success w-100 mt-3">
+                            <button type="submit" class="btn btn-success w-100 mt-3" id="submit-btn">
                                 <i class="bi bi-cart-check me-2"></i>Thanh toán
                                 ({{ number_format($subtotal + 20000, 0, ',', '.') }} ₫)
                             </button>
@@ -257,28 +244,55 @@
 
 @section('scripts')
     <script>
+        // Khởi tạo khi trang được tải
         document.addEventListener("DOMContentLoaded", function() {
+            // Lấy các input radio và nút thanh toán
             const radios = document.querySelectorAll('input[name="paymentMethod"]');
+            const submitBtn = document.getElementById('submit-btn');
             const details = {
                 cod: document.getElementById("cod-details"),
                 momo: document.getElementById("momo-details"),
                 card: document.getElementById("card-details")
             };
+            const total = "{{ number_format($subtotal + 20000, 0, ',', '.') }} ₫"; // Tổng tiền
 
-            function showSelectedPayment() {
+            // Hàm cập nhật giao diện nút thanh toán
+            function updatePaymentButton() {
                 const selected = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+                // Cập nhật văn bản và kiểu dáng nút theo phương thức thanh toán
+                if (selected === 'cod') {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Đặt hàng`;
+                    submitBtn.classList.remove('btn-primary');
+                    submitBtn.classList.remove('btn-warning');
+                    submitBtn.classList.add('btn-success');
+                } else if (selected === 'card') {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán bằng thẻ (${total})`;
+                    submitBtn.classList.remove('btn-success');
+                    submitBtn.classList.remove('btn-warning');
+                    submitBtn.classList.add('btn-primary');
+                } else {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${total})`;
+                    submitBtn.classList.remove('btn-primary');
+                    submitBtn.classList.remove('btn-success');
+                    submitBtn.classList.add('btn-warning');
+                }
+
+                // Hiển thị chi tiết phương thức thanh toán
                 Object.keys(details).forEach(key => {
-                    details[key].style.display = (key === selected) ? "block" : "none";
+                    if (details[key]) {
+                        details[key].style.display = (key === selected) ? "block" : "none";
+                    }
                 });
             }
 
-            radios.forEach(radio => radio.addEventListener("change", showSelectedPayment));
-            showSelectedPayment(); // Hiển thị mặc định ban đầu
+            // Gắn sự kiện thay đổi cho radio buttons
+            radios.forEach(radio => radio.addEventListener("change", updatePaymentButton));
+
+            // Gọi hàm để hiển thị trạng thái ban đầu
+            updatePaymentButton();
         });
-    </script>
 
-
-    <script>
         // Hiển thị thông tin địa chỉ khi chọn
         document.addEventListener('DOMContentLoaded', function() {
             const select = document.getElementById('address-select');
@@ -287,6 +301,7 @@
             const phoneSpan = document.getElementById('detail-phone');
             const addressSpan = document.getElementById('detail-address');
 
+            // Cập nhật thông tin địa chỉ khi chọn từ dropdown
             select.addEventListener('change', function() {
                 const selected = select.options[select.selectedIndex];
 
@@ -301,66 +316,12 @@
             });
         });
 
-        // Kiểm tra đồng ý với chính sách
+        // Kiểm tra đồng ý với chính sách trước khi submit
         document.querySelector('form').addEventListener('submit', function(e) {
             if (!document.getElementById('agree').checked) {
                 e.preventDefault();
                 alert('Bạn cần đồng ý với chính sách mua hàng để tiếp tục.');
             }
-            return;
         });
     </script>
-
-    {{-- <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Xử lý chọn địa chỉ có sẵn
-            document.getElementById('saved-addresses').addEventListener('change', function() {
-                const value = this.value;
-                if (value) {
-                    const [address, phone] = value.split('|');
-                    document.getElementById('shipping_address').value = address;
-                    document.getElementById('shipping_phone').value = phone;
-                }
-            });
-
-            // Xử lý áp dụng mã giảm giá
-            document.getElementById('apply-coupon').addEventListener('click', function() {
-                const code = document.getElementById('coupon-code').value.trim();
-                const feedback = document.getElementById('coupon-feedback');
-
-                if (!code) {
-                    feedback.textContent = "Vui lòng nhập mã giảm giá.";
-                    feedback.style.display = 'block';
-                    return;
-                }
-
-                // Gửi AJAX kiểm tra mã giảm giá
-                fetch("{{ route('coupon.check') }}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            code: code
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.valid) {
-                            feedback.style.display = 'none';
-                            // Bạn có thể cập nhật số tiền giảm tại đây
-                            alert(`Mã hợp lệ! Giảm: ${data.discount}₫`);
-                        } else {
-                            feedback.textContent = data.message || "Mã không hợp lệ hoặc đã hết hạn.";
-                            feedback.style.display = 'block';
-                        }
-                    })
-                    .catch(() => {
-                        feedback.textContent = "Đã xảy ra lỗi. Vui lòng thử lại.";
-                        feedback.style.display = 'block';
-                    });
-            });
-        });
-    </script> --}}
 @endsection

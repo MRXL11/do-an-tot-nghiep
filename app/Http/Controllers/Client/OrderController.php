@@ -62,4 +62,11 @@ class OrderController extends Controller
         // Trả về thông báo thành công
         return redirect()->back()->with('cancel-request-success', 'Đã gửi yêu cầu huỷ đơn hàng thành công. Chờ admin xử lý.');
     }
+
+    public function pay(Request $request)
+    {
+        
+        // Chưa có logic xử lý thanh toán, chỉ là placeholder
+        return view('client.pages.pay');
+    }
 }
