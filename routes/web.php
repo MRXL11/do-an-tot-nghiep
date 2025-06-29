@@ -27,8 +27,9 @@
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
 
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
-use App\Http\Controllers\Client\CartController;
-use App\Http\Controllers\Client\WishlistController;
+    use App\Http\Controllers\Client\CartController;
+    use App\Http\Controllers\Client\CheckoutController;
+    use App\Http\Controllers\Client\WishlistController;
 
     // ✅ Route cho Admin
     // Route cho Admin
@@ -64,7 +65,7 @@ use App\Http\Controllers\Client\WishlistController;
             Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
             Route::get('/brands/trashed', [BrandController::class, 'trashed'])->name('brands.trashed');
             Route::post('/brands/{id}/restore', [BrandController::class, 'restore'])->name('brands.restore');
-          
+
 
             // Voucher (Coupons)
             Route::get('/coupons', [CouponController::class, 'index'])->name('admin.coupons.index');
@@ -107,8 +108,8 @@ use App\Http\Controllers\Client\WishlistController;
     // trang chủ Khách hàng (Client)
     Route::get('/', function () {
         return view('client.layouts.index');
-    })->name('home');    
-    
+    })->name('home');
+
     // ✅ Route riêng cho Khách hàng (Client) đã đăng nhập
     Route::middleware('auth')->prefix('client')->group(function () {
         Route::post('/wishlist/store', [WishlistController::class, 'store'])
@@ -121,8 +122,6 @@ use App\Http\Controllers\Client\WishlistController;
 
     Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
     //Route::get('/', [ProductController::class, 'homepage'])->name('home');
-
-
 
     Route::get('/products-client', [ProductClientController::class, 'index'])->name('products-client');
 
@@ -137,11 +136,14 @@ use App\Http\Controllers\Client\WishlistController;
         Route::post('/cart/remove-selected', [CartController::class, 'removeSelected'])->name('cart.removeSelected');
         Route::post('/cart/add-ajax', [CartController::class, 'addAjax'])->name('cart.addAjax');
     });
-    
 
-    Route::get('/checkout', function () {
-        return view('client.pages.checkout');
-    })->name('checkout');
+    // Route hiển thị trang thanh toán
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+
+    // Route xử lý thanh toán, thêm đơn hàng vào db nhưng mà chưa chạy được đâu
+    // Chưa có controller
+    Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
+
 
     Route::get('/about', function () {
         return view('client.pages.about');
