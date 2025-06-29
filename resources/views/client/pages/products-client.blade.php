@@ -39,7 +39,8 @@
                                                 @foreach($categories as $cat)
                                                     <li class="{{ request()->category == $cat->id ? 'active' : '' }}">
                                                         <a href="{{ route('products-client', array_merge(request()->query(), ['category' => $cat->id])) }}" class="d-block py-2 px-3 rounded-2">
-                                                            {{ $cat->name }} ({{ $cat->products_count ?? 0 }})
+                                                            {{ $cat->name }} 
+                                                            {{-- ({{ $cat->products_count ?? 0 }}) --}}
                                                         </a>
                                                     </li>
                                                 @endforeach
@@ -329,7 +330,9 @@
 
                 <!-- Pagination -->
                 <div class="d-flex justify-content-center">
-                    {{ $products->appends(request()->query())->links() }}
+                    @if ($products->hasPages())
+                        {{ $products->appends(request()->query())->links() }}
+                    @endif
                 </div>
             </div>
         </div>
@@ -598,7 +601,12 @@
             background: #007bff;
             color: #fff;
         }
-
+    
+        .card:hover img {
+            transform: scale(1.2);
+            transition: transform 0.5s ease;
+            border-radius: 10px;
+        }
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .shop__sidebar {
