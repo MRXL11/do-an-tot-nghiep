@@ -63,4 +63,24 @@ class CheckoutController extends Controller
             'user' => $user, // Truyền dữ liệu người dùng để hiển thị địa chỉ đã lưu
         ]);
     }
+
+    public function submit(Request $request)
+    {
+        $paymentMethod = $request->input('paymentMethod'); // hoặc $request->paymentMethod;
+        // ✅ Kiểm tra người dùng đã đăng nhập chưa
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('warning', 'Vui lòng đăng nhập để thanh toán.');
+        }
+
+        // ✅ Xử lý logic thêm đơn hàng vào db ở đây
+        // ...
+
+        if ($paymentMethod === 'momo') {
+            // ✅ Chuyển hướng đến trang thanh toán Momo
+            return redirect()->route('pay');
+        }
+
+        // ✅ Nếu không phải thanh toán Momo, xử lý logic đặt hàng thông thường
+        return redirect()->route('account.show')->with('order-success', 'Đã đặt hàng thành công.');
+    }
 }
