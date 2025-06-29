@@ -14,7 +14,7 @@
                     </a>
                 </div>
             </div>
-            
+
             {{-- Thông báo lỗi hoặc thành công --}}
             <div class="row">
                 @if (session('error'))
@@ -65,7 +65,7 @@
                 </div>
                 <div class="col-md-2">
                     <h6 class="text-muted">Phương thức thanh toán</h6>
-                    <p class="fw-semibold">{{ ucfirst($order->payment_method) }}</p>
+                    <p class="fw-semibold">{{ strtoupper($order->payment_method) }}</p>
                 </div>
                 <div class="col-md-2">
                     <h6 class="text-muted">Trạng thái thanh toán</h6>
@@ -87,7 +87,7 @@
                             $label =
                                 $coupon->discount_type === 'percent'
                                     ? 'Giảm ' . $coupon->discount_value . '%'
-                                    : 'Giảm ' . number_format($coupon->discount_value, 0, ',', '.') . '.000 VNĐ';
+                                    : 'Giảm ' . number_format($coupon->discount_value, 0, ',', '.') . ' đ';
                         @endphp
                         <p class="fw-semibold">{{ $coupon->code }} - {{ $label }}</p>
                     @else
@@ -182,9 +182,9 @@
                                 </td>
                                 <td>{{ $item->productVariant->product->short_description }}</td>
                                 <td>{{ $item->quantity }}</td>
-                                <td>{{ number_format($item->price, 0, ',', '.') }}.000</td>
-                                <td>{{ number_format($item->discount, 0, ',', '.') }}.000</td>
-                                <td>{{ number_format($item->subtotal, 0, ',', '.') }}.000</td>
+                                <td>{{ number_format($item->price, 0, ',', '.') }}</td>
+                                <td>{{ number_format($item->discount, 0, ',', '.') }}</td>
+                                <td>{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -212,17 +212,17 @@
                         @if ($order->coupon)
                             <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
                                 Giảm:
-                                <span>{{ number_format($discount, 0, ',', '.') }}.000 VNĐ</span>
+                                <span>{{ number_format($discount, 0, ',', '.') }}đ</span>
                             </li>
                         @else
                             <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
                                 Giảm:
-                                <span>0 VNĐ</span>
+                                <span>0 đ</span>
                             </li>
                         @endif
                         <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
                             Thành tiền:
-                            <span>{{ number_format($order->total_price, 0, ',', '.') }}.000 VNĐ</span>
+                            <span>{{ number_format($order->total_price, 0, ',', '.') }}đ</span>
                         </li>
                     </ul>
                 </div>

@@ -68,9 +68,12 @@ class OrderController extends Controller
     public function update(Request $request, $id)
     {
         $order = Order::findOrFail($id);
+        $oldStatusLabel = Order::getStatusMeta($order->status)['label'];
+
 
         // Lấy trạng thái mới từ request
         $newStatus = $request->input('status');
+        $newStatusLabel = Order::getStatusMeta($newStatus)['label'];
 
         // Mảng trạng thái hợp lệ và chuyển đổi
         $validTransitions = [
@@ -82,9 +85,14 @@ class OrderController extends Controller
         if (!isset($validTransitions[$order->status]) || $validTransitions[$order->status] !== $newStatus) {
             return redirect()->back()->with('error', 'Chuyển trạng thái không hợp lệ.');
         }
+
         // Lưu trạng thái mới
         $order->status = $newStatus;
         $order->save();
+
+        // Tạo thông báo cho người dùng
+        $message = "Trạng thái đơn hàng #{$order->order_code} đã được cập nhật từ '{$oldStatusLabel}' thành '{$newStatusLabel}'.";
+        $this->createOrderNotificationToClient($order, $message, 'Đơn hàng đã được cập nhật');
 
         return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
     }
@@ -100,6 +108,33 @@ class OrderController extends Controller
 
         return redirect()->back()->with('success', 'Đã huỷ đơn hàng thành công.');
     }
+
+    private function createOrderNotificationToClient(Order $order, $message, $title)
+    {
+        try {
+            $client = $order->user; // Người đã đặt đơn
+
+            // Kiểm tra nếu người dùng không tồn tại
+            if (!$client) {
+                Log::warning("Đơn hàng #{$order->id} không có người dùng liên kết.");
+                return;
+            }
+
+            // Tạo thông báo cho người dùng
+            Notification::create([
+                'user_id'    => $client->id,
+                'title'      => $title,
+                'message'    => $message,
+                'type'       => 'order',
+                'is_read'    => false,
+                'order_id'   => $order->id,
+                'created_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi tạo thông báo đơn hàng: ' . $e->getMessage());
+        }
+    }
+
     private function createOrderNotification(Order $order, string $message, string $title = 'Cập nhật đơn hàng')
     {
         try {

@@ -29,6 +29,7 @@
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
     use App\Http\Controllers\Client\CartController;
     use App\Http\Controllers\Client\CheckoutController;
+    use App\Http\Controllers\Client\OrderController as ClientOrderController;
     use App\Http\Controllers\Client\WishlistController;
 
     // ✅ Route cho Admin
@@ -175,6 +176,10 @@
     // đây là phần thông báo được gửi tới khách hàng
     Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
     Route::post('/client/notifications/mark-all-read', [ClientNotificationController::class, 'markAllRead'])->name('client.notifications.markAllRead');
+
+    // gửi thông báo cho admin khi khách hàng chọn huỷ đơn hàng
+    Route::post('/order/cancel/{order}/request', [ClientOrderController::class, 'createOrderCancelNotificationToAdmin'])
+        ->name('order.cancel.request');
 
     // ✅ Route xác thực (Auth)
     Route::middleware('web')->group(function () {
