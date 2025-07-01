@@ -35,20 +35,16 @@
                             data-bs-parent="#productFilters">
                             <div class="accordion-body">
                                 <ul class="list-group list-group-flush">
-                                    <li class="list-group-item {{ !request()->category ? 'active' : '' }}">
-                                        <a
-                                            href="{{ route('products-client', array_merge(request()->except('category'))) }}">Tất
-                                            cả</a>
-                                        @if (!request()->category)
+                                    <li class="list-group-item {{ request()->is('products-client') ? 'active' : '' }}">
+                                        <a href="{{ route('products-client') }}">Tất cả</a>
+                                        @if (request()->is('products-client'))
                                             <i class="bi bi-check-circle ms-2"></i>
                                         @endif
                                     </li>
                                     @foreach ($categories as $category)
-                                        <li
-                                            class="list-group-item {{ request()->category == $category->id ? 'active' : '' }}">
-                                            <a
-                                                href="{{ route('products-client', array_merge(request()->query(), ['category' => $category->id])) }}">{{ $category->name }}</a>
-                                            @if (request()->category == $category->id)
+                                        <li class="list-group-item {{ request()->is('products-client/' . $category->slug) ? 'active' : '' }}">
+                                            <a href="{{ route('products-client', $category->slug) }}">{{ $category->name }}</a>
+                                            @if (request()->is('products-client/' . $category->slug))
                                                 <i class="bi bi-check-circle ms-2"></i>
                                             @endif
                                         </li>

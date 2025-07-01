@@ -38,7 +38,13 @@ class CartController extends Controller
             $total = $subtotal;
         }
 
-        return view('client.pages.cart', compact('cartItems', 'subtotal', 'total'));
+        $cartItemsForJs = $cartItems->map(function($item) {
+            return [
+                'id' => $item->id,
+                'status' => $item->productVariant->status ?? 'inactive'
+            ];
+        });
+        return view('client.pages.cart', compact('cartItems', 'subtotal', 'total', 'cartItemsForJs'));
     }
 
 
@@ -57,7 +63,15 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1'
         ]);
 
-        $variant = ProductVariant::findOrFail($request->product_variant_id);
+        $variant = ProductVariant::find($request->product_variant_id);
+        if (!$variant) {
+            return back()->with('error', 'Sản phẩm này không còn tồn tại!');
+        }
+
+        // Kiểm tra trạng thái active
+        if ($variant->status !== 'active') {
+            return back()->with('error', 'Sản phẩm này hiện không còn hoạt động!');
+        }
 
         if ($variant->stock_quantity < $request->quantity) {
             return back()->with('error', 'Số lượng vượt quá tồn kho!');
@@ -101,9 +115,13 @@ class CartController extends Controller
         }
 
         $variant = $cart->productVariant;
-
         if (!$variant) {
-            return response()->json(['error' => 'Không tìm thấy phiên bản sản phẩm!'], 404);
+            return response()->json(['error' => 'Sản phẩm này không còn tồn tại!'], 404);
+        }
+
+        // Kiểm tra trạng thái active
+        if ($variant->status !== 'active') {
+            return response()->json(['error' => 'Sản phẩm này đã ngừng bán!'], 400);
         }
 
         if ($variant->stock_quantity < $request->quantity) {
@@ -192,7 +210,15 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1'
         ]);
 
-        $variant = ProductVariant::findOrFail($request->product_variant_id);
+        $variant = ProductVariant::find($request->product_variant_id);
+        if (!$variant) {
+            return response()->json(['success' => false, 'message' => 'Sản phẩm này không còn tồn tại!']);
+        }
+
+        // Kiểm tra trạng thái active
+        if ($variant->status !== 'active') {
+            return response()->json(['success' => false, 'message' => 'Sản phẩm này đã ngừng bán!']);
+        }
 
         // Kiểm tra tồn kho
         if ($variant->stock_quantity < $request->quantity) {

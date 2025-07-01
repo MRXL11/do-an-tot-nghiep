@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class ProductClientController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, $slug = null)
     {
         // lấy fetch categories, brands, sizes, and colors
         $categories = Category::where('status', 'active')->get();
@@ -26,8 +26,9 @@ class ProductClientController extends Controller
         // Hứng sản phẩm truy vấn 
         $productsQuery = Product::with(['variants', 'reviews']);
         // Apply filters/ lọc theo
-        if ($request->has('category') && $request->category) {
-            $productsQuery->where('category_id', $request->category);
+        if ($slug) {
+        $selectedCategory = Category::where('slug', $slug)->firstOrFail();
+        $productsQuery->where('category_id', $selectedCategory->id);
         }
         if ($request->has('brand') && $request->brand) {
             $productsQuery->where('brand_id', $request->brand);
