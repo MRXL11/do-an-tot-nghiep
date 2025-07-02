@@ -4,6 +4,16 @@
     <div class="container d-flex justify-content-center align-items-center">
         <div class="card shadow-lg p-4 w-100" style="max-width: 500px;">
             {{-- thông báo lỗi --}}
+            @if (session('warning'))
+                <div class="container">
+                    <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+                        {{ session('warning') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            @endif
+
+            {{-- thông báo thành công --}}
             @if (session('success'))
                 <div class="alert alert-success  text-center">
                     <i class="bi bi-check-circle-fill"></i> {{ session('success') }}

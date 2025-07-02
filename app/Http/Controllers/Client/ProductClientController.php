@@ -22,6 +22,7 @@ class ProductClientController extends Controller
         $brands = Brand::where('status', 'active')->get();
         $sizes = ProductVariant::select('size')->distinct()->pluck('size');
         $colors = ProductVariant::select('color')->distinct()->pluck('color');
+        
 
         // Hứng sản phẩm truy vấn 
         $productsQuery = Product::with(['variants', 'reviews']);
@@ -31,7 +32,10 @@ class ProductClientController extends Controller
         $productsQuery->where('category_id', $selectedCategory->id);
         }
         if ($request->has('brand') && $request->brand) {
-            $productsQuery->where('brand_id', $request->brand);
+            $brand = Brand::where('slug', $request->brand)->first();
+            if ($brand) {
+                $productsQuery->where('brand_id', $brand->id);
+            }
         }
         if ($request->has('size') && $request->size) {
             $productsQuery->whereHas('variants', function ($query) use ($request) {
@@ -109,7 +113,7 @@ class ProductClientController extends Controller
         }
 
         // Paginate
-        $products = $productsQuery->where('products.status', 'active')->paginate(15)->appends($request->query());
+        $products = $productsQuery->where('products.status', 'active')->paginate(9)->appends($request->query());
 
         // nếu không có sản phẩm nào và có bộ lọc hoặc tìm kiếm trả lại 
         $noResults = $products->isEmpty() && $request->hasAny(['category', 'brand', 'size', 'color', 'price_min', 'price_max', 'search', 'sort']);
