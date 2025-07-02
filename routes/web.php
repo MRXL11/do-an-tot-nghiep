@@ -121,10 +121,9 @@
 
 
 
-    Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
+    //Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
+    Route::get('/products-client/{slug?}', [ProductClientController::class, 'index'])->name('products-client');
     //Route::get('/', [ProductController::class, 'homepage'])->name('home');
-
-    Route::get('/products-client', [ProductClientController::class, 'index'])->name('products-client');
 
     // Router hiển thị giỏ hàng
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');

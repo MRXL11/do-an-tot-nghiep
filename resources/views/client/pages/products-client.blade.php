@@ -18,33 +18,26 @@
                             <button type="submit" class="btn btn-primary rounded-3 shadow-sm">
                                 <i class="bi bi-search"></i>
                             </button>
-                        </form>
-                    </div>
-
-                    {{-- Filter Sections --}}
-                    <div class="shop__sidebar__filters">
-                        {{-- Categories --}}
-                        <div class="card border-0 shadow-sm rounded-3 mb-3">
-                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse" data-bs-target="#categoriesCollapse" aria-expanded="false" aria-controls="categoriesCollapse">
-                                <h6 class="text-dark fw-bold text-uppercase d-flex align-items-center">
-                                    <i class="bi bi-list me-2"></i> Danh mục
-                                    <i class="bi bi-chevron-down ms-auto"></i>
-                                </h6>
-                            </div>
-                            <div class="collapse" id="categoriesCollapse">
-                                <div class="card-body p-3">
-                                    <div class="shop__sidebar__categories">
-                                        <ul class="list-unstyled">
-                                            @foreach($categories as $cat)
-                                                <li class="{{ request()->category == $cat->id ? 'active' : '' }}">
-                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['category' => $cat->id])) }}" class="d-block py-2 px-3 rounded-2">
-                                                        {{ $cat->name }}
-                                                    </a>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                </div>
+                        </h2>
+                        <div id="collapseCategories" class="accordion-collapse collapse show"
+                            data-bs-parent="#productFilters">
+                            <div class="accordion-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item {{ request()->is('products-client') ? 'active' : '' }}">
+                                        <a href="{{ route('products-client') }}">Tất cả</a>
+                                        @if (request()->is('products-client'))
+                                            <i class="bi bi-check-circle ms-2"></i>
+                                        @endif
+                                    </li>
+                                    @foreach ($categories as $category)
+                                        <li class="list-group-item {{ request()->is('products-client/' . $category->slug) ? 'active' : '' }}">
+                                            <a href="{{ route('products-client', $category->slug) }}">{{ $category->name }}</a>
+                                            @if (request()->is('products-client/' . $category->slug))
+                                                <i class="bi bi-check-circle ms-2"></i>
+                                            @endif
+                                        </li>
+                                    @endforeach
+                                </ul>
                             </div>
                         </div>
 

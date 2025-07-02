@@ -1,11 +1,12 @@
 <section class="section" id="men">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-6">
-                <div class="section-heading">
-                    <h2>Thời trang nam mới nhất</h2>
-                    <span>Chú trọng đến từng chi tiết chính là điều khiến HN_447 khác biệt so với các chủ đề khác.</span>
-                </div>
+        <div class="row align-items-center justify-content-between mb-4">
+            <div class="col-auto">
+                <h2 class="fw-bold mb-2">Thời trang nam mới nhất</h2>
+                <span class="text-muted small d-block">Chú trọng đến từng chi tiết chính là điều khiến HN_447 khác biệt so với các chủ đề khác.</span>
+            </div>
+            <div class="col-auto">
+                <a href="{{ route('products-client', 'nam') }}" class="btn btn-outline-dark">Xem thêm</a>
             </div>
         </div>
     </div>
@@ -73,7 +74,7 @@
                                     <img src="assets/images/men-03.jpg" alt="">
                                 </div>
                                 <div class="down-content">
-                                    <h4>Love Nana ‘20</h4>
+                                    <h4>Love Nana '20</h4>
                                     <span>$150.00</span>
                                     <ul class="stars">
                                         <li><i class="fa fa-star"></i></li>

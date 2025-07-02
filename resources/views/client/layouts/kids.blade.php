@@ -1,11 +1,12 @@
 <section class="section" id="kids">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="section-heading">
-                        <h2>Sản phẩm mới cho trẻ em</h2>
-                        <span>Chú ý đến từng chi tiết là điều khiến HN_447 khác biệt so với các giao diện khác.</span>
-                    </div>
+            <div class="row align-items-center justify-content-between mb-4">
+                <div class="col-auto">
+                    <h2 class="fw-bold mb-2">Sản phẩm mới cho trẻ em</h2>
+                    <span class="text-muted small d-block">Chú ý đến từng chi tiết là điều khiến HN_447 khác biệt so với các giao diện khác.</span>
+                </div>
+                <div class="col-auto">
+                    <a href="{{ route('products-client', 'tre-em') }}" class="btn btn-outline-dark">Xem thêm</a>
                 </div>
             </div>
         </div>
