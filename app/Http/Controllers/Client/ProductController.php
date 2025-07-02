@@ -37,30 +37,34 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        // lấy sản phẩm theo id và kèm theo các quan hệ category, brand, variants
         $product = Product::with(['variants', 'reviews' => function ($query) {
             $query->where('status', 'approved')->with('user');
-        }])->where('status', 'active')->find($id);
-
-        // nếu không tìm thấy sản phẩm thì trả về lỗi
+        }, 'category', 'brand'])->where('status', 'active')->find($id);
+    
         if (!$product) {
             return back()->with('error', 'Sản phẩm không tồn tại hoặc đã ngừng kinh doanh.');
         }
-
+    
+        // Đảm bảo tải đầy đủ variants cho relatedProducts
+        $relatedProducts = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->where('status', 'active')
+            ->with(['variants' => function ($query) {
+                $query->where('status', 'active')->where('stock_quantity', '>', 0);
+            }])
+            ->inRandomOrder()
+            ->limit(rand(5, 10))
+            ->get();
+    
         $selectedVariant = $product->variants->first();
-        $reviews = $product->reviews; // Gán reviews từ quan hệ
-
-        /* lấy data sản phẩm để truyền vào view,
-        sau đó dùng JS để xử lý thêm vào localStorage để lưu wishlist cho user chưa đăng nhập */
+        $reviews = $product->reviews;
+    
         $productData = [
             'id' => $product->id,
             'status' => $product->status,
         ];
-
-        return view(
-            'client.pages.detail-product',
-            compact('product', 'productData', 'selectedVariant', 'reviews')
-        );
+    
+        return view('client.pages.detail-product', compact('product', 'productData', 'selectedVariant', 'reviews', 'relatedProducts'));
     }
 
     /**
