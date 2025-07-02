@@ -21,153 +21,133 @@
                         </form>
                     </div>
 
-                    {{-- Accordion --}}
-                    <div class="shop__sidebar__accordion">
-                        <div class="accordion" id="shopSidebarAccordion">
-                            {{-- Categories --}}
-                            <div class="card border-0 shadow-sm rounded-3 ">
-                                <div class="card-heading p-3 bg-light rounded-top-3">
-                                    <a data-bs-toggle="collapse" href="#collapseCategories" aria-expanded="true" class="text-dark fw-bold text-uppercase d-flex justify-content-between align-items-center">
-                                    <i class="bi bi-list"></i> Danh mục
-                                        <i class="bi bi-chevron-down"></i>
-                                    </a>
-                                </div>
-                                <div id="collapseCategories" class="collapse show" data-bs-parent="#shopSidebarAccordion">
-                                    <div class="card-body p-3">
-                                        <div class="shop__sidebar__categories">
-                                            <ul class="list-unstyled">
-                                                @foreach($categories as $cat)
-                                                    <li class="{{ request()->category == $cat->id ? 'active' : '' }}">
-                                                        <a href="{{ route('products-client', array_merge(request()->query(), ['category' => $cat->id])) }}" class="d-block py-2 px-3 rounded-2">
-                                                            {{ $cat->name }} 
-                                                            {{-- ({{ $cat->products_count ?? 0 }}) --}}
-                                                        </a>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
+                    {{-- Filter Sections --}}
+                    <div class="shop__sidebar__filters">
+                        {{-- Categories --}}
+                        <div class="card border-0 shadow-sm rounded-3 mb-3">
+                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse" data-bs-target="#categoriesCollapse" aria-expanded="false" aria-controls="categoriesCollapse">
+                                <h6 class="text-dark fw-bold text-uppercase d-flex align-items-center">
+                                    <i class="bi bi-list me-2"></i> Danh mục
+                                    <i class="bi bi-chevron-down ms-auto"></i>
+                                </h6>
                             </div>
-
-                            {{-- Branding --}}
-                            <div class="card border-0 shadow-sm rounded-3 ">
-                                <div class="card-heading p-3 bg-light rounded-top-3">
-                                    <a data-bs-toggle="collapse" href="#collapseBrand" aria-expanded="true" class="text-dark fw-bold text-uppercase d-flex justify-content-between align-items-center">
-                                      <i class="bi bi-tags"></i> Thương hiệu
-                                        <i class="bi bi-chevron-down"></i>
-                                    </a>
-                                </div>
-                                <div id="collapseBrand" class="collapse show" data-bs-parent="#shopSidebarAccordion">
-                                    <div class="card-body p-3">
-                                        <div class="shop__sidebar__brand">
-                                            <ul class="list-unstyled">
-                                                @foreach($brands as $brand)
-                                                    <li class="{{ request()->brand == $brand->id ? 'active' : '' }}">
-                                                        <a href="{{ route('products-client', array_merge(request()->query(), ['brand' => $brand->id])) }}" class="d-block py-2 px-3 rounded-2">
-                                                            {{ $brand->name }}
-                                                        </a>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Filter Price --}}
-                            <div class="card border-0 shadow-sm rounded-3 ">
-                                <div class="card-heading p-3 bg-light rounded-top-3">
-                                    <a data-bs-toggle="collapse" href="#collapsePrice" aria-expanded="true" class="text-dark fw-bold text-uppercase d-flex justify-content-between align-items-center">
-                                     <i class="bi bi-currency-dollar"></i>   Lọc theo giá
-                                        <i class="bi bi-chevron-down"></i>
-                                    </a>
-                                </div>
-                                <div id="collapsePrice" class="collapse show" data-bs-parent="#shopSidebarAccordion">
-                                    <div class="card-body p-3">
-                                        <div class="shop__sidebar__price">
-                                            @php
-                                                $priceRanges = [
-                                                    ['min'=>0,'max'=>50,'label'=>'$0.00 - $50.00'],
-                                                    ['min'=>50,'max'=>100,'label'=>'$50.00 - $100.00'],
-                                                    ['min'=>100,'max'=>150,'label'=>'$100.00 - $150.00'],
-                                                    ['min'=>150,'max'=>200,'label'=>'$150.00 - $200.00'],
-                                                    ['min'=>200,'max'=>250,'label'=>'$200.00 - $250.00'],
-                                                    ['min'=>250,'max'=>null,'label'=>'250.00+'],
-                                                ];
-                                            @endphp
-                                            <ul class="list-unstyled">
-                                                @foreach($priceRanges as $range)
-                                                    <li class="{{ request()->price_min == $range['min'] && request()->price_max == $range['max'] ? 'active' : '' }}">
-                                                        <a href="{{ route('products-client', array_merge(request()->query(), ['price_min'=>$range['min'],'price_max'=>$range['max']])) }}" class="d-block py-2 px-3 rounded-2">
-                                                            {{ $range['label'] }}
-                                                        </a>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Size --}}
-                            <div class="card border-0 shadow-sm rounded-3 ">
-                                <div class="card-heading p-3 bg-light rounded-top-3">
-                                    <a data-bs-toggle="collapse" href="#collapseSize" aria-expanded="true" class="text-dark fw-bold text-uppercase d-flex justify-content-between align-items-center">
-                                    <i class="bi bi-aspect-ratio"></i>  Kích cỡ
-                                        <i class="bi bi-chevron-down"></i>
-                                    </a>
-                                </div>
-                                <div id="collapseSize" class="collapse show" data-bs-parent="#shopSidebarAccordion">
-                                    <div class="card-body p-3">
-                                        <div class="shop__sidebar__size">
-                                            @foreach($sizes as $size)
-                                                <label for="size-{{ $size }}" class="btn btn-outline-dark rounded-3 m-1 {{ request()->size == $size ? 'active' : '' }}">
-                                                    {{ $size }}
-                                                    <input type="radio" name="size" id="size-{{ $size }}"
-                                                        onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['size'=>$size])) }}'" {{ request()->size == $size ? 'checked' : '' }}>
-                                                </label>
+                            <div class="collapse" id="categoriesCollapse">
+                                <div class="card-body p-3">
+                                    <div class="shop__sidebar__categories">
+                                        <ul class="list-unstyled">
+                                            @foreach($categories as $cat)
+                                                <li class="{{ request()->category == $cat->id ? 'active' : '' }}">
+                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['category' => $cat->id])) }}" class="d-block py-2 px-3 rounded-2">
+                                                        {{ $cat->name }}
+                                                    </a>
+                                                </li>
                                             @endforeach
-                                        </div>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            {{-- Colors --}}
-                            <div class="card border-0 shadow-sm rounded-3 ">
-                                <div class="card-heading p-3 bg-light rounded-top-3">
-                                    <a data-bs-toggle="collapse" href="#collapseColor" aria-expanded="true" class="text-dark fw-bold text-uppercase d-flex justify-content-between align-items-center">
-                                    <i class="bi bi-palette"></i>  Màu sắc
-                                        <i class="bi bi-chevron-down"></i>
-                                    </a>
-                                </div>
-                                <div id="collapseColor" class="collapse show" data-bs-parent="#shopSidebarAccordion">
-                                    <div class="card-body p-3">
-                                        <div class="shop__sidebar__color">
-                                            @foreach($colors as $color)
-                                                <label class="c-{{ $loop->iteration }} {{ request()->color == $color ? 'active' : '' }}" for="color-{{ $color }}">
-                                                    <input type="radio" name="color" id="color-{{ $color }}"
-                                                        onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['color'=>$color])) }}'" {{ request()->color == $color ? 'checked' : '' }}>
-                                                </label>
+                        {{-- Branding --}}
+                        <div class="card border-0 shadow-sm rounded-3 mb-3">
+                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse" data-bs-target="#brandingCollapse" aria-expanded="false" aria-controls="brandingCollapse">
+                                <h6 class="text-dark fw-bold text-uppercase d-flex align-items-center">
+                                    <i class="bi bi-tags me-2"></i> Thương hiệu
+                                    <i class="bi bi-chevron-down ms-auto"></i>
+                                </h6>
+                            </div>
+                            <div class="collapse" id="brandingCollapse">
+                                <div class="card-body p-3">
+                                    <div class="shop__sidebar__brand">
+                                        <ul class="list-unstyled">
+                                            @foreach($brands as $brand)
+                                                <li class="{{ request()->brand == $brand->id ? 'active' : '' }}">
+                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['brand' => $brand->id])) }}" class="d-block py-2 px-3 rounded-2">
+                                                        {{ $brand->name }}
+                                                    </a>
+                                                </li>
                                             @endforeach
-                                        </div>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            {{-- Tags --}}     {{-- chưa có tags --}}
-                            <div class="card border-0 shadow-sm rounded-3 ">
-                                <div class="card-heading p-3 bg-light rounded-top-3">
-                                    <a data-bs-toggle="collapse" href="#collapseTags" aria-expanded="true" class="text-dark fw-bold text-uppercase d-flex justify-content-between align-items-center">
-                                    <i class="bi bi-badge"></i>  Tags
-                                        <i class="bi bi-chevron-down"></i>
-                                    </a>
+                        {{-- Filter Price --}}
+                        <div class="card border-0 shadow-sm rounded-3 mb-3">
+                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse" data-bs-target="#priceCollapse" aria-expanded="false" aria-controls="priceCollapse">
+                                <h6 class="text-dark fw-bold text-uppercase d-flex align-items-center">
+                                    <i class="bi bi-currency-dollar me-2"></i> Lọc theo giá
+                                    <i class="bi bi-chevron-down ms-auto"></i>
+                                </h6>
+                            </div>
+                            <div class="collapse" id="priceCollapse">
+                                <div class="card-body p-3">
+                                    <div class="shop__sidebar__price">
+                                        @php
+                                            $priceRanges = [
+                                                ['min'=>0,'max'=>50,'label'=>'$0.00 - $50.00'],
+                                                ['min'=>50,'max'=>100,'label'=>'$50.00 - $100.00'],
+                                                ['min'=>100,'max'=>150,'label'=>'$100.00 - $150.00'],
+                                                ['min'=>150,'max'=>200,'label'=>'$150.00 - $200.00'],
+                                                ['min'=>200,'max'=>250,'label'=>'$200.00 - $250.00'],
+                                                ['min'=>250,'max'=>null,'label'=>'250.00+'],
+                                            ];
+                                        @endphp
+                                        <ul class="list-unstyled">
+                                            @foreach($priceRanges as $range)
+                                                <li class="{{ request()->price_min == $range['min'] && request()->price_max == $range['max'] ? 'active' : '' }}">
+                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['price_min'=>$range['min'],'price_max'=>$range['max']])) }}" class="d-block py-2 px-3 rounded-2">
+                                                        {{ $range['label'] }}
+                                                    </a>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
                                 </div>
-                                <div id="collapseTags" class="collapse show" data-bs-parent="#shopSidebarAccordion">
-                                    <div class="card-body p-3">
-                                        <div class="shop__sidebar__tags">
-                                       
-                                        </div>
+                            </div>
+                        </div>
+
+                        {{-- Size --}}
+                        <div class="card border-0 shadow-sm rounded-3 mb-3">
+                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse" data-bs-target="#sizeCollapse" aria-expanded="false" aria-controls="sizeCollapse">
+                                <h6 class="text-dark fw-bold text-uppercase d-flex align-items-center">
+                                    <i class="bi bi-aspect-ratio me-2"></i> Kích cỡ
+                                    <i class="bi bi-chevron-down ms-auto"></i>
+                                </h6>
+                            </div>
+                            <div class="collapse" id="sizeCollapse">
+                                <div class="card-body p-3">
+                                    <div class="shop__sidebar__size">
+                                        @foreach($sizes as $size)
+                                            <label for="size-{{ $size }}" class="btn btn-outline-dark rounded-3 m-1 {{ request()->size == $size ? 'active' : '' }}">
+                                                {{ $size }}
+                                                <input type="radio" name="size" id="size-{{ $size }}"
+                                                    onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['size'=>$size])) }}'" {{ request()->size == $size ? 'checked' : '' }}>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Colors --}}
+                        <div class="card border-0 shadow-sm rounded-3 mb-3">
+                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse" data-bs-target="#colorsCollapse" aria-expanded="false" aria-controls="colorsCollapse">
+                                <h6 class="text-dark fw-bold text-uppercase d-flex align-items-center">
+                                    <i class="bi bi-palette me-2"></i> Màu sắc
+                                    <i class="bi bi-chevron-down ms-auto"></i>
+                                </h6>
+                            </div>
+                            <div class="collapse" id="colorsCollapse">
+                                <div class="card-body p-3">
+                                    <div class="shop__sidebar__color">
+                                        @foreach(collect($colors)->unique(function($item) { return strtolower($item); }) as $color)
+                                            <label class="c-{{ $loop->iteration }} {{ strtolower(request()->color) == strtolower($color) ? 'active' : '' }}" for="color-{{ $color }}">
+                                                <input type="radio" name="color" id="color-{{ $color }}"
+                                                    onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['color'=>$color])) }}'" {{ strtolower(request()->color) == strtolower($color) ? 'checked' : '' }}>
+                                            </label>
+                                        @endforeach
                                     </div>
                                 </div>
                             </div>
@@ -201,7 +181,7 @@
                 <div class="mb-4">
                     @php
                         $filters = [];
-                        if (request()->has('category') && request()->category) {
+                        if(request()->has('category') && request()->category) {
                             $category = $categories->firstWhere('id', request()->category);
                             $filters[] = 'Danh mục: ' . ($category ? $category->name : 'Không xác định');
                         }
@@ -317,7 +297,7 @@
                                             <i class="bi bi-eye"></i> Xem
                                         </a>
                                         <a href="" class="btn btn-outline-danger"><i class="bi bi-cart"></i> Thêm</a>
-                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -327,9 +307,9 @@
                         </div>
                     @endforelse
                 </div>
-
+               
                 <!-- Pagination -->
-                <div class="d-flex justify-content-center">
+                 <div class="d-flex justify-content-center">
                     @if ($products->hasPages())
                         {{ $products->appends(request()->query())->links() }}
                     @endif
@@ -400,7 +380,6 @@
 
         /* Sidebar-specific styling */
         .shop__sidebar {
-            /* padding: 20px; */
             background: #ffffff;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -413,7 +392,7 @@
         .shop__sidebar__search input {
             border: 1px solid #dee2e6;
             border-radius: 25px;
-            padding:0px 20px;
+            padding: 0px 20px;
             font-size: 14px;
             transition: border-color 0.3s;
         }
@@ -436,36 +415,24 @@
             background: #0056b3;
         }
 
-        .shop__sidebar__accordion .card {
+        .shop__sidebar__filters .card {
             border: none;
             border-radius: 10px;
-            margin-bottom: ;
+            margin-bottom: 15px;
             overflow: hidden;
         }
 
-        .shop__sidebar__accordion .card-heading {
+        .shop__sidebar__filters .card-heading {
             background: #f8f9fa;
-            padding: ;
+            padding: 15px;
             font-size: 16px;
             font-weight: 600;
             text-transform: uppercase;
             cursor: pointer;
         }
 
-        .shop__sidebar__accordion .card-heading a {
-            color: #333;
-            text-decoration: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .shop__sidebar__accordion .card-heading a:not(.collapsed) {
-            color: #007bff;
-        }
-
-        .shop__sidebar__accordion .card-body {
-            padding: ;
+        .shop__sidebar__filters .card-body {
+            padding: 15px;
             border-top: 1px solid #e9ecef;
         }
 
@@ -518,7 +485,7 @@
             font-size: 14px;
             font-weight: 500;
             border: 1px solid #dee2e6;
-            padding: 8px ;
+            padding: 8px;
             margin-right: 8px;
             margin-bottom: 8px;
             cursor: pointer;
@@ -569,15 +536,18 @@
             display: none;
         }
 
-        .shop__sidebar__color label.c-1 { background: #0b090c; }
-        .shop__sidebar__color label.c-2 { background: #20315f; }
-        .shop__sidebar__color label.c-3 { background: #f1af4d; }
-        .shop__sidebar__color label.c-4 { background: #636068; }
-        .shop__sidebar__color label.c-5 { background: #57594d; }
-        .shop__sidebar__color label.c-6 { background: #e8bac4; }
-        .shop__sidebar__color label.c-7 { background: #d6c1d7; }
-        .shop__sidebar__color label.c-8 { background: #ed1c24; }
-        .shop__sidebar__color label.c-9 { background: #ffffff; }
+        .shop__sidebar__color label.c-1 { background: #A1866F; }
+        .shop__sidebar__color label.c-2 { background: black; }
+        .shop__sidebar__color label.c-3 { background: #2E2A5F; }
+        .shop__sidebar__color label.c-4 { background: #dcd8c1; }
+        .shop__sidebar__color label.c-5 { background: #512e05; }
+        .shop__sidebar__color label.c-6 { background: #8a8582; }
+        .shop__sidebar__color label.c-7 { background: #696969; }
+        .shop__sidebar__color label.c-8 { background: #245f2b; }
+        .shop__sidebar__color label.c-9 { background: #102b4e; }
+        .shop__sidebar__color label.c-10 { background: #6f4e37; } /* màu cà phê */
+        .shop__sidebar__color label.c-11 { background: #f8f8f2; border: #1c1818 1px solid; } /* màu trắng ngà */
+        .shop__sidebar__color label.c-12 { background: #ffffff;border: #2E2A5F 1px solid; }
 
         .shop__sidebar__tags {
             padding-top: 10px;
@@ -588,7 +558,7 @@
             font-size: 13px;
             font-weight: 600;
             background: #f1f5f8;
-            padding: 6px ;
+            padding: 6px;
             border-radius: 25px;
             text-decoration: none;
             margin-right: 8px;
@@ -601,92 +571,97 @@
             background: #007bff;
             color: #fff;
         }
-    
+
         .card:hover img {
             transform: scale(1.2);
             transition: transform 0.5s ease;
             border-radius: 10px;
         }
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .shop__sidebar {
-                padding: ;
-            }
-
-            .shop__sidebar__search input {
-                font-size: 13px;
-                padding: 8px ;
-            }
-
-            .shop__sidebar__search button {
-                padding: 0 ;
-            }
-
-            .shop__sidebar__accordion .card-heading {
-                font-size: 14px;
-            }
-
-            .shop__sidebar__categories ul li a,
-            .shop__sidebar__price ul li a,
-            .shop__sidebar__brand ul li a {
-                font-size: 13px;
-                padding: 6px 10px;
-            }
-
-            .shop__sidebar__size label {
-                font-size: 13px;
-                padding: 6px 12px;
-            }
-
-            .shop__sidebar__color label {
-                height: 28px;
-                width: 28px;
-            }
-        }
     </style>
 
     <script src="{{ asset('assets/js/cart.js') }}"></script>
-    <script>document.addEventListener('DOMContentLoaded', function() {
-    const accordionIds = ['collapseCategories', 'collapseBrand', 'collapsePrice', 'collapseSize', 'collapseColor', 'collapseTags'];
-    
-    // Lấy trạng thái từ localStorage
-    let accordionStates = JSON.parse(localStorage.getItem('accordionStates')) || {};
-    
-    // Đặt trạng thái ban đầu cho các accordion
-    accordionIds.forEach(id => {
-        const collapseElement = document.getElementById(id);
-        if (collapseElement) {
-            if (accordionStates.hasOwnProperty(id)) {
-                if (accordionStates[id] === false) {
-                    collapseElement.classList.remove('show');
-                } else {
-                    collapseElement.classList.add('show');
-                }
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Hàm mở collapse nếu có tham số URL phù hợp
+    function initializeCollapse(collapseId, param) {
+        const collapseElement = document.getElementById(collapseId);
+        if (!collapseElement) return;
+
+        const collapseInstance = new bootstrap.Collapse(collapseElement, {
+            toggle: false
+        });
+
+        // Kiểm tra nếu có tham số trong URL thì mở collapse
+        if (urlParams.has(param)) {
+            collapseElement.classList.add('show'); // Đặt trạng thái mở ban đầu
+        }
+    }
+
+    // Khởi tạo các collapse dựa trên tham số URL
+    initializeCollapse('categoriesCollapse', 'category');
+    initializeCollapse('brandingCollapse', 'brand');
+    initializeCollapse('priceCollapse', 'price_min');
+    initializeCollapse('priceCollapse', 'price_max');
+    initializeCollapse('sizeCollapse', 'size');
+    initializeCollapse('colorsCollapse', 'color');
+    initializeCollapse('tagsCollapse', 'tag');
+
+    // Ngăn sự kiện click từ item bên trong lan truyền lên tiêu đề
+    document.querySelectorAll('.collapse .card-body').forEach(body => {
+        body.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    });
+
+    // Theo dõi trạng thái collapse và chỉ cho phép mở/đóng khi nhấp vào tiêu đề
+    document.querySelectorAll('.collapse').forEach(collapse => {
+        const heading = collapse.closest('.card').querySelector('.card-heading');
+        let isManualToggle = false;
+
+        // Đánh dấu khi người dùng nhấp vào tiêu đề
+        heading.addEventListener('click', function() {
+            isManualToggle = true;
+            const collapseInstance = bootstrap.Collapse.getInstance(collapse) || new bootstrap.Collapse(collapse, {
+                toggle: false
+            });
+            if (collapse.classList.contains('show')) {
+                collapseInstance.hide();
             } else {
-                // Nếu không có trạng thái, để mặc định là mở
-                collapseElement.classList.add('show');
+                collapseInstance.show();
             }
-        }
+        });
+
+        // Ngăn tự động mở nếu không phải nhấp vào tiêu đề
+        collapse.addEventListener('show.bs.collapse', function(event) {
+            if (!isManualToggle) {
+                event.preventDefault();
+            }
+            isManualToggle = false;
+        });
+
+        // Ngăn tự động đóng nếu không phải nhấp vào tiêu đề
+        collapse.addEventListener('hide.bs.collapse', function(event) {
+            if (!isManualToggle) {
+                event.preventDefault();
+            }
+            isManualToggle = false;
+        });
     });
-    
-    // Lắng nghe sự kiện show và hide của các accordion
-    accordionIds.forEach(id => {
-        const collapseElement = document.getElementById(id);
-        if (collapseElement) {
-            collapseElement.addEventListener('show.bs.collapse', function() {
-                accordionStates[id] = true;
-                localStorage.setItem('accordionStates', JSON.stringify(accordionStates));
-            });
-            collapseElement.addEventListener('hide.bs.collapse', function() {
-                accordionStates[id] = false;
-                localStorage.setItem('accordionStates', JSON.stringify(accordionStates));
-            });
-        }
+
+    // Xử lý click vào các liên kết bên trong collapse
+    document.querySelectorAll('.shop__sidebar__categories ul li a, .shop__sidebar__brand ul li a, .shop__sidebar__price ul li a').forEach(link => {
+        link.addEventListener('click', function(event) {
+            event.stopPropagation(); // Ngăn lan truyền để không ảnh hưởng collapse
+        });
     });
-});</script>
+});
+    </script>
 @endsection
 
 @section('scripts')
+
     @if (!Auth::check())
         <script>
             document.addEventListener("DOMContentLoaded", function() {
@@ -699,7 +674,7 @@
                         fetch(`/wishlist/check/product/${productId}`)
                             .then(response => {
                                 if (!response.ok) {
-                                    throw new Error("Không tìm thấy sản phẩm hoặc lỗi máy chủ.");
+                                    throw new Error("Không tìm thấy sạn phẩm hoặc lỗi máy chủ.");
                                 }
                                 return response.json();
                             })
@@ -758,5 +733,4 @@
             });
         </script>
     @endif
-    
 @endsection
