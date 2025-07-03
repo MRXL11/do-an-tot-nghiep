@@ -13,10 +13,9 @@
                         <div class="card mb-4 shadow-sm">
                             <div class="card-body">
                                 <h5 class="mb-3">Địa chỉ nhận hàng</h5>
-                                <p><strong>Người nhận:</strong> Nguyễn Văn A</p>
-                                <p><strong>Điện thoại:</strong> 0909 123 456</p>
-                                <p><strong>Địa chỉ:</strong> 123 Đường ABC, Phường DEF, Quận GHI, TP. HCM</p>
-                                {{-- ✅ Thay bằng biến động nếu cần --}}
+                                <p><strong>Người nhận:</strong> {{ $order->shippingAddress->name }}</p>
+                                <p><strong>Điện thoại:</strong> {{ $order->shippingAddress->phone_number }}</p>
+                                <p><strong>Địa chỉ:</strong> {{ $order->shippingAddress->address }}{{ $order->shippingAddress->ward ? ', ' . $order->shippingAddress->ward : '' }}{{ $order->shippingAddress->district ? ', ' . $order->shippingAddress->district : '' }}{{ $order->shippingAddress->city ? ', ' . $order->shippingAddress->city : '' }}</p>
                             </div>
                         </div>
 
@@ -25,23 +24,15 @@
                             <div class="card-body">
                                 <h5 class="mb-3">Sản phẩm trong đơn</h5>
                                 <ul class="list-group">
-                                    {{-- 🧥 Sản phẩm 1 --}}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>Áo thun nam cổ tròn</strong> <span>x2</span><br>
-                                            <small>Size: M, Màu: Đen</small>
-                                        </div>
-                                        <strong>200.000 ₫</strong>
-                                    </li>
-
-                                    {{-- 👖 Sản phẩm 2 --}}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>Quần short kaki</strong> <span>x1</span><br>
-                                            <small>Size: L, Màu: Kem</small>
-                                        </div>
-                                        <strong>150.000 ₫</strong>
-                                    </li>
+                                    @foreach ($order->orderDetails as $detail)
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>{{ $detail->productVariant->product->name }}</strong> <span>x{{ $detail->quantity }}</span><br>
+                                                <small>Size: {{ $detail->productVariant->size ?? 'N/A' }}, Màu: {{ $detail->productVariant->color ?? 'N/A' }}</small>
+                                            </div>
+                                            <strong>{{ number_format($detail->subtotal, 0, ',', '.') }} ₫</strong>
+                                        </li>
+                                    @endforeach
                                 </ul>
                             </div>
                         </div>
@@ -70,7 +61,7 @@
                         {{-- 🔳 Mã QR thanh toán --}}
                         <div class="card mb-4 shadow-sm text-center p-4">
                             <h5 class="mb-3">Số tiền cần thanh toán:</h5>
-                            <h3 class="text-danger fw-bold">100.000 ₫</h3>
+                            <h3 class="text-danger fw-bold">{{ number_format($order->total_price, 0, ',', '.') }} ₫</h3>
                             <p class="text-muted mb-3">Vui lòng quét mã QR bên dưới bằng ứng dụng Momo</p>
 
                             <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=Thanh+toan+Momo+Demo"
