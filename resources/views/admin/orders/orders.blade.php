@@ -116,7 +116,7 @@
                                                         'next_status' => 'shipped',
                                                     ],
                                                     'shipped' => [
-                                                        'label' => 'Giao hàng thành công',
+                                                        'label' => 'Đã giao hàng',
                                                         'next_status' => 'delivered',
                                                     ],
                                                 ];

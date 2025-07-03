@@ -28,9 +28,12 @@ class OrderController extends Controller
 
         // Kiểm tra nếu đã gửi thông báo huỷ đơn hàng trước đó
         $existingNotification = Notification::where('order_id', $order->id)
+            ->where('user_id', $order->user_id) // Chỉ kiểm tra thông báo của người dùng đã đặt đơn hàng
             ->where('type', 'order')
             ->where('is_read', false)
             ->first();
+
+        // dd($existingNotification);
 
         if ($existingNotification) {
             return redirect()->back()->with('cancel-request-error', 'Bạn đã gửi yêu cầu huỷ đơn hàng này trước đó. Vui lòng chờ admin xử lý.');
@@ -65,7 +68,7 @@ class OrderController extends Controller
 
     public function pay(Request $request)
     {
-        
+
         // Chưa có logic xử lý thanh toán, chỉ là placeholder
         return view('client.pages.pay');
     }

@@ -120,7 +120,8 @@
                                                 <strong>#{{ $order->order_code }}</strong> • <span
                                                     class="text-muted small ms-2">{{ $order->created_at->format('d/m/Y - H:i') }}</span>
                                             </div>
-                                            <span class="badge bg-warning text-dark ms-auto">{{ $order->status }}</span>
+                                            <span
+                                                class="badge {{ $order->getStatusMeta($order->status)['color'] }} ms-auto p-2">{{ $order->getStatusMeta($order->status)['label'] }}</span>
                                         </button>
                                     </h2>
                                     <div id="collapse{{ $order->id }}" class="accordion-collapse collapse"
