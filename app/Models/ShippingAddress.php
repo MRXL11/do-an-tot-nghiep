@@ -9,12 +9,14 @@ class ShippingAddress extends Model
     //
     protected $fillable = [
         'user_id',
-        'name',
+        'full_name',
         'phone_number',
         'address',
         'ward',
         'district',
         'city',
+        'full_address',
+        'is_default'
     ];
 
     public function user()
