@@ -106,6 +106,10 @@ class OrderController extends Controller
         $order->status = 'cancelled';
         $order->save();
 
+        // Tạo thông báo cho người dùng
+        $message = "Đơn hàng #{$order->order_code} đã được huỷ.";
+        $this->createOrderNotificationToClient($order, $message, 'Đơn hàng đã được huỷ');
+
         return redirect()->back()->with('success', 'Đã huỷ đơn hàng thành công.');
     }
 
