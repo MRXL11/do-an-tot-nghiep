@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
@@ -66,10 +67,37 @@ class OrderController extends Controller
         return redirect()->back()->with('cancel-request-success', 'Đã gửi yêu cầu huỷ đơn hàng thành công. Chờ admin xử lý.');
     }
 
-    public function pay(Request $request)
+public function pay(Request $request)
     {
+        // Lấy pending_order_id từ session
+        $orderId = session('pending_order_id');
+        if (!$orderId) {
+            \Log::warning('No pending_order_id found in session');
+            return redirect()->route('cart.index')->with('error', 'Không tìm thấy đơn hàng để thanh toán.');
+        }
 
-        // Chưa có logic xử lý thanh toán, chỉ là placeholder
-        return view('client.pages.pay');
+        // Lấy thông tin đơn hàng
+        $order = Order::with(['orderDetails.productVariant.product', 'shippingAddress'])
+            ->where('id', $orderId)
+            ->where('user_id', Auth::id())
+            ->where('payment_method', 'online') // Chỉ lấy đơn hàng Momo
+            ->first();
+
+        if (!$order) {
+            \Log::warning('Order not found or invalid', [
+                'order_id' => $orderId,
+                'user_id' => Auth::id()
+            ]);
+            return redirect()->route('cart.index')->with('error', 'Đơn hàng không hợp lệ hoặc không tồn tại.');
+        }
+
+        // Giả lập URL mã QR (thay bằng API Momo nếu có)
+        $qrData = "momo://pay?amount={$order->total_price}&orderId={$order->id}&message=Thanh+toan+don+hang+{$order->order_code}";
+        $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" . urlencode($qrData);
+
+        return view('client.pages.pay', [
+            'order' => $order,
+            'qrUrl' => $qrUrl,
+        ]);
     }
 }
