@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\User;
+use App\Models\Order;
+use App\Models\OrderDetail;
+use App\Models\ShippingAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
@@ -66,21 +70,122 @@ class CheckoutController extends Controller
 
     public function submit(Request $request)
     {
-        $paymentMethod = $request->input('paymentMethod'); // hoặc $request->paymentMethod;
         // ✅ Kiểm tra người dùng đã đăng nhập chưa
         if (!Auth::check()) {
             return redirect()->route('login')->with('warning', 'Vui lòng đăng nhập để thanh toán.');
         }
 
-        // ✅ Xử lý logic thêm đơn hàng vào db ở đây
-        // ...
+        // ✅ Validate dữ liệu đầu vào
+        $request->validate([
+            'paymentMethod' => 'required|in:cod,momo,card',
+            'name' => 'required|string|max:100',
+            'phone_number' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'ward' => 'nullable|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'city' => 'nullable|string|max:100',
+        ], [
+            'paymentMethod.required' => 'Vui lòng chọn phương thức thanh toán.',
+            'name.required' => 'Vui lòng nhập họ tên người nhận.',
+            'phone_number.required' => 'Vui lòng nhập số điện thoại.',
+            'address.required' => 'Vui lòng nhập địa chỉ giao hàng.',
+        ]);
 
-        if ($paymentMethod === 'momo') {
-            // ✅ Chuyển hướng đến trang thanh toán Momo
-            return redirect()->route('pay');
+        // ✅ Lấy danh sách sản phẩm trong giỏ hàng đã chọn từ form
+        $cartItemIds = $request->input('cart_item_ids');
+        if (empty($cartItemIds)) {
+            return redirect()->route('cart.index')->with('warning', 'Vui lòng chọn sản phẩm để thanh toán.');
+        }
+        
+        // Chuyển string thành array nếu cần
+        if (is_string($cartItemIds)) {
+            $cartItemIds = explode(',', $cartItemIds);
+        }
+        
+        // Lọc các ID hợp lệ
+        $cartItemIds = array_filter($cartItemIds, function ($id) {
+            return is_numeric($id) && intval($id) > 0;
+        });
+
+        // ✅ Lấy các sản phẩm trong giỏ hàng
+        $cartItems = Cart::with(['productVariant.product'])
+            ->where('user_id', Auth::id())
+            ->whereIn('id', $cartItemIds)
+            ->get();
+
+        if ($cartItems->isEmpty()) {
+            return redirect()->route('cart.index')->with('warning', 'Không tìm thấy sản phẩm để thanh toán.');
         }
 
-        // ✅ Nếu không phải thanh toán Momo, xử lý logic đặt hàng thông thường
-        return redirect()->route('account.show')->with('order-success', 'Đã đặt hàng thành công.');
+        try {
+            \DB::beginTransaction();
+
+            // ✅ Tạo hoặc tìm địa chỉ giao hàng
+            $shippingAddress = \App\Models\ShippingAddress::create([
+                'user_id' => Auth::id(),
+                'name' => $request->name,
+                'phone_number' => $request->phone_number,
+                'address' => $request->address,
+                'ward' => $request->ward,
+                'district' => $request->district,
+                'city' => $request->city,
+                'is_default' => false,
+            ]);
+
+            // ✅ Tính tổng tiền
+            $subtotal = $cartItems->sum(function ($item) {
+                return $item->productVariant->price * $item->quantity;
+            });
+            $shippingFee = 20000; // Phí vận chuyển cố định
+            $totalPrice = $subtotal + $shippingFee;
+
+            // ✅ Tạo đơn hàng
+            $order = \App\Models\Order::create([
+                'user_id' => Auth::id(),
+                'total_price' => $totalPrice,
+                'status' => 'pending',
+                'payment_method' => $request->paymentMethod === 'momo' ? 'online' : 'cod',
+                'payment_status' => 'pending',
+                'note' => $request->note ?? null,
+                'shipping_address_id' => $shippingAddress->id,
+                'coupon_id' => null, // Có thể thêm logic xử lý coupon sau
+            ]);
+
+            // ✅ Tạo chi tiết đơn hàng
+            foreach ($cartItems as $item) {
+                \App\Models\OrderDetail::create([
+                    'order_id' => $order->id,
+                    'product_variant_id' => $item->product_variant_id,
+                    'quantity' => $item->quantity,
+                    'price' => $item->productVariant->price,
+                    'discount' => 0,
+                    'subtotal' => $item->productVariant->price * $item->quantity,
+                ]);
+            }
+
+            // ✅ Xóa các sản phẩm đã đặt hàng khỏi giỏ hàng
+            Cart::where('user_id', Auth::id())
+                ->whereIn('id', $cartItemIds)
+                ->delete();
+
+            // ✅ Không cần xóa session vì không sử dụng session để lưu cart items
+
+            \DB::commit();
+
+            // ✅ Chuyển hướng dựa trên phương thức thanh toán
+            if ($request->paymentMethod === 'momo') {
+                // Lưu order_id vào session để sử dụng ở trang thanh toán momo
+                session(['pending_order_id' => $order->id]);
+                return redirect()->route('pay')->with('success', 'Đơn hàng đã được tạo. Vui lòng thanh toán để hoàn tất.');
+            }
+
+            // ✅ COD hoặc các phương thức khác - chuyển về trang account
+            return redirect()->route('account.show')->with('order-success', 'Đặt hàng thành công! Đơn hàng của bạn đang được xử lý.');
+
+        } catch (\Exception $e) {
+            \DB::rollback();
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.')
+                ->withInput();
+        }
     }
 }
