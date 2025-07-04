@@ -75,7 +75,7 @@ class StatisticsController extends Controller
         // lấy tháng theo bộ lọc hoặc mặc định là tháng hioeenj tại
         $month = $request->query('month', now()->format('Y-m'));
         $start = Carbon::parse($month . '-01')->startOfMonth();
-        $end = $start->isSameMonth(now()) ? now()->startOfDay() : $start->copy()->endOfMonth();
+        $end = $start->isSameMonth(now()) ? now()->endOfDay() : $start->copy()->endOfMonth();
 
         $rawData = Order::selectRaw('DATE(created_at) as day, SUM(total_price) as total')
             ->where('status', 'delivered')
