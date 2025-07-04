@@ -8,17 +8,23 @@
                 <div class="shop__sidebar">
                     {{-- Search --}}
                     <div class="shop__sidebar__search mb-4">
+
                         <form action="{{ route('products-client') }}" method="GET" class="d-flex">
-                            @foreach(request()->query() as $key => $value)
-                                @if($key !== 'search')
+                            @foreach (request()->query() as $key => $value)
+                                @if ($key !== 'search')
                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                 @endif
                             @endforeach
-                            <input type="text" name="search" placeholder="Tìm kiếm sản phẩm..." value="{{ request()->search }}" class="form-control me-2 rounded-3 shadow-sm">
+                            <input type="text" name="search" placeholder="Tìm kiếm sản phẩm..."
+                                value="{{ request()->search }}" class="form-control me-2 rounded-3 shadow-sm">
                             <button type="submit" class="btn btn-primary rounded-3 shadow-sm">
                                 <i class="bi bi-search"></i>
                             </button>
-                        </h2>
+
+                        </form>
+                    </div>
+                    <div class="shop__sidebar__filters">
+                        {{-- Categories --}}
                         <div id="collapseCategories" class="accordion-collapse collapse show"
                             data-bs-parent="#productFilters">
                             <div class="accordion-body">
@@ -30,8 +36,10 @@
                                         @endif
                                     </li>
                                     @foreach ($categories as $category)
-                                        <li class="list-group-item {{ request()->is('products-client/' . $category->slug) ? 'active' : '' }}">
-                                            <a href="{{ route('products-client', $category->slug) }}">{{ $category->name }}</a>
+                                        <li
+                                            class="list-group-item {{ request()->is('products-client/' . $category->slug) ? 'active' : '' }}">
+                                            <a
+                                                href="{{ route('products-client', $category->slug) }}">{{ $category->name }}</a>
                                             @if (request()->is('products-client/' . $category->slug))
                                                 <i class="bi bi-check-circle ms-2"></i>
                                             @endif
@@ -43,7 +51,8 @@
 
                         {{-- Branding --}}
                         <div class="card border-0 shadow-sm rounded-3 mb-3">
-                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse" data-bs-target="#brandingCollapse" aria-expanded="false" aria-controls="brandingCollapse">
+                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse"
+                                data-bs-target="#brandingCollapse" aria-expanded="false" aria-controls="brandingCollapse">
                                 <h6 class="text-dark fw-bold text-uppercase d-flex align-items-center">
                                     <i class="bi bi-tags me-2"></i> Thương hiệu
                                     <i class="bi bi-chevron-down ms-auto"></i>
@@ -53,9 +62,10 @@
                                 <div class="card-body p-3">
                                     <div class="shop__sidebar__brand">
                                         <ul class="list-unstyled">
-                                            @foreach($brands as $brand)
+                                            @foreach ($brands as $brand)
                                                 <li class="{{ request()->brand == $brand->id ? 'active' : '' }}">
-                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['brand' => $brand->id])) }}" class="d-block py-2 px-3 rounded-2">
+                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['brand' => $brand->id])) }}"
+                                                        class="d-block py-2 px-3 rounded-2">
                                                         {{ $brand->name }}
                                                     </a>
                                                 </li>
@@ -68,7 +78,8 @@
 
                         {{-- Filter Price --}}
                         <div class="card border-0 shadow-sm rounded-3 mb-3">
-                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse" data-bs-target="#priceCollapse" aria-expanded="false" aria-controls="priceCollapse">
+                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse"
+                                data-bs-target="#priceCollapse" aria-expanded="false" aria-controls="priceCollapse">
                                 <h6 class="text-dark fw-bold text-uppercase d-flex align-items-center">
                                     <i class="bi bi-currency-dollar me-2"></i> Lọc theo giá
                                     <i class="bi bi-chevron-down ms-auto"></i>
@@ -79,18 +90,20 @@
                                     <div class="shop__sidebar__price">
                                         @php
                                             $priceRanges = [
-                                                ['min'=>0,'max'=>50,'label'=>'$0.00 - $50.00'],
-                                                ['min'=>50,'max'=>100,'label'=>'$50.00 - $100.00'],
-                                                ['min'=>100,'max'=>150,'label'=>'$100.00 - $150.00'],
-                                                ['min'=>150,'max'=>200,'label'=>'$150.00 - $200.00'],
-                                                ['min'=>200,'max'=>250,'label'=>'$200.00 - $250.00'],
-                                                ['min'=>250,'max'=>null,'label'=>'250.00+'],
+                                                ['min' => 0, 'max' => 50, 'label' => '$0.00 - $50.00'],
+                                                ['min' => 50, 'max' => 100, 'label' => '$50.00 - $100.00'],
+                                                ['min' => 100, 'max' => 150, 'label' => '$100.00 - $150.00'],
+                                                ['min' => 150, 'max' => 200, 'label' => '$150.00 - $200.00'],
+                                                ['min' => 200, 'max' => 250, 'label' => '$200.00 - $250.00'],
+                                                ['min' => 250, 'max' => null, 'label' => '250.00+'],
                                             ];
                                         @endphp
                                         <ul class="list-unstyled">
-                                            @foreach($priceRanges as $range)
-                                                <li class="{{ request()->price_min == $range['min'] && request()->price_max == $range['max'] ? 'active' : '' }}">
-                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['price_min'=>$range['min'],'price_max'=>$range['max']])) }}" class="d-block py-2 px-3 rounded-2">
+                                            @foreach ($priceRanges as $range)
+                                                <li
+                                                    class="{{ request()->price_min == $range['min'] && request()->price_max == $range['max'] ? 'active' : '' }}">
+                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['price_min' => $range['min'], 'price_max' => $range['max']])) }}"
+                                                        class="d-block py-2 px-3 rounded-2">
                                                         {{ $range['label'] }}
                                                     </a>
                                                 </li>
@@ -103,7 +116,8 @@
 
                         {{-- Size --}}
                         <div class="card border-0 shadow-sm rounded-3 mb-3">
-                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse" data-bs-target="#sizeCollapse" aria-expanded="false" aria-controls="sizeCollapse">
+                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse"
+                                data-bs-target="#sizeCollapse" aria-expanded="false" aria-controls="sizeCollapse">
                                 <h6 class="text-dark fw-bold text-uppercase d-flex align-items-center">
                                     <i class="bi bi-aspect-ratio me-2"></i> Kích cỡ
                                     <i class="bi bi-chevron-down ms-auto"></i>
@@ -112,11 +126,13 @@
                             <div class="collapse" id="sizeCollapse">
                                 <div class="card-body p-3">
                                     <div class="shop__sidebar__size">
-                                        @foreach($sizes as $size)
-                                            <label for="size-{{ $size }}" class="btn btn-outline-dark rounded-3 m-1 {{ request()->size == $size ? 'active' : '' }}">
+                                        @foreach ($sizes as $size)
+                                            <label for="size-{{ $size }}"
+                                                class="btn btn-outline-dark rounded-3 m-1 {{ request()->size == $size ? 'active' : '' }}">
                                                 {{ $size }}
                                                 <input type="radio" name="size" id="size-{{ $size }}"
-                                                    onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['size'=>$size])) }}'" {{ request()->size == $size ? 'checked' : '' }}>
+                                                    onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['size' => $size])) }}'"
+                                                    {{ request()->size == $size ? 'checked' : '' }}>
                                             </label>
                                         @endforeach
                                     </div>
@@ -126,7 +142,8 @@
 
                         {{-- Colors --}}
                         <div class="card border-0 shadow-sm rounded-3 mb-3">
-                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse" data-bs-target="#colorsCollapse" aria-expanded="false" aria-controls="colorsCollapse">
+                            <div class="card-heading p-3 bg-light rounded-top-3" data-bs-toggle="collapse"
+                                data-bs-target="#colorsCollapse" aria-expanded="false" aria-controls="colorsCollapse">
                                 <h6 class="text-dark fw-bold text-uppercase d-flex align-items-center">
                                     <i class="bi bi-palette me-2"></i> Màu sắc
                                     <i class="bi bi-chevron-down ms-auto"></i>
@@ -135,10 +152,15 @@
                             <div class="collapse" id="colorsCollapse">
                                 <div class="card-body p-3">
                                     <div class="shop__sidebar__color">
-                                        @foreach(collect($colors)->unique(function($item) { return strtolower($item); }) as $color)
-                                            <label class="c-{{ $loop->iteration }} {{ strtolower(request()->color) == strtolower($color) ? 'active' : '' }}" for="color-{{ $color }}">
+                                        @foreach (collect($colors)->unique(function ($item) {
+            return strtolower($item);
+        }) as $color)
+                                            <label
+                                                class="c-{{ $loop->iteration }} {{ strtolower(request()->color) == strtolower($color) ? 'active' : '' }}"
+                                                for="color-{{ $color }}">
                                                 <input type="radio" name="color" id="color-{{ $color }}"
-                                                    onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['color'=>$color])) }}'" {{ strtolower(request()->color) == strtolower($color) ? 'checked' : '' }}>
+                                                    onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['color' => $color])) }}'"
+                                                    {{ strtolower(request()->color) == strtolower($color) ? 'checked' : '' }}>
                                             </label>
                                         @endforeach
                                     </div>
@@ -174,7 +196,7 @@
                 <div class="mb-4">
                     @php
                         $filters = [];
-                        if(request()->has('category') && request()->category) {
+                        if (request()->has('category') && request()->category) {
                             $category = $categories->firstWhere('id', request()->category);
                             $filters[] = 'Danh mục: ' . ($category ? $category->name : 'Không xác định');
                         }
@@ -223,7 +245,7 @@
                                     </img>
                                     @php
                                         /* lấy data sản phẩm để truyền vào view,
-                                         sau đó dùng JS để xử lý thêm vào localStorage để lưu wishlist cho user chưa đăng nhập */
+ sau đó dùng JS để xử lý thêm vào localStorage để lưu wishlist cho user chưa đăng nhập */
                                         $productData = [
                                             'id' => $product->id,
                                             'status' => $product->status,
@@ -273,23 +295,26 @@
                                         </div>
                                     </div>
                                     @php
-                                    $effectivePrices = $product->variants->map(function ($variant) {
-                                        return $variant->discount_price ?? $variant->price;
-                                    });
-                                    $minPrice = $effectivePrices->min();
-                                    $maxPrice = $effectivePrices->max();
+                                        $effectivePrices = $product->variants->map(function ($variant) {
+                                            return $variant->discount_price ?? $variant->price;
+                                        });
+                                        $minPrice = $effectivePrices->min();
+                                        $maxPrice = $effectivePrices->max();
                                     @endphp
 
                                     @if ($minPrice == $maxPrice)
                                         <p class="text-danger fw-bold mb-3">{{ number_format($minPrice) }} đ</p>
                                     @else
-                                        <p class="text-danger fw-bold mb-3">{{ number_format($minPrice) }} đ - {{ number_format($maxPrice) }} đ</p>
+                                        <p class="text-danger fw-bold mb-3">{{ number_format($minPrice) }} đ -
+                                            {{ number_format($maxPrice) }} đ</p>
                                     @endif
                                     <div class="d-flex gap-2 mt-auto justify-content-center">
-                                        <a href="{{ route('detail-product', ['id' => $product->id]) }}" class="btn btn-outline-primary">
+                                        <a href="{{ route('detail-product', ['id' => $product->id]) }}"
+                                            class="btn btn-outline-primary">
                                             <i class="bi bi-eye"></i> Xem
                                         </a>
-                                        <a href="" class="btn btn-outline-danger"><i class="bi bi-cart"></i> Thêm</a>
+                                        <a href="" class="btn btn-outline-danger"><i class="bi bi-cart"></i>
+                                            Thêm</a>
                                     </div>
                                 </div>
                             </div>
@@ -300,9 +325,9 @@
                         </div>
                     @endforelse
                 </div>
-               
+
                 <!-- Pagination -->
-                 <div class="d-flex justify-content-center">
+                <div class="d-flex justify-content-center">
                     @if ($products->hasPages())
                         {{ $products->appends(request()->query())->links() }}
                     @endif
@@ -319,7 +344,8 @@
                     <h5 class="modal-title fw-bold" id="wishlistModalLabel">
                         <i class="bi bi-heart-fill me-2"></i> Thông báo
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Đóng"></button>
                 </div>
                 <div class="modal-body text-center p-4">
                     <i class="bi bi-check-circle-fill text-success display-4 mb-3"></i>
@@ -330,14 +356,16 @@
     </div>
 
     <!-- Error Modal -->
-    <div class="modal fade" id="wishlistErrorModal" tabindex="-1" aria-labelledby="wishlistErrorModalLabel" aria-hidden="true">
+    <div class="modal fade" id="wishlistErrorModal" tabindex="-1" aria-labelledby="wishlistErrorModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow rounded-4">
                 <div class="modal-header bg-danger text-white rounded-top-4">
                     <h5 class="modal-title fw-bold" id="wishlistErrorModalLabel">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i> Lỗi
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Đóng"></button>
                 </div>
                 <div class="modal-body text-center p-4">
                     <i class="bi bi-x-circle-fill text-danger display-4 mb-3"></i>
@@ -529,18 +557,57 @@
             display: none;
         }
 
-        .shop__sidebar__color label.c-1 { background: #A1866F; }
-        .shop__sidebar__color label.c-2 { background: black; }
-        .shop__sidebar__color label.c-3 { background: #2E2A5F; }
-        .shop__sidebar__color label.c-4 { background: #dcd8c1; }
-        .shop__sidebar__color label.c-5 { background: #512e05; }
-        .shop__sidebar__color label.c-6 { background: #8a8582; }
-        .shop__sidebar__color label.c-7 { background: #696969; }
-        .shop__sidebar__color label.c-8 { background: #245f2b; }
-        .shop__sidebar__color label.c-9 { background: #102b4e; }
-        .shop__sidebar__color label.c-10 { background: #6f4e37; } /* màu cà phê */
-        .shop__sidebar__color label.c-11 { background: #f8f8f2; border: #1c1818 1px solid; } /* màu trắng ngà */
-        .shop__sidebar__color label.c-12 { background: #ffffff;border: #2E2A5F 1px solid; }
+        .shop__sidebar__color label.c-1 {
+            background: #A1866F;
+        }
+
+        .shop__sidebar__color label.c-2 {
+            background: black;
+        }
+
+        .shop__sidebar__color label.c-3 {
+            background: #2E2A5F;
+        }
+
+        .shop__sidebar__color label.c-4 {
+            background: #dcd8c1;
+        }
+
+        .shop__sidebar__color label.c-5 {
+            background: #512e05;
+        }
+
+        .shop__sidebar__color label.c-6 {
+            background: #8a8582;
+        }
+
+        .shop__sidebar__color label.c-7 {
+            background: #696969;
+        }
+
+        .shop__sidebar__color label.c-8 {
+            background: #245f2b;
+        }
+
+        .shop__sidebar__color label.c-9 {
+            background: #102b4e;
+        }
+
+        .shop__sidebar__color label.c-10 {
+            background: #6f4e37;
+        }
+
+        /* màu cà phê */
+        .shop__sidebar__color label.c-11 {
+            background: #f8f8f2;
+            border: #1c1818 1px solid;
+        }
+
+        /* màu trắng ngà */
+        .shop__sidebar__color label.c-12 {
+            background: #ffffff;
+            border: #2E2A5F 1px solid;
+        }
 
         .shop__sidebar__tags {
             padding-top: 10px;
@@ -574,87 +641,89 @@
 
     <script src="{{ asset('assets/js/cart.js') }}"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
 
-    // Hàm mở collapse nếu có tham số URL phù hợp
-    function initializeCollapse(collapseId, param) {
-        const collapseElement = document.getElementById(collapseId);
-        if (!collapseElement) return;
+            // Hàm mở collapse nếu có tham số URL phù hợp
+            function initializeCollapse(collapseId, param) {
+                const collapseElement = document.getElementById(collapseId);
+                if (!collapseElement) return;
 
-        const collapseInstance = new bootstrap.Collapse(collapseElement, {
-            toggle: false
-        });
+                const collapseInstance = new bootstrap.Collapse(collapseElement, {
+                    toggle: false
+                });
 
-        // Kiểm tra nếu có tham số trong URL thì mở collapse
-        if (urlParams.has(param)) {
-            collapseElement.classList.add('show'); // Đặt trạng thái mở ban đầu
-        }
-    }
+                // Kiểm tra nếu có tham số trong URL thì mở collapse
+                if (urlParams.has(param)) {
+                    collapseElement.classList.add('show'); // Đặt trạng thái mở ban đầu
+                }
+            }
 
-    // Khởi tạo các collapse dựa trên tham số URL
-    initializeCollapse('categoriesCollapse', 'category');
-    initializeCollapse('brandingCollapse', 'brand');
-    initializeCollapse('priceCollapse', 'price_min');
-    initializeCollapse('priceCollapse', 'price_max');
-    initializeCollapse('sizeCollapse', 'size');
-    initializeCollapse('colorsCollapse', 'color');
-    initializeCollapse('tagsCollapse', 'tag');
+            // Khởi tạo các collapse dựa trên tham số URL
+            initializeCollapse('categoriesCollapse', 'category');
+            initializeCollapse('brandingCollapse', 'brand');
+            initializeCollapse('priceCollapse', 'price_min');
+            initializeCollapse('priceCollapse', 'price_max');
+            initializeCollapse('sizeCollapse', 'size');
+            initializeCollapse('colorsCollapse', 'color');
+            initializeCollapse('tagsCollapse', 'tag');
 
-    // Ngăn sự kiện click từ item bên trong lan truyền lên tiêu đề
-    document.querySelectorAll('.collapse .card-body').forEach(body => {
-        body.addEventListener('click', function(event) {
-            event.stopPropagation();
-        });
-    });
-
-    // Theo dõi trạng thái collapse và chỉ cho phép mở/đóng khi nhấp vào tiêu đề
-    document.querySelectorAll('.collapse').forEach(collapse => {
-        const heading = collapse.closest('.card').querySelector('.card-heading');
-        let isManualToggle = false;
-
-        // Đánh dấu khi người dùng nhấp vào tiêu đề
-        heading.addEventListener('click', function() {
-            isManualToggle = true;
-            const collapseInstance = bootstrap.Collapse.getInstance(collapse) || new bootstrap.Collapse(collapse, {
-                toggle: false
+            // Ngăn sự kiện click từ item bên trong lan truyền lên tiêu đề
+            document.querySelectorAll('.collapse .card-body').forEach(body => {
+                body.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                });
             });
-            if (collapse.classList.contains('show')) {
-                collapseInstance.hide();
-            } else {
-                collapseInstance.show();
-            }
-        });
 
-        // Ngăn tự động mở nếu không phải nhấp vào tiêu đề
-        collapse.addEventListener('show.bs.collapse', function(event) {
-            if (!isManualToggle) {
-                event.preventDefault();
-            }
-            isManualToggle = false;
-        });
+            // Theo dõi trạng thái collapse và chỉ cho phép mở/đóng khi nhấp vào tiêu đề
+            document.querySelectorAll('.collapse').forEach(collapse => {
+                const heading = collapse.closest('.card').querySelector('.card-heading');
+                let isManualToggle = false;
 
-        // Ngăn tự động đóng nếu không phải nhấp vào tiêu đề
-        collapse.addEventListener('hide.bs.collapse', function(event) {
-            if (!isManualToggle) {
-                event.preventDefault();
-            }
-            isManualToggle = false;
-        });
-    });
+                // Đánh dấu khi người dùng nhấp vào tiêu đề
+                heading.addEventListener('click', function() {
+                    isManualToggle = true;
+                    const collapseInstance = bootstrap.Collapse.getInstance(collapse) ||
+                        new bootstrap.Collapse(collapse, {
+                            toggle: false
+                        });
+                    if (collapse.classList.contains('show')) {
+                        collapseInstance.hide();
+                    } else {
+                        collapseInstance.show();
+                    }
+                });
 
-    // Xử lý click vào các liên kết bên trong collapse
-    document.querySelectorAll('.shop__sidebar__categories ul li a, .shop__sidebar__brand ul li a, .shop__sidebar__price ul li a').forEach(link => {
-        link.addEventListener('click', function(event) {
-            event.stopPropagation(); // Ngăn lan truyền để không ảnh hưởng collapse
+                // Ngăn tự động mở nếu không phải nhấp vào tiêu đề
+                collapse.addEventListener('show.bs.collapse', function(event) {
+                    if (!isManualToggle) {
+                        event.preventDefault();
+                    }
+                    isManualToggle = false;
+                });
+
+                // Ngăn tự động đóng nếu không phải nhấp vào tiêu đề
+                collapse.addEventListener('hide.bs.collapse', function(event) {
+                    if (!isManualToggle) {
+                        event.preventDefault();
+                    }
+                    isManualToggle = false;
+                });
+            });
+
+            // Xử lý click vào các liên kết bên trong collapse
+            document.querySelectorAll(
+                '.shop__sidebar__categories ul li a, .shop__sidebar__brand ul li a, .shop__sidebar__price ul li a'
+            ).forEach(link => {
+                link.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Ngăn lan truyền để không ảnh hưởng collapse
+                });
+            });
         });
-    });
-});
     </script>
 @endsection
 
 @section('scripts')
-
     @if (!Auth::check())
         <script>
             document.addEventListener("DOMContentLoaded", function() {
@@ -673,7 +742,9 @@
                             })
                             .then(data => {
                                 if (!data.status || data.status !== 'active') {
-                                    alert("❌ Sản phẩm này hiện không còn kinh doanh và không thể thêm vào wishlist.");
+                                    alert(
+                                        "❌ Sản phẩm này hiện không còn kinh doanh và không thể thêm vào wishlist."
+                                    );
                                     window.location.href = "{{ route('home') }}";
                                     return;
                                 }
