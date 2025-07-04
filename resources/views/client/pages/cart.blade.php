@@ -58,7 +58,7 @@
                                             {{ $item->productVariant->size }} / {{ $item->productVariant->color }}
                                         </td>
                                         <td class="text-primary fw-bold">
-                                            ${{ $item->productVariant->price }}
+                                            {{ number_format($item->productVariant->price, 0, ',', '.') }} đ
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
@@ -80,7 +80,7 @@
                                             </div>
                                         </td>
                                         <td class="fw-bold item-total" id="item-total-{{ $item->id }}">
-                                            ${{ $item->productVariant->price * $item->quantity }}.00
+                                            {{ number_format($item->productVariant->price * $item->quantity, 0, ',', '.') }} đ
                                         </td>
                                         <td>
                                             <button class="btn btn-outline-danger btn-remove"
@@ -103,7 +103,9 @@
                             <div class="text-end">
                                 <span class="me-3 fs-5">
                                     Tổng cộng (<span id="selected-count">0</span> sản phẩm):
+
                                     <strong id="total" class="text-danger fs-5">VND0.00</strong>
+
                                 </span>
                                 <a href="{{ route('checkout') }}" class="btn btn-warning text-white btn-checkout">Tiến hành
                                     thanh toán</a>
@@ -128,6 +130,20 @@
 
         .inactive-item {
             opacity: 0.5;
+        }
+
+        /* Ngăn layout bị dịch khi hiển thị SweetAlert */
+        body.swal2-shown {
+            padding-right: 0 !important;
+        }
+        
+        .swal2-container {
+            padding-right: 0 !important;
+        }
+        
+        /* Đảm bảo scrollbar không bị thay đổi */
+        html {
+            scrollbar-gutter: stable;
         }
     </style>
 
@@ -158,7 +174,8 @@
                         icon: 'info',
                         title: 'Thông báo',
                         text: `Chỉ còn ${stock} sản phẩm trong kho.`,
-                        timer: 1500
+                        timer: 1500,
+                        scrollbarPadding: false
                     });
                     qty = stock;
                 }
@@ -384,10 +401,10 @@
                         _token: '{{ csrf_token() }}',
                         cart_id: id,
                         quantity: qty
-                    }, res => {
-                        $('#item-total-' + id).text('$' + res.itemTotal.toFixed(2));
-                        updateSummary();
-                    });
+                                    }, res => {
+                    $('#item-total-' + id).text(res.itemTotal.toLocaleString('vi-VN') + ' đ');
+                    updateSummary();
+                });
                 }, 800);
             }
 
@@ -398,7 +415,7 @@
                     cart_id: id,
                     quantity: qty
                 }, res => {
-                    $('#item-total-' + id).text('$' + res.itemTotal.toFixed(2));
+                    $('#item-total-' + id).text(res.itemTotal.toLocaleString('vi-VN') + ' đ');
                     updateSummary();
                 });
             }
@@ -426,7 +443,7 @@
                         });
                     }
                 });
-                $('#total').text('$' + total.toFixed(2));
+                $('#total').text(total.toLocaleString('vi-VN') + ' đ');
                 $('#selected-count').text(count);
             }
 

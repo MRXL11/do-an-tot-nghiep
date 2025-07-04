@@ -6,7 +6,7 @@
                     <span class="text-muted small d-block">Chú ý đến từng chi tiết là điều làm HN_447 khác biệt so với các giao diện khác.</span>
                 </div>
                 <div class="col-auto">
-                    <a href="{{ route('products-client', 'nu') }}" class="btn btn-outline-dark">Xem thêm</a>
+                    <a href="{{ route('products-client', 'do-nu') }}" class="btn btn-outline-dark">Xem thêm</a>
                 </div>
             </div>
         </div>
