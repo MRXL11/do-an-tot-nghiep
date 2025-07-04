@@ -86,9 +86,18 @@
                 </div>
             </div>
 
+
+
             <!-- Cột phải: Lịch sử đơn hàng -->
             <div class="col-md-9">
                 <div class="card shadow-sm">
+
+                    @if (session('order-success'))
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ session('order-success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
 
                     @if (session('cancel-request-success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -135,7 +144,7 @@
                                                         <th>Size</th>
                                                         <th>Số lượng</th>
                                                         <th>Đơn giá</th>
-                                                        <th>Giảm giá</th>
+                                                        <th>Giảm</th>
                                                         <th>Tổng</th>
                                                     </tr>
                                                 </thead>
