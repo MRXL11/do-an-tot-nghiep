@@ -32,6 +32,7 @@ class SocialAuthController extends Controller
                     'email_verified_at' => now(),
                     'status' => 'active',
                     'role_id' => 2,
+                    'google_id' => $googleUser->getId(),
                 ]
             );
 

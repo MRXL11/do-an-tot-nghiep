@@ -28,8 +28,8 @@ class ProductClientController extends Controller
         $productsQuery = Product::with(['variants', 'reviews']);
         // Apply filters/ lọc theo
         if ($slug) {
-        $selectedCategory = Category::where('slug', $slug)->firstOrFail();
-        $productsQuery->where('category_id', $selectedCategory->id);
+            $selectedCategory = Category::where('slug', $slug)->firstOrFail();
+            $productsQuery->where('category_id', $selectedCategory->id);
         }
         if ($request->has('brand') && $request->brand) {
             $brand = Brand::where('slug', $request->brand)->first();

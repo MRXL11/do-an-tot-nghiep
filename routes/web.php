@@ -146,9 +146,11 @@
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 
     // Route xử lý thanh toán, thêm đơn hàng vào db nhưng mà chưa chạy được đâu
-    // Chưa có controller
+
     Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
     Route::get('/pay', [ClientOrderController::class, 'pay'])->name('pay');
+    Route::post('/momo_payment', [ClientOrderController::class, 'momo_payment'])->name('momo_payment');
+    Route::post('/momo_callback', [ClientOrderController::class, 'momoCallback'])->name('momo_callback');
 
     Route::get('/about', function () {
         return view('client.pages.about');
