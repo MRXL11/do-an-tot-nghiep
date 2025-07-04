@@ -36,8 +36,8 @@
                                     <div class="shop__sidebar__categories">
                                         <ul class="list-unstyled">
                                             @foreach($categories as $cat)
-                                                <li class="{{ request()->category == $cat->id ? 'active' : '' }}">
-                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['category' => $cat->id])) }}" class="d-block py-2 px-3 rounded-2">
+                                                <li class="{{ request()->route('slug') == $cat->slug ? 'active' : '' }}">
+                                                    <a href="{{ route('products-client', $cat->slug) }}" class="d-block py-2 px-3 rounded-2">
                                                         {{ $cat->name }}
                                                     </a>
                                                 </li>
@@ -61,8 +61,8 @@
                                     <div class="shop__sidebar__brand">
                                         <ul class="list-unstyled">
                                             @foreach($brands as $brand)
-                                                <li class="{{ request()->brand == $brand->id ? 'active' : '' }}">
-                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['brand' => $brand->id])) }}" class="d-block py-2 px-3 rounded-2">
+                                                <li class="{{ request()->brand == $brand->slug ? 'active' : '' }}">
+                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['brand' => $brand->slug])) }}" class="d-block py-2 px-3 rounded-2">
                                                         {{ $brand->name }}
                                                     </a>
                                                 </li>
@@ -162,10 +162,10 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h3><i class="bi bi-list me-2"></i>Danh sách sản phẩm</h3>
                     <div class="btn-group align-items-center hover-zoom">
-                        <a href="{{ route('products-client', array_merge(request()->query(), ['sort' => 'newest'])) }}"
+                        <a href="{{ request()->route('slug') ? route('products-client', request()->route('slug')) . '?sort=newest' : route('products-client', array_merge(request()->query(), ['sort' => 'newest'])) }}"
                             class="btn btn-outline-primary {{ request()->sort == 'newest' || !request()->sort ? 'active' : '' }}"><i
                                 class="bi bi-sort-alpha-down"></i> Mới nhất</a>
-                        <a href="{{ route('products-client', array_merge(request()->query(), ['sort' => 'sales'])) }}"
+                        <a href="{{ request()->route('slug') ? route('products-client', request()->route('slug')) . '?sort=sales' : route('products-client', array_merge(request()->query(), ['sort' => 'sales'])) }}"
                             class="btn btn-outline-primary {{ request()->sort == 'sales' ? 'active' : '' }}"><i
                                 class="bi bi-bag-check"></i> Bán chạy</a>
                         <a href="{{ route('products-client', array_merge(request()->query(), ['sort' => 'likes'])) }}"
@@ -181,12 +181,12 @@
                 <div class="mb-4">
                     @php
                         $filters = [];
-                        if(request()->has('category') && request()->category) {
-                            $category = $categories->firstWhere('id', request()->category);
+                        if(request()->route('slug')) {
+                            $category = $categories->firstWhere('slug', request()->route('slug'));
                             $filters[] = 'Danh mục: ' . ($category ? $category->name : 'Không xác định');
                         }
                         if (request()->has('brand') && request()->brand) {
-                            $brand = $brands->firstWhere('id', request()->brand);
+                            $brand = $brands->firstWhere('slug', request()->brand);
                             $filters[] = 'Thương hiệu: ' . ($brand ? $brand->name : 'Không xác định');
                         }
                         if (request()->has('size') && request()->size) {
