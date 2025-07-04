@@ -36,13 +36,15 @@
     // Route cho Admin
     Route::middleware(['auth', 'restrict.admin'])->group(function () {
 
-        // Dashboard admin
+        // Dashboard admin - nhóm route để thống kê
         Route::get('/admin', [StatisticsController::class, 'index'])->name('statistical');
-        Route::get('/admin/statistics/filter-revenue', [StatisticsController::class, 'filterRevenue']);
         // Route API dùng để lấy top sản phẩm bán chạy theo tháng
+        Route::get('/admin/statistics/filter-revenue', [StatisticsController::class, 'filterRevenue']);
         Route::get('/admin/statistics/top-products', [StatisticsController::class, 'getTopSellingProducts']);
         Route::get('/admin/statistics/order-status', [StatisticsController::class, 'orderStatusByMonth'])
             ->name('admin.statistics.order_status');
+        Route::get('/admin/statistics/low-stock', [StatisticsController::class, 'lowStockVariants'])->name('admin.statistics.low-stock');
+        Route::get('/admin/statistics/pending-reviews', [StatisticsController::class, 'getPendingReviews']);
 
         // Nhóm route admin với prefix và name
         Route::prefix('admin')->name('admin.')->group(function () {
