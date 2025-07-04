@@ -67,12 +67,12 @@ class OrderController extends Controller
         return redirect()->back()->with('cancel-request-success', 'Đã gửi yêu cầu huỷ đơn hàng thành công. Chờ admin xử lý.');
     }
 
-public function pay(Request $request)
+    public function pay(Request $request)
     {
         // Lấy pending_order_id từ session
         $orderId = session('pending_order_id');
         if (!$orderId) {
-            \Log::warning('No pending_order_id found in session');
+            Log::warning('No pending_order_id found in session');
             return redirect()->route('cart.index')->with('error', 'Không tìm thấy đơn hàng để thanh toán.');
         }
 
@@ -84,7 +84,7 @@ public function pay(Request $request)
             ->first();
 
         if (!$order) {
-            \Log::warning('Order not found or invalid', [
+            Log::warning('Order not found or invalid', [
                 'order_id' => $orderId,
                 'user_id' => Auth::id()
             ]);
