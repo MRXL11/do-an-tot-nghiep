@@ -103,7 +103,7 @@
                             <div class="text-end">
                                 <span class="me-3 fs-5">
                                     Tổng cộng (<span id="selected-count">0</span> sản phẩm):
-                                    <strong id="total" class="text-danger fs-5">$0.00</strong>
+                                    <strong id="total" class="text-danger fs-5">VND0.00</strong>
                                 </span>
                                 <a href="{{ route('checkout') }}" class="btn btn-warning text-white btn-checkout">Tiến hành
                                     thanh toán</a>

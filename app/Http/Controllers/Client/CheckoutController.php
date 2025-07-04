@@ -114,30 +114,47 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('warning', 'Danh sách sản phẩm không hợp lệ.');
         }
 
-        $cartItems = Cart::with(['productVariant.product'])
-            ->where('user_id', Auth::id())
-            ->whereIn('id', $cartItemIds)
-            ->get();
+
+        // Tính tổng tiền
+        $subtotal = $cartItems->sum(function ($item) {
+            return $item->productVariant->price * $item->quantity;
+        });
+        $shippingFee = 20000;
+        $totalPrice = $subtotal + $shippingFee;
+
+        // Tạo mã đơn hàng duy nhất
+        $orderCode = 'ORD-' . strtoupper(Str::random(8));
+
+        // Tạo đơn hàng
+        $order = Order::create([
+            'user_id' => Auth::id(),
+            'order_code' => $orderCode,
+            'total_price' => $totalPrice,
+            'status' => 'pending',
+            'payment_method' => $request->paymentMethod === 'momo' ? 'online' : 'cod',
+            'payment_status' => 'pending',
+            'note' => $request->note ?? null,
+            'shipping_address_id' => $shippingAddress->id,
+            'coupon_id' => null,
+        ]);
+
 
         if ($cartItems->isEmpty()) {
             Log::warning('No cart items found for user_id: ' . Auth::id() . ', cart_item_ids: ' . implode(',', $cartItemIds));
             return redirect()->route('cart.index')->with('warning', 'Không tìm thấy sản phẩm để thanh toán.');
         }
 
-        try {
-            DB::beginTransaction();
 
-            // Tạo địa chỉ giao hàng
-            $shippingAddress = ShippingAddress::create([
-                'user_id' => Auth::id(),
-                'name' => $request->name,
-                'phone_number' => $request->phone_number,
-                'address' => $request->address,
-                'ward' => $request->ward,
-                'district' => $request->district,
-                'city' => $request->city,
-                'is_default' => false,
-            ]);
+        // Chỉ xóa giỏ hàng nếu chọn COD
+        if ($request->paymentMethod === 'cod') {
+            Cart::where('user_id', Auth::id())
+                ->whereIn('id', $cartItemIds)
+                ->delete();
+        } else {
+            // Lưu cart_item_ids vào session để sử dụng sau khi thanh toán Momo thành công
+            session(['pending_cart_item_ids' => $cartItemIds]);
+        }
+
 
             // Tính tổng tiền
             $subtotal = $cartItems->sum(function ($item) {
@@ -200,3 +217,6 @@ class CheckoutController extends Controller
         }
     }
 }
+
+}
+
