@@ -61,6 +61,8 @@
                                 <th scope="col">Tên người nhận</th>
                                 <th scope="col">Địa chỉ</th>
                                 <th scope="col">Số điện thoại</th>
+                                <th scope="col">Phương thức thanh toán</th>
+                                <th scope="col">Trạng thái thanh toán</th>
                                 <th scope="col">Trạng thái</th>
                                 <th scope="col">Thao tác</th>
                             </tr>
@@ -75,6 +77,8 @@
                                         {{ $order->shippingAddress->full_address }}
                                     </td>
                                     <td>{{ $order->shippingAddress->phone_number }}</td>
+                                    <td>{{ $order->payment_method }}</td>
+                                    <td>{{ $order->payment_status }}</td>
                                     <td>
                                         @php
                                             $status = $order->getStatusLabel();

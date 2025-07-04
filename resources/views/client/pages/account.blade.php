@@ -121,6 +121,7 @@
                         <div class="accordion" id="orderAccordion">
                             @forelse ($orders as $order)
                                 <div class="accordion-item mb-2 border rounded shadow-sm">
+
                                     <h2 class="accordion-header" id="heading{{ $order->id }}">
                                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                             data-bs-target="#collapse{{ $order->id }}">
@@ -129,13 +130,46 @@
                                                 <strong>#{{ $order->order_code }}</strong> • <span
                                                     class="text-muted small ms-2">{{ $order->created_at->format('d/m/Y - H:i') }}</span>
                                             </div>
-                                            <span
-                                                class="badge {{ $order->getStatusMeta($order->status)['color'] }} ms-auto p-2">{{ $order->getStatusMeta($order->status)['label'] }}</span>
                                         </button>
                                     </h2>
+
                                     <div id="collapse{{ $order->id }}" class="accordion-collapse collapse"
                                         data-bs-parent="#orderAccordion">
                                         <div class="accordion-body">
+                                            <div class="row mb-3">
+                                                <div class="col-12 mb-1">
+                                                    <h6 class="mb-1">
+                                                        <strong>Thông tin người nhận: </strong>
+                                                        <span style="text-decoration: none; color:rgb(241, 123, 123)">
+                                                            {{ $order->shippingAddress->name }} -
+                                                            {{ $order->shippingAddress->phone_number }}
+                                                        </span>
+                                                    </h6>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-md-3 col-12 mb-2">
+                                                    <h6 class="mb-1"><strong>Phương thức thanh toán:</strong></h6>
+                                                    <p class="mb-0">{{ $order->payment_method }}</p>
+                                                </div>
+                                                <div class="col-md-3 col-12 mb-2">
+                                                    <h6 class="mb-1"><strong>Trạng thái thanh toán:</strong></h6>
+                                                    <p class="mb-0">{{ $order->payment_status }}</p>
+                                                </div>
+                                                <div class="col-md-3 col-12 mb-2">
+                                                    <h6 class="mb-1"><strong>Trạng thái đơn hàng:</strong></h6>
+                                                    <span
+                                                        class="badge {{ $order->getStatusMeta($order->status)['color'] }} p-2">
+                                                        {{ $order->getStatusMeta($order->status)['label'] }}
+                                                    </span>
+                                                </div>
+                                                <div class="col-md-3 col-12 mb-2">
+                                                    <h6 class="mb-1"><strong>Địa chỉ nhận hàng:</strong></h6>
+                                                    <p class="mb-0">{{ $order->shippingAddress->full_address }}</p>
+                                                </div>
+                                            </div>
+
                                             <table class="table table-bordered">
                                                 <thead>
                                                     <tr>
@@ -163,16 +197,20 @@
                                                     @endforeach
                                                 </tbody>
                                             </table>
-                                            <div class="text-end">
-                                                <form
-                                                    action="{{ route('order.cancel.request', [$order->id, ($message = 'Tôi muốn huỷ đơn hàng')]) }}"
-                                                    method="POST">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-danger"
-                                                        onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')"><i
-                                                            class="bi bi-x-circle"></i> Hủy đơn hàng</button>
-                                                </form>
-                                            </div>
+
+                                            @if (in_array($order->status, ['pending', 'processing']))
+                                                <div class="text-end">
+                                                    <form
+                                                        action="{{ route('order.cancel.request', [$order->id, ($message = 'Tôi muốn huỷ đơn hàng')]) }}"
+                                                        method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-danger"
+                                                            onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')"><i
+                                                                class="bi bi-x-circle"></i> Hủy đơn hàng</button>
+                                                    </form>
+                                                </div>
+                                            @else
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
