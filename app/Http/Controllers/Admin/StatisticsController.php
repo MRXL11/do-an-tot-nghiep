@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Review;
 use Illuminate\Support\Facades\DB;
 
 class StatisticsController extends Controller
@@ -190,5 +192,27 @@ class StatisticsController extends Controller
             'counts' => array_map(fn($status) => $orderCounts[$status] ?? 0, $statuses),
             'cancelRate' => $cancelRate,
         ]);
+    }
+
+    public function lowStockVariants()
+    {
+        $variants = ProductVariant::with('product') // Load quan hệ để lấy tên sản phẩm
+            ->where('stock_quantity', '<', 20)
+            ->where('status', 'active')
+            ->orderBy('stock_quantity', 'asc') // Sắp xếp tồn kho tăng dần
+            ->get();
+
+        return response()->json($variants);
+    }
+
+    public function getPendingReviews(Request $request)
+    {
+        $reviews = Review::with(['user', 'product'])
+            ->where('status', 'pending') // Giả sử cột này là trạng thái duyệt
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return response()->json($reviews);
     }
 }
