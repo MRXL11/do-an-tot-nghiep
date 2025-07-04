@@ -268,7 +268,7 @@
 @endsection
 
 @section('scripts')
- <script src="https://www.paypal.com/sdk/js?client-id={{ env('PAYPAL_CLIENT_ID') }}&currency=USD"></script>
+ {{-- <script src="https://www.paypal.com/sdk/js?client-id={{ env('PAYPAL_CLIENT_ID') }}&currency=USD"></script> --}}
     <script>
         // Khởi tạo khi trang được tải
         document.addEventListener("DOMContentLoaded", function() {

@@ -145,12 +145,12 @@ public function submit(Request $request)
         $totalPrice = $subtotal + $shippingFee;
 
         // Tạo mã đơn hàng duy nhất
-        $orderCode = 'ORD-' . strtoupper(Str::random(8)); // Ví dụ: ORD-ABCD1234
+        $orderCode = 'ORD-' . strtoupper(Str::random(8));
 
         // Tạo đơn hàng
         $order = Order::create([
             'user_id' => Auth::id(),
-            'order_code' => $orderCode, // Thêm order_code
+            'order_code' => $orderCode,
             'total_price' => $totalPrice,
             'status' => 'pending',
             'payment_method' => $request->paymentMethod === 'momo' ? 'online' : 'cod',
@@ -172,10 +172,15 @@ public function submit(Request $request)
             ]);
         }
 
-        // Xóa sản phẩm khỏi giỏ hàng
-        Cart::where('user_id', Auth::id())
-            ->whereIn('id', $cartItemIds)
-            ->delete();
+        // Chỉ xóa giỏ hàng nếu chọn COD
+        if ($request->paymentMethod === 'cod') {
+            Cart::where('user_id', Auth::id())
+                ->whereIn('id', $cartItemIds)
+                ->delete();
+        } else {
+            // Lưu cart_item_ids vào session để sử dụng sau khi thanh toán Momo thành công
+            session(['pending_cart_item_ids' => $cartItemIds]);
+        }
 
         \DB::commit();
         \Log::info('Checkout completed successfully', ['order_id' => $order->id]);
@@ -196,4 +201,5 @@ public function submit(Request $request)
         return redirect()->back()->with('error', 'Có lỗi xảy ra khi đặt hàng: ' . $e->getMessage())
             ->withInput();
     }
-}}
+}
+}
