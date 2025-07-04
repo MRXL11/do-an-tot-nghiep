@@ -318,8 +318,8 @@
                                             class="btn btn-outline-primary">
                                             <i class="bi bi-eye"></i> Xem
                                         </a>
-                                        <a href="" class="btn btn-outline-danger"><i class="bi bi-cart"></i>
-                                            Thêm</a>
+                                        {{-- <a href="" class="btn btn-outline-danger"><i class="bi bi-cart"></i>
+                                            Thêm</a> --}}
                                     </div>
                                 </div>
                             </div>

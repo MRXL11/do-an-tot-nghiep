@@ -10,7 +10,7 @@ use App\Models\OrderDetail;
 use App\Models\ShippingAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth; // Sửa dòng này
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -18,55 +18,54 @@ class CheckoutController extends Controller
 {
     public function index(Request $request)
     {
-        // ✅ Kiểm tra người dùng đã đăng nhập chưa
+        // Kiểm tra người dùng đã đăng nhập chưa
         if (!Auth::check()) {
-            // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập và hiển thị cảnh báo
             return redirect()->route('login')->with('warning', 'Vui lòng đăng nhập để thanh toán.');
         }
 
-        // ✅ Lấy dữ liệu người dùng hiện tại
+        // Lấy dữ liệu người dùng hiện tại
         $user = User::with('shippingAddresses')->find(Auth::id());
 
-        // ✅ Lấy danh sách ID sản phẩm từ query string: ?cart_item_ids=1,2,3
+        // Lấy danh sách ID sản phẩm từ query string: ?cart_item_ids=1,2,3
         $rawIds = explode(',', $request->query('cart_item_ids', ''));
 
-        // ✅ Lọc ra các ID hợp lệ (chỉ giữ lại ID là số nguyên dương)
+        // Lọc ra các ID hợp lệ (chỉ giữ lại ID là số nguyên dương)
         $validIds = array_filter($rawIds, function ($id) {
             return is_numeric($id) && intval($id) > 0;
         });
 
-        // ✅ Nếu không có ID nào hợp lệ → quay lại giỏ hàng
+        // Nếu không có ID nào hợp lệ → quay lại giỏ hàng
         if (empty($validIds)) {
             return redirect()->route('cart.index')->with('warning', 'Danh sách sản phẩm không hợp lệ.');
         }
 
-        // ✅ Truy vấn các sản phẩm trong giỏ hàng của user hiện tại, dựa trên danh sách ID hợp lệ
+        // Truy vấn các sản phẩm trong giỏ hàng của user hiện tại, dựa trên danh sách ID hợp lệ
         $cartItems = Cart::with(['productVariant', 'user'])
-            ->where('user_id', Auth::id()) // Đảm bảo chỉ lấy cart của người dùng hiện tại
-            ->whereIn('id', $validIds)     // Chỉ lấy những cart_item có ID nằm trong danh sách đã chọn
+            ->where('user_id', Auth::id())
+            ->whereIn('id', $validIds)
             ->get();
 
-        // ✅ Nếu không tìm thấy sản phẩm nào → redirect về giỏ hàng và hiển thị thông báo
+        // Nếu không tìm thấy sản phẩm nào → redirect về giỏ hàng
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('warning', 'Không tìm thấy sản phẩm nào phù hợp.');
         }
 
-        // ✅ Nếu có sản phẩm không hợp lệ bị loại ra → thông báo nhẹ để người dùng biết
+        // Nếu có sản phẩm không hợp lệ bị loại ra → thông báo nhẹ
         if (count($validIds) !== $cartItems->count()) {
-            session()->flash('warning', 'Một số sản phẩm bạn chọn đã ngừng bán hoặc không còn tồn tại và sẽ không được hiển thị.');
+            session()->flash('warning', 'Một số sản phẩm bạn chọn đã ngừng bán hoặc không còn tồn tại.');
         }
 
-        // ✅ Tính tổng tiền tạm tính (subtotal)
+        // Tính tổng tiền tạm tính (subtotal)
         $subtotal = $cartItems->sum(function ($item) {
             return $item->productVariant->price * $item->quantity;
         });
 
-        // ✅ Truyền dữ liệu sang view checkout để hiển thị
+        // Truyền dữ liệu sang view checkout
         return view('client.pages.checkout', [
             'cartItems' => $cartItems,
             'subtotal' => $subtotal,
-            'total' => $subtotal, // Có thể thêm phí ship sau nếu cần
-            'user' => $user, // Truyền dữ liệu người dùng để hiển thị địa chỉ đã lưu
+            'total' => $subtotal + 20000, // Thêm phí ship
+            'user' => $user,
         ]);
     }
 
@@ -114,47 +113,30 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('warning', 'Danh sách sản phẩm không hợp lệ.');
         }
 
-
-        // Tính tổng tiền
-        $subtotal = $cartItems->sum(function ($item) {
-            return $item->productVariant->price * $item->quantity;
-        });
-        $shippingFee = 20000;
-        $totalPrice = $subtotal + $shippingFee;
-
-        // Tạo mã đơn hàng duy nhất
-        $orderCode = 'ORD-' . strtoupper(Str::random(8));
-
-        // Tạo đơn hàng
-        $order = Order::create([
-            'user_id' => Auth::id(),
-            'order_code' => $orderCode,
-            'total_price' => $totalPrice,
-            'status' => 'pending',
-            'payment_method' => $request->paymentMethod === 'momo' ? 'online' : 'cod',
-            'payment_status' => 'pending',
-            'note' => $request->note ?? null,
-            'shipping_address_id' => $shippingAddress->id,
-            'coupon_id' => null,
-        ]);
-
+        // Truy vấn các sản phẩm trong giỏ hàng
+        $cartItems = Cart::with(['productVariant'])
+            ->where('user_id', Auth::id())
+            ->whereIn('id', $cartItemIds)
+            ->get();
 
         if ($cartItems->isEmpty()) {
             Log::warning('No cart items found for user_id: ' . Auth::id() . ', cart_item_ids: ' . implode(',', $cartItemIds));
             return redirect()->route('cart.index')->with('warning', 'Không tìm thấy sản phẩm để thanh toán.');
         }
 
-
-        // Chỉ xóa giỏ hàng nếu chọn COD
-        if ($request->paymentMethod === 'cod') {
-            Cart::where('user_id', Auth::id())
-                ->whereIn('id', $cartItemIds)
-                ->delete();
-        } else {
-            // Lưu cart_item_ids vào session để sử dụng sau khi thanh toán Momo thành công
-            session(['pending_cart_item_ids' => $cartItemIds]);
-        }
-
+        DB::beginTransaction();
+        try {
+            // Tạo địa chỉ giao hàng
+            $shippingAddress = ShippingAddress::create([
+                'user_id' => Auth::id(),
+                'name' => $request->name,
+                'phone_number' => $request->phone_number,
+                'address' => $request->address,
+                'ward' => $request->ward,
+                'district' => $request->district,
+                'city' => $request->city,
+                'is_default' => false,
+            ]);
 
             // Tính tổng tiền
             $subtotal = $cartItems->sum(function ($item) {
@@ -164,12 +146,12 @@ class CheckoutController extends Controller
             $totalPrice = $subtotal + $shippingFee;
 
             // Tạo mã đơn hàng duy nhất
-            $orderCode = 'ORD-' . strtoupper(Str::random(8)); // Ví dụ: ORD-ABCD1234
+            $orderCode = 'ORD-' . strtoupper(Str::random(8));
 
             // Tạo đơn hàng
             $order = Order::create([
                 'user_id' => Auth::id(),
-                'order_code' => $orderCode, // Thêm order_code
+                'order_code' => $orderCode,
                 'total_price' => $totalPrice,
                 'status' => 'pending',
                 'payment_method' => $request->paymentMethod === 'momo' ? 'online' : 'cod',
@@ -191,10 +173,15 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // Xóa sản phẩm khỏi giỏ hàng
-            Cart::where('user_id', Auth::id())
-                ->whereIn('id', $cartItemIds)
-                ->delete();
+            // Xóa sản phẩm khỏi giỏ hàng nếu chọn COD
+            if ($request->paymentMethod === 'cod') {
+                Cart::where('user_id', Auth::id())
+                    ->whereIn('id', $cartItemIds)
+                    ->delete();
+            } else {
+                // Lưu cart_item_ids vào session để sử dụng sau khi thanh toán Momo thành công
+                session(['pending_cart_item_ids' => $cartItemIds]);
+            }
 
             DB::commit();
             Log::info('Checkout completed successfully', ['order_id' => $order->id]);
@@ -212,11 +199,7 @@ class CheckoutController extends Controller
                 'request_data' => $request->all(),
                 'cart_item_ids' => $cartItemIds
             ]);
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi đặt hàng: ' . $e->getMessage())
-                ->withInput();
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi đặt hàng: ' . $e->getMessage())->withInput();
         }
     }
 }
-
-}
-
