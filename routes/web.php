@@ -25,7 +25,7 @@
     use App\Http\Controllers\Client\ProductClientController; // Sản phẩm phía khách hàng- làm riêng vì sau này dễ backup (Products)
 
     use App\Http\Controllers\Admin\ReviewController; // Đánh giá (Reviews)
-
+    use App\Http\Controllers\Admin\StatisticsController;
     use App\Http\Controllers\Client\Auth\SocialAuthController; // dăng nhập bằng gôogle
     use App\Http\Controllers\Client\CartController;
     use App\Http\Controllers\Client\CheckoutController;
@@ -37,9 +37,12 @@
     Route::middleware(['auth', 'restrict.admin'])->group(function () {
 
         // Dashboard admin
-        Route::get('/admin', function () {
-            return view('admin.others_menu.statistical');
-        })->name('statistical');
+        Route::get('/admin', [StatisticsController::class, 'index'])->name('statistical');
+        Route::get('/admin/statistics/filter-revenue', [StatisticsController::class, 'filterRevenue']);
+        // Route API dùng để lấy top sản phẩm bán chạy theo tháng
+        Route::get('/admin/statistics/top-products', [StatisticsController::class, 'getTopSellingProducts']);
+        Route::get('/admin/statistics/order-status', [StatisticsController::class, 'orderStatusByMonth'])
+            ->name('admin.statistics.order_status');
 
         // Nhóm route admin với prefix và name
         Route::prefix('admin')->name('admin.')->group(function () {

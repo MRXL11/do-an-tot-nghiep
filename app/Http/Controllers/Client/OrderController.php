@@ -88,7 +88,7 @@ class OrderController extends Controller
     {
         $orderId = session('pending_order_id');
         if (!$orderId) {
-            \Log::warning('No pending_order_id found in session');
+            Log::warning('No pending_order_id found in session');
             return redirect()->route('cart.index')->with('error', 'Không tìm thấy đơn hàng để thanh toán.');
         }
 
@@ -99,7 +99,7 @@ class OrderController extends Controller
             ->first();
 
         if (!$order) {
-            \Log::warning('Order not found or invalid', [
+            Log::warning('Order not found or invalid', [
                 'order_id' => $orderId,
                 'user_id' => Auth::id(),
                 'payment_method' => $order ? $order->payment_method : 'not_found'
