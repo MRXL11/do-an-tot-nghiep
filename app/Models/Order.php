@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     //
-protected $fillable = [
+    protected $fillable = [
         'user_id',
         'order_code', // Thêm order_code
         'total_price',
@@ -18,7 +18,7 @@ protected $fillable = [
         'shipping_address_id',
         'coupon_id',
     ];
-    
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -43,7 +43,7 @@ protected $fillable = [
             'pending' => ['label' => 'Đang chờ xử lý', 'color' => 'bg-warning'],
             'processing' => ['label' => 'Đang xử lý', 'color' => 'bg-primary'],
             'shipped' => ['label' => 'Đang giao hàng', 'color' => 'bg-info'],
-            'delivered' => ['label' => 'Đã hoàn thành', 'color' => 'bg-success'],
+            'delivered' => ['label' => 'Đã giao hàng', 'color' => 'bg-success'],
             'cancelled' => ['label' => 'Đơn đã hủy', 'color' => 'bg-danger'],
         ];
 
@@ -56,7 +56,7 @@ protected $fillable = [
             'pending'    => ['label' => 'Đang chờ xử lý', 'color' => 'bg-warning'],
             'processing' => ['label' => 'Đang xử lý',     'color' => 'bg-primary'],
             'shipped'    => ['label' => 'Đang giao hàng', 'color' => 'bg-info'],
-            'delivered'  => ['label' => 'Đã hoàn thành',  'color' => 'bg-success'],
+            'delivered'  => ['label' => 'Đã giao hàng',  'color' => 'bg-success'],
             'cancelled'  => ['label' => 'Đơn đã hủy',     'color' => 'bg-danger'],
         ];
 

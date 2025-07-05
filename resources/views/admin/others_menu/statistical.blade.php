@@ -1,178 +1,16 @@
 @extends('admin.layouts.AdminLayouts')
 @section('title-page')
-    <h3>Thống kê</h3>
 @endsection
 @section('content')
     <div class="container-fluid">
-        <!--begin::Row-->
+        {{-- doanh thu --}}
         <div class="row">
-            <!--begin::Col-->
-            <div class="col-lg-3 col-6">
-                <!--begin::Small Box Widget 1-->
-                <div class="small-box text-bg-primary">
-                    <div class="inner">
-                        <h3>150</h3>
-                        <p>Đơn hàng mới</p>
-                    </div>
-                    <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true">
-                        <path
-                            d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z">
-                        </path>
-                    </svg>
-                    <a href="#"
-                        class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
-                        Chi tiết <i class="bi bi-link-45deg"></i>
-                    </a>
-                </div>
-                <!--end::Small Box Widget 1-->
-            </div>
-            <!--end::Col-->
-            <div class="col-lg-3 col-6">
-                <!--begin::Small Box Widget 2-->
-                <div class="small-box text-bg-success">
-                    <div class="inner">
-                        <h3>1.255.2222</sup></h3>
-                        <p>TỔNG DOANH THU</p>
-                    </div>
-                    <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true">
-                        <path
-                            d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z">
-                        </path>
-                    </svg>
-                    <a href="#"
-                        class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
-                        Chi tiết <i class="bi bi-link-45deg"></i>
-                    </a>
-                </div>
-                <!--end::Small Box Widget 2-->
-            </div>
-            <!--end::Col-->
-            <div class="col-lg-3 col-6">
-                <!--begin::Small Box Widget 3-->
-                <div class="small-box text-bg-warning">
-                    <div class="inner">
-                        <h3>44</h3>
-                        <p>Người dùng đăng ký</p>
-                    </div>
-                    <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true">
-                        <path
-                            d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z">
-                        </path>
-                    </svg>
-                    <a href="#"
-                        class="small-box-footer link-dark link-underline-opacity-0 link-underline-opacity-50-hover">
-                        Chi tiết <i class="bi bi-link-45deg"></i>
-                    </a>
-                </div>
-                <!--end::Small Box Widget 3-->
-            </div>
-            <!--end::Col-->
-            <div class="col-lg-3 col-6">
-                <!--begin::Small Box Widget 4-->
-                <div class="small-box text-bg-danger">
-                    <div class="inner">
-                        <h3>65</h3>
-                        <p>Khách vãng lai</p>
-                    </div>
-                    <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true">
-                        <path clip-rule="evenodd" fill-rule="evenodd"
-                            d="M2.25 13.5a8.25 8.25 0 018.25-8.25.75.75 0 01.75.75v6.75H18a.75.75 0 01.75.75 8.25 8.25 0 01-16.5 0z">
-                        </path>
-                        <path clip-rule="evenodd" fill-rule="evenodd"
-                            d="M12.75 3a.75.75 0 01.75-.75 8.25 8.25 0 018.25 8.25.75.75 0 01-.75.75h-7.5a.75.75 0 01-.75-.75V3z">
-                        </path>
-                    </svg>
-                    <a href="#"
-                        class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
-                        Chi tiết <i class="bi bi-link-45deg"></i>
-                    </a>
-                </div>
-                <!--end::Small Box Widget 4-->
-            </div>
-            <!--end::Col-->
-        </div>
-        <!--end::Row-->
-
-        <!--begin::Row-->
-        <div class="row">
-            <div class="col-md-3 col-sm-6 col-12">
-                <div class="info-box text-bg-primary">
-                    <span class="info-box-icon"> <i class="bi bi-heart-fill text-w"></i> </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Yêu thích</span>
-                        <span class="info-box-number">41,410</span>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: 70%"></div>
-                        </div>
-                        <span class="progress-description"> Có 135 sản phẩm được yêu thích </span>
-                    </div>
-                    <!-- /.info-box-content -->
-                </div>
-                <!-- /.info-box -->
-            </div>
-            <!-- /.col -->
-            <div class="col-md-3 col-sm-6 col-12">
-                <div class="info-box text-bg-success">
-                    <span class="info-box-icon"> <i class="bi bi-star-fill text-warning"></i> </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Đánh giá</span>
-                        <span class="info-box-number">41,410</span>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: 70%"></div>
-                        </div>
-                        <span class="progress-description"> 13k đánh giá </span>
-                    </div>
-                    <!-- /.info-box-content -->
-                </div>
-                <!-- /.info-box -->
-            </div>
-            <!-- /.col -->
-            <div class="col-md-3 col-sm-6 col-12">
-                <div class="info-box text-bg-warning">
-                    <span class="info-box-icon"> <i class="bi bi-calendar3"></i> </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Sự kiện</span>
-                        <span class="info-box-number">41,410</span>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: 70%"></div>
-                        </div>
-                        <span class="progress-description"> 15 voucher trong 30 ngày </span>
-                    </div>
-                    <!-- /.info-box-content -->
-                </div>
-                <!-- /.info-box -->
-            </div>
-            <!-- /.col -->
-            <div class="col-md-3 col-sm-6 col-12">
-                <div class="info-box text-bg-danger">
-                    <span class="info-box-icon"> <i class="bi bi-chat-text-fill"></i> </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Bình luận</span>
-                        <span class="info-box-number">41,410</span>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: 70%"></div>
-                        </div>
-                        <span class="progress-description"> 134k bình luận </span>
-                    </div>
-                    <!-- /.info-box-content -->
-                </div>
-                <!-- /.info-box -->
-            </div>
-            <!-- /.col -->
-        </div>
-        <!--end::Row-->
-
-        <div class="row">
-            <main class="container my-5">
+            <main class="container mb-5">
                 <!-- Tiêu đề -->
                 <div class="row mb-4">
                     <div class="col text-center">
                         <h2 class="fw-bold" id="revenue-title">
-                            Chi tiết doanh thu tháng
+                            Doanh thu
                         </h2>
                         <p class="text-muted">Tổng hợp doanh thu theo từng ngày của tháng trong năm</p>
                     </div>
@@ -188,8 +26,7 @@
                                     <h5 class="mb-0 fw-bold" id="revenue-total">
                                         Tổng doanh thu tháng
                                     </h5>
-                                    <input type="month" id="filterMonth" class="form-control"
-                                        style="max-width: 200px;">
+                                    <input type="month" id="filterMonth" class="form-control" style="max-width: 200px;">
                                 </div>
 
                                 <!-- Biểu đồ doanh thu -->
@@ -203,8 +40,9 @@
             </main>
         </div>
 
-        {{--  --}}
+        {{-- đơn hàng theo ngày và top sản phẩm bán chạy của tháng --}}
         <div class="row">
+            {{-- đơn hàng --}}
             <div class="col-lg-6">
                 <div class="card mb-4">
                     <div class="card-header border-0">
@@ -251,35 +89,28 @@
                 </div>
             </div>
 
-
+            {{-- sản phẩm --}}
             <div class="col-lg-6">
                 <!-- Tiêu đề -->
                 <div class="row mb-4">
                     <div class="col">
-                        <h4 class="fw-bold " id="top-products-title">Top sản phẩm bán chạy nhất tháng 07/2025
+                        <h4 class="fw-bold " id="top-products-title">Top sản phẩm bán chạy nhất
                         </h4>
                     </div>
                 </div>
                 <!-- begin::san pham ban chay-->
-                <table class="table table-striped align-middle" id="topProductsTable">
-                    {{-- <thead>
-                        <tr>
-                            <th>Sản phẩm</th>
-                            <th>Màu sắc</th>
-                            <th>Size</th>
-                            <th>Giá</th>
-                            <th>Đã bán</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead> --}}
-                    <tbody>
-                        <!-- Dữ liệu sản phẩm sẽ được JS thêm vào đây -->
-                    </tbody>
-                </table>
+                <div style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-striped align-middle" id="topProductsTable">
+                        <tbody>
+                            <!-- Dữ liệu sản phẩm sẽ được JS thêm vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- end::san pham ban chay-->
             </div>
-            <!-- end::san pham ban chay-->
         </div>
 
+        {{-- tổng đơn hàng theo từng trạng thái của tháng --}}
         <div class="row">
             {{-- Biểu đồ tỷ lệ huỷ đơn --}}
             <div class="col-lg-3">
@@ -300,17 +131,70 @@
                         <input type="month" id="orderStatusMonth" class="form-control" style="max-width: 200px;">
                     </div>
                     <div class="card-body">
-                        <canvas id="orderStatusChart" height="333"></canvas>
+                        <canvas id="orderStatusChart" height="328"></canvas>
                     </div>
                 </div>
             </div>
 
         </div>
+
+        {{-- sản phẩm sắp hết hàng và review từ khách --}}
+        <div class="row">
+            <div class="col-lg-6">
+                <!-- Tiêu đề -->
+                <div class="row mb-4">
+                    <div class="col">
+                        <h4 class="fw-bold">Sản phẩm sắp hết hàng</h4>
+                    </div>
+                </div>
+                <!-- begin::san pham sap het-->
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-striped align-middle mb-0">
+                        <tbody id="lowStockTableBody">
+                            <!-- Dữ liệu sản phẩm sẽ được JS thêm vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- end::san pham sap het-->
+            </div>
+
+            {{-- Đánh giá mới chờ duyệt --}}
+            <div class="col-lg-6">
+                <!-- Tiêu đề -->
+                <div class="row mb-4">
+                    <div class="col d-flex justify-content-between">
+                        <h4 class="fw-bold">Đánh giá mới chờ duyệt</h4>
+                        <a href ='{{ route('reviews') }}'
+                            class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                            Xem tất cả</a>
+                    </div>
+                </div>
+
+                <!-- begin::đánh giá mới-->
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead id='pendingReviewsHead'>
+
+                        </thead>
+                        <tbody id="pendingReviewsBody">
+                            <!-- Dữ liệu đánh giá sẽ được thêm bằng JavaScript -->
+                        </tbody>
+                    </table>
+                    <div class="text-center py-2 text-muted" id="noReviews" style="display: none;">
+                        Không có đánh giá nào chờ duyệt.
+                    </div>
+                </div>
+                <!-- end::đánh giá mới-->
+            </div>
+
+        </div>
+
     </div>
 @endsection
 
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     {{-- xử lý biểu đồ doanh thu --}}
     <script>
@@ -369,9 +253,9 @@
                         year: 'numeric'
                     });
 
-                    document.getElementById('revenue-title').textContent = `Chi tiết doanh thu tháng ${formattedMonth}`;
+                    document.getElementById('revenue-title').textContent = `Doanh thu ${formattedMonth}`;
                     document.getElementById('revenue-total').textContent =
-                        `Tổng doanh thu tháng ${formattedMonth}: ${formatCurrency(res.monthly_total)}`;
+                        `Tổng doanh thu ${formattedMonth}: ${formatCurrency(res.monthly_total)}`;
                     // hiển thị tăng/giảm doanh thu so với tháng trước đó
                     if (res.growth_rate !== null) {
                         const trend = res.growth_rate >= 0 ? '↑' : '↓';
@@ -445,13 +329,14 @@
                     });
                 });
 
-            // ✅ Cập nhật tiêu đề và tổng doanh thu
-            const formattedMonth = new Date(res.month + '-01').toLocaleDateString('vi-VN', {
+            // Update the title with the selected month
+            const formattedMonth = new Date(month + '-01').toLocaleDateString('vi-VN', {
                 month: '2-digit',
                 year: 'numeric'
             });
 
-            document.getElementById('top-products-title').textContent = `Chi tiết doanh thu tháng ${formattedMonth}`;
+            document.getElementById('top-products-title').textContent =
+                `Top sản phẩm bán chạy nhất ${formattedMonth}`;
         }
 
         // Tự động load khi trang load
@@ -650,5 +535,165 @@
             document.getElementById('orderStatusMonth').value = currentMonth;
             loadOrderStatusChart(currentMonth);
         });
+    </script>
+
+    {{-- xử lý load sản phẩm sắp hết hàng --}}
+    <script>
+        // Hàm load sản phẩm gần hết hàng
+        function loadLowStockProducts() {
+            fetch('/admin/statistics/low-stock')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('lowStockTableBody');
+                    tbody.innerHTML = '';
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Không có sản phẩm nào gần hết hàng</td>
+                        </tr>`;
+                        return;
+                    }
+
+                    data.forEach(variant => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                        <td>
+                            <img src="/${variant.image ?? 'default.png'}" alt="Ảnh" class="img-size-32 rounded-circle me-2" width="32" height="32">
+                            <a href="/admin/products/${variant.product.id}">${variant.product.name}</a>
+                        </td>
+                        <td>${variant.color ?? ''}</td>
+                        <td>${variant.size ?? ''}</td>
+                        <td>${Number(variant.price).toLocaleString()}₫</td>
+                        <td class="fw-bold text-danger">${variant.stock_quantity}</td>
+                    `;
+                        tbody.appendChild(row);
+                    });
+                });
+        }
+
+        // Gọi hàm khi trang tải xong
+        window.addEventListener('load', loadLowStockProducts);
+    </script>
+
+    {{-- xử lý hiển thị đánh giá mới chưa duyệt --}}
+    <script>
+        // Gọi AJAX để lấy các đánh giá chưa duyệt
+        function loadPendingReviews() {
+            fetch('/admin/statistics/pending-reviews')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('pendingReviewsBody');
+                    const thead = document.getElementById('pendingReviewsHead');
+                    const noData = document.getElementById('noReviews');
+                    tbody.innerHTML = '';
+                    thead.innerHTML = '';
+
+                    if (data.length === 0) {
+                        noData.style.display = 'block';
+                        return;
+                    } else {
+                        noData.style.display = 'none';
+                        thead.innerHTML = `
+                    <tr>
+                                <th>Người dùng</th>
+                                <th>Sản phẩm</th>
+                                <th>Nội dung</th>
+                                <th>Sao</th>
+                                <th>Hành động</th>
+                            </tr>
+                            `;
+                    }
+
+                    data.forEach(review => {
+                        const row = document.createElement('tr');
+
+                        row.innerHTML = `
+                            <td>${review.user?.name || 'Ẩn danh'}</td>
+                            <td>${review.product?.name || 'Không xác định'}</td>
+                            <td>${review.comment || 'Không có nội dung'}</td>
+                            <td><span class="badge bg-warning text-dark">${review.rating} ★</span></td>
+                            <td>
+                            <!-- Nút duyệt đánh giá -->
+                            <button class="btn btn-success btn-sm me-1"
+                            onclick="approveReview(${review.id})" title="Duyệt đánh giá">
+                            <i class="bi bi-check-circle"></i>
+                            </button>
+
+                            <!-- Nút xoá đánh giá -->
+                            <button class="btn btn-danger btn-sm"
+                            onclick="deleteReview(${review.id})" title="Xoá đánh giá">
+                            <i class="bi bi-trash"></i>
+                            </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                });
+        }
+
+        // Gọi hàm khi load trang
+        window.addEventListener('load', loadPendingReviews);
+
+        function approveReview(id) {
+            fetch(`/reviews/${id}/approve`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                }
+            }).then(res => {
+                if (res.ok) {
+                    // ✅ Hiển thị thông báo SweetAlert khi duyệt thành công
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đã duyệt!',
+                        text: 'Đánh giá đã được duyệt thành công.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    loadPendingReviews(); // Reload lại bảng sau khi duyệt
+                } else {
+                    Swal.fire('Lỗi', 'Duyệt không thành công!', 'error');
+                }
+            });
+        }
+
+        // Xoá đánh giá
+        function deleteReview(id) {
+            Swal.fire({
+                title: 'Bạn có chắc muốn xoá?',
+                text: 'Thao tác này sẽ xoá vĩnh viễn đánh giá!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Xoá',
+                cancelButtonText: 'Huỷ'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/reviews/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    }).then(res => {
+                        if (res.ok) {
+                            // ✅ Hiển thị thông báo SweetAlert khi xoá thành công
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Đã xoá!',
+                                text: 'Đánh giá đã được xoá.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            loadPendingReviews();
+                        } else {
+                            Swal.fire('Lỗi', 'Xoá không thành công!', 'error');
+                        }
+                    });
+                }
+            });
+        }
     </script>
 @endsection

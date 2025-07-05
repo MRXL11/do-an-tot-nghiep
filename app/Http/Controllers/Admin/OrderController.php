@@ -86,6 +86,10 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Chuyển trạng thái không hợp lệ.');
         }
 
+        if ($order->payment_method === 'cod') {
+            $order->payment_status = 'completed';
+        }
+
         // Lưu trạng thái mới
         $order->status = $newStatus;
         $order->save();
