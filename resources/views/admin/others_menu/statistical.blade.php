@@ -272,6 +272,7 @@
         function formatCurrency(value) {
             return Number(value).toLocaleString('vi-VN') + '₫';
         }
+        
 
         // Khi chọn tháng thay đổi
         document.getElementById('filterMonth').addEventListener('change', function() {
@@ -448,11 +449,16 @@
                                 {
                                     label: 'Đã giao',
                                     data: [statusData[3]],
-                                    backgroundColor: '#28a745' // xanh lá
+                                    backgroundColor: '#339966' // xanh lá
+                                },
+                                {
+                                    label: 'Đã hoàn thành',
+                                    data: [statusData[4]],
+                                    backgroundColor: '#004400' // xanh lá
                                 },
                                 {
                                     label: 'Đã huỷ',
-                                    data: [statusData[4]],
+                                    data: [statusData[5]],
                                     backgroundColor: '#dc3545' // đỏ
                                 }
                             ]
@@ -619,13 +625,6 @@
                             onclick="approveReview(${review.id})" title="Duyệt đánh giá">
                             <i class="bi bi-check-circle"></i>
                             </button>
-
-                            <!-- Nút xoá đánh giá -->
-                            <button class="btn btn-danger btn-sm"
-                            onclick="deleteReview(${review.id})" title="Xoá đánh giá">
-                            <i class="bi bi-trash"></i>
-                            </button>
-                            </td>
                         `;
                         tbody.appendChild(row);
                     });

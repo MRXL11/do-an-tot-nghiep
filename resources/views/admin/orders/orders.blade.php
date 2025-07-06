@@ -77,8 +77,10 @@
                                         {{ $order->shippingAddress->full_address }}
                                     </td>
                                     <td>{{ $order->shippingAddress->phone_number }}</td>
-                                    <td>{{ $order->payment_method }}</td>
-                                    <td>{{ $order->payment_status }}</td>
+                                    <td style="color: {{ $order->getPaymentMethod($order->payment_method)['color'] }} ">
+                                        {{ $order->getPaymentMethod($order->payment_method)['label'] }}</td>
+                                    <td style="color: {{ $order->getPaymentStatus($order->payment_status)['color'] }} ">
+                                        {{ $order->getPaymentStatus($order->payment_status)['label'] }}</td>
                                     <td>
                                         @php
                                             $status = $order->getStatusLabel();
@@ -94,7 +96,7 @@
                                             <i class="bi bi-info-circle"></i> Chi tiết
                                         </a>
 
-                                        @if (!in_array($order->status, ['delivered', 'cancelled']))
+                                        @if (!in_array($order->status, ['delivered', 'completed', 'cancelled']))
                                             {{-- Nút Xác nhận tương ứng với trạng thái --}}
                                             @php
                                                 // Xác định thông điệp huỷ đơn dựa trên trạng thái
