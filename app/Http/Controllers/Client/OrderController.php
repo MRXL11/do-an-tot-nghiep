@@ -291,4 +291,28 @@ class OrderController extends Controller
         \Log::warning('Momo payment failed via callback', ['order_id' => $orderId, 'result' => $request->all()]);
         return response()->json(['error' => 'Payment failed']);
     }
+
+    public function received($id)
+    {
+        $user = Auth::user();
+        $order = Order::find($id);
+
+        if (!$order || $order->user_id !== $user->id) {
+            return redirect()->back()->with('received-error', 'Bạn không có quyền xác nhận đơn hàng này.'); 
+        }
+
+        if ($order->status === 'completed') {
+            return redirect()->back()->with('received-info', 'Đơn hàng này đã được xác nhận trước đó.');
+        }
+
+        $order->status = 'completed';
+        $order->payment_status = 'completed';
+        // $order->confirmed_at = now(); // nếu có cột
+        $order->save();
+
+        return redirect()->back()->with(
+            'received-success',
+            "Cảm ơn quý khách! Đơn hàng #{$order->order_code} đã được xác nhận là đã nhận vào lúc " . now()->format('H:i d/m/Y')
+        );
+    }
 }
