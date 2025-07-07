@@ -18,164 +18,142 @@ class StatisticsController extends Controller
 
     public function index()
     {
-        // Khởi tạo thời gian bắt đầu và kết thúc của ngày hôm nay
-        $todayStart = Carbon::today();    // 00:00:00 hôm nay
-        $todayEnd = Carbon::tomorrow();   // 00:00:00 ngày mai (tức là kết thúc hôm nay)
-
-        // Đếm số lượng đơn hàng được tạo trong ngày hôm nay
-        $orderTodayCount = Order::where('created_at', '>=', $todayStart) // các đơn hàng từ sau 00:00 hôm nay
-            ->where('created_at', '<', $todayEnd)                         // và trước 00:00 ngày mai
-            ->count();                                                    // đếm tổng số đơn hàng
-
-        // (Tuỳ chọn) Tính số đơn hàng của ngày hôm qua để dùng cho việc so sánh % tăng/giảm
-        $yesterdayStart = Carbon::yesterday();  // 00:00:00 hôm qua
-        $yesterdayEnd = Carbon::today();        // 00:00:00 hôm nay
-        $orderYesterdayCount = Order::whereBetween('created_at', [$yesterdayStart, $yesterdayEnd])->count(); // đếm đơn hàng trong ngày hôm qua
-
-        // Khởi tạo biến phần trăm thay đổi (mặc định = 0 nếu không có đơn hôm qua)
-        $percentChange = 0;
-        if ($orderYesterdayCount > 0) {
-            // Tính phần trăm thay đổi: ((hôm nay - hôm qua) / hôm qua) * 100
-            $percentChange = (($orderTodayCount - $orderYesterdayCount) / $orderYesterdayCount) * 100;
-        }
-
-        // Truy vấn số lượng đơn hàng (không bị huỷ) trong 7 ngày gần nhất
-        $orderLast7Days = Order::select(
-            DB::raw('DATE(created_at) as date'),      // lấy phần ngày từ created_at
-            DB::raw('COUNT(*) as total')              // đếm tổng số đơn theo từng ngày
-        )
-            ->where('created_at', '>=', Carbon::now()->subDays(6)->startOfDay()) // từ 6 ngày trước tới nay
-            ->where('created_at', '<=', Carbon::now()->endOfDay())              // đến hết hôm nay
-            ->where('status', '!=', 'cancelled')                                // loại trừ đơn bị huỷ
-            ->groupBy(DB::raw('DATE(created_at)'))                              // nhóm theo ngày
-            ->orderBy('date')                                                   // sắp xếp theo ngày tăng dần
-            ->get();
-
-        // Tạo collection `$days` để chứa dữ liệu 7 ngày liên tục (kể cả ngày không có đơn)
-        $days = collect();
-        for ($i = 6; $i >= 0; $i--) {
-            // Tính ngày tương ứng từ 6 ngày trước đến hôm nay
-            $day = Carbon::now()->subDays($i)->format('Y-m-d');
-
-            // Tìm tổng đơn theo ngày, nếu không có thì gán là 0
-            $days->push([
-                'date' => $day,                                                          // ngày
-                'total' => $orderLast7Days->firstWhere('date', $day)->total ?? 0,        // số đơn hàng hôm đó hoặc 0 nếu không có
-            ]);
-        }
-
         // Trả về view `admin.others_menu.statistical` với các biến thống kê truyền sang
         return view(
-            'admin.others_menu.statistical',
-            [
-                'orderTodayCount' => $orderTodayCount,  // số đơn hôm nay
-                'percentChange' => $percentChange,      // phần trăm thay đổi so với hôm qua
-                'orderLast7Days' => $days               // danh sách đơn hàng 7 ngày gần nhất
-            ]
+            'admin.others_menu.statistical'
         );
     }
 
     public function filterRevenue(Request $request)
     {
-        // Lấy tham số 'month' từ URL (dạng YYYY-MM), nếu không có thì mặc định là tháng hiện tại
-        $month = $request->query('month', now()->format('Y-m'));
+        // 👉 Nhận start và end từ URL query, nếu không có thì mặc định là 30 ngày gần nhất
+        $start = Carbon::parse(
+            $request->query('start', now()->subDays(29)->format('Y-m-d'))
+        )->startOfDay(); // Bắt đầu từ đầu ngày
+        $end = Carbon::parse(
+            $request->query('end', now()->format('Y-m-d'))
+        )->endOfDay(); // Kết thúc cuối ngày
 
-        // Tạo thời gian bắt đầu và kết thúc của tháng được chọn
-        $start = Carbon::parse($month . '-01')->startOfMonth(); // Bắt đầu từ ngày 01 của tháng đó
-        $end = $start->isSameMonth(now())
-            ? now()->endOfDay()               // Nếu là tháng hiện tại, lấy tới thời điểm hiện tại trong ngày
-            : $start->copy()->endOfMonth();   // Nếu là tháng trước, lấy tới cuối tháng
+        // 👉 Truy vấn tổng doanh thu mỗi ngày (chỉ lấy đơn đã hoàn thành và thanh toán)
+        $rawData = Order::selectRaw('DATE(created_at) as day, SUM(total_price) as total')
+            ->where('status', 'completed') // Chỉ lấy đơn đã hoàn thành
+            ->where('payment_status', 'completed') // Và đã thanh toán
+            ->whereBetween('created_at', [$start, $end]) // Trong khoảng ngày được chọn
+            ->groupBy('day') // Gom theo ngày (tự động group theo DATE, bỏ phần giờ)
+            ->orderBy('day') // Sắp xếp tăng dần theo ngày
+            ->pluck('total', 'day'); // Kết quả dạng: [ '2025-07-01' => 1500000, ... ]
 
-        // Truy vấn tổng doanh thu theo từng ngày trong tháng
-        $rawData = Order::selectRaw('DATE(created_at) as day, SUM(total_price) as total') // Lấy ngày và tổng doanh thu theo ngày
-            ->where('status', 'completed')               // Chỉ lấy đơn đã hoàn thành
-            ->where('payment_status', 'completed')       // Và đã thanh toán thành công
-            ->whereBetween('created_at', [$start, $end]) // Trong khoảng thời gian đã chọn
-            ->groupBy('day')                             // Nhóm theo từng ngày
-            ->orderBy('day')                             // Sắp xếp theo ngày tăng dần
-            ->pluck('total', 'day');                     // Trả về dạng mảng: key là ngày, value là tổng tiền
-
-        // Tạo mảng dữ liệu thống kê từng ngày trong tháng
+        // 👉 Tạo mảng đầy đủ các ngày (kể cả ngày không có đơn)
         $days = [];
-        $period = \Carbon\CarbonPeriod::create($start, $end); // Tạo khoảng thời gian từ đầu đến cuối tháng
+        $period = \Carbon\CarbonPeriod::create($start, $end); // Tạo khoảng lặp từ start đến end
 
         foreach ($period as $date) {
-            $key = $date->format('Y-m-d'); // Format ngày về dạng chuỗi
+            $key = $date->format('Y-m-d');
             $days[] = [
-                'day' => $key,                         // Ngày thống kê
-                'total' => $rawData[$key] ?? 0,        // Nếu không có dữ liệu thì gán 0
+                'day' => $key,
+                'total' => $rawData[$key] ?? 0, // Nếu ngày không có doanh thu thì gán 0
             ];
         }
 
-        // Tính tổng doanh thu của tháng hiện tại
-        $monthlyTotal = $rawData->sum(); // Do `$rawData` là Collection nên dùng được `sum()`
+        // 👉 Tổng doanh thu toàn bộ khoảng ngày đang xét
+        $total = $rawData->sum();
 
-        // ✅ Tính khoảng thời gian của tháng trước
-        $prevStart = $start->copy()->subMonth()->startOfMonth(); // Đầu tháng trước
-        $prevEnd = $start->copy()->subMonth()->endOfMonth();     // Cuối tháng trước
+        // 👉 Tính khoảng thời gian trước đó có độ dài tương tự (để so sánh)
+        $diff = $start->diffInDays($end); // Ví dụ: nếu khoảng là 30 ngày thì diff = 29
+        $prevStart = $start->copy()->subDays($diff + 1); // Trừ ra khoảng trước đó
+        $prevEnd = $start->copy()->subDay(); // Ngày liền trước ngày bắt đầu
 
-        // ✅ Truy vấn tổng doanh thu của tháng trước
-        $prevMonthlyTotal = Order::where('status', 'completed')                // Đơn đã hoàn thành
-            ->whereBetween('created_at', [$prevStart, $prevEnd])              // Trong tháng trước
-            ->where('payment_status', 'completed')                            // Đã thanh toán
-            ->sum('total_price');                                             // Tính tổng doanh thu
+        // 👉 Tổng doanh thu của khoảng thời gian trước đó
+        $prevTotal = Order::where('status', 'completed')
+            ->where('payment_status', 'completed')
+            ->whereBetween('created_at', [$prevStart, $prevEnd])
+            ->sum('total_price');
 
-        // ✅ Tính phần trăm tăng trưởng doanh thu so với tháng trước
-        $growthRate = $prevMonthlyTotal > 0
-            ? round((($monthlyTotal - $prevMonthlyTotal) / $prevMonthlyTotal) * 100, 2) // Nếu tháng trước có doanh thu
-            : null; // Nếu không có, tránh chia cho 0
+        // 👉 Tính % tăng trưởng doanh thu (nếu có dữ liệu)
+        $growthRate = $prevTotal > 0
+            ? round((($total - $prevTotal) / $prevTotal) * 100, 2) // Làm tròn 2 chữ số
+            : null; // Nếu tháng trước không có đơn thì trả về null
 
-        // Trả về JSON cho frontend (dùng cho biểu đồ hoặc dashboard)
+        // 👉 Trả về JSON phục vụ frontend hiển thị biểu đồ & tổng quan
         return response()->json([
-            'month' => $month,                                      // Tháng đang thống kê
-            'days' => $days,                                        // Danh sách doanh thu từng ngày
-            'monthly_total' => round((float) $monthlyTotal),        // Tổng doanh thu tháng hiện tại (làm tròn số)
-            'prev_month_total' => round((float) $prevMonthlyTotal), // Tổng doanh thu tháng trước (làm tròn số)
-            'growth_rate' => $growthRate,                           // Tỉ lệ tăng trưởng (%)
+            'days' => $days, // Dữ liệu từng ngày để vẽ biểu đồ
+            'total' => round((float) $total), // Tổng doanh thu hiện tại
+            'prev_total' => round((float) $prevTotal), // Tổng doanh thu kỳ trước
+            'growth_rate' => $growthRate, // Tỷ lệ tăng trưởng (%)
+        ]);
+    }
+
+    public function getOrdersPerDay(Request $request)
+    {
+        $start = Carbon::parse($request->query('start', now()->subDays(6)->format('Y-m-d')))->startOfDay();
+        $end = Carbon::parse($request->query('end', now()->format('Y-m-d')))->endOfDay();
+
+        // Truy vấn đơn hàng không huỷ, nhóm theo ngày
+        $rawData = Order::select(
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('COUNT(*) as total')
+        )
+            ->whereBetween('created_at', [$start, $end])
+            ->where('status', '!=', 'cancelled')
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->orderBy('date')
+            ->get();
+
+        // Tạo mảng dữ liệu đủ ngày (kể cả không có đơn)
+        $days = collect();
+        $period = Carbon::parse($start)->toPeriod($end);
+        foreach ($period as $date) {
+            $d = $date->format('Y-m-d');
+            $days->push([
+                'date' => $d,
+                'total' => $rawData->firstWhere('date', $d)->total ?? 0,
+            ]);
+        }
+
+        // ✅ Tính tổng số đơn trong toàn khoảng thời gian
+        $totalOrders = $days->sum('total');
+
+        // ✅ Trả JSON cho frontend
+        return response()->json([
+            'days' => $days,               // dữ liệu theo ngày
+            'total_orders' => $totalOrders // tổng đơn hàng
         ]);
     }
 
     public function getTopSellingProducts(Request $request)
     {
-        // ✅ Lấy giá trị 'month' từ request đầu vào, nếu không có thì mặc định là tháng hiện tại (định dạng YYYY-MM)
-        $month = $request->input('month', now()->format('Y-m'));
+        // ✅ Lấy ngày bắt đầu và kết thúc từ query string (nếu không có thì lấy 30 ngày gần nhất)
+        $start = Carbon::parse(
+            $request->query('start', now()->subDays(29)->format('Y-m-d'))
+        )->startOfDay(); // Bắt đầu từ đầu ngày
 
-        // ✅ Tách chuỗi tháng thành $year và $monthNum để sử dụng trong truy vấn
-        [$year, $monthNum] = explode('-', $month);
+        $end = Carbon::parse(
+            $request->query('end', now()->format('Y-m-d'))
+        )->endOfDay(); // Đến cuối ngày hôm nay
 
-        // ✅ Truy vấn dữ liệu top sản phẩm bán chạy theo biến thể trong tháng được chọn
+        // ✅ Truy vấn top sản phẩm bán chạy theo biến thể trong khoảng thời gian
         $topProducts = DB::table('order_details')
-            // Join với bảng orders để lấy thời gian đặt hàng và trạng thái
             ->join('orders', 'order_details.order_id', '=', 'orders.id')
-
-            // Join với bảng product_variants để lấy thông tin biến thể (hình ảnh, giá, màu, size)
             ->join('product_variants', 'order_details.product_variant_id', '=', 'product_variants.id')
-
-            // Join với bảng products để lấy thông tin sản phẩm chính (tên sản phẩm)
             ->join('products', 'product_variants.product_id', '=', 'products.id')
 
-            // Lọc các đơn hàng theo năm và tháng đã chọn
-            ->whereYear('orders.created_at', $year)
-            ->whereMonth('orders.created_at', $monthNum)
+            // ✅ Chỉ tính đơn hàng đã hoàn thành trong khoảng thời gian
+            ->whereBetween('orders.created_at', [$start, $end])
+            ->where('orders.status', 'completed') // Trạng thái đã hoàn thành
+            ->where('orders.payment_status', 'completed') // Đã thanh toán
 
-            // Bỏ qua các đơn hàng bị huỷ
-            ->where('orders.status', '!=', 'cancelled')
-
-            // Chỉ lấy đơn hàng đã hoàn thành (đã giao, đã xác nhận, v.v.)
-            ->where('orders.status', '=', 'completed')
-
-            // ✅ Chọn các cột cần thống kê, bao gồm cả thông tin sản phẩm và biến thể
+            // ✅ Chọn các thông tin cần thiết
             ->select(
-                'products.id as product_id',              // ID sản phẩm chính
-                'products.name as product_name',          // Tên sản phẩm
-                'product_variants.image',                 // Ảnh biến thể
-                'product_variants.price',                 // Giá biến thể
-                'product_variants.color',                 // Màu
-                'product_variants.size',                  // Size
-                DB::raw('SUM(order_details.quantity) as total_sold') // Tổng số lượng đã bán cho mỗi biến thể
+                'products.id as product_id',
+                'products.name as product_name',
+                'product_variants.image',
+                'product_variants.price',
+                'product_variants.color',
+                'product_variants.size',
+                DB::raw('SUM(order_details.quantity) as total_sold')
             )
 
-            // ✅ Nhóm theo từng biến thể sản phẩm (nếu không nhóm thì SUM sẽ sai)
+            // ✅ Nhóm theo từng biến thể sản phẩm
             ->groupBy(
                 'products.id',
                 'products.name',
@@ -185,61 +163,41 @@ class StatisticsController extends Controller
                 'product_variants.size'
             )
 
-            // ✅ Sắp xếp theo tổng số lượng đã bán (giảm dần)
+            // ✅ Lấy top 10 theo số lượng bán
             ->orderByDesc('total_sold')
-            // ✅ Giới hạn top 10 kết quả
             ->limit(10)
-            // ✅ Thực thi truy vấn và lấy kết quả
             ->get();
 
-        // ✅ Trả kết quả dưới dạng JSON để frontend dùng hiển thị bảng hoặc biểu đồ
         return response()->json($topProducts);
     }
 
-    public function orderStatusByMonth(Request $request)
+    public function orderStatusByDate(Request $request)
     {
-        // ✅ Lấy tháng từ request (dạng 'YYYY-MM'), nếu không có thì mặc định là tháng hiện tại
-        $month = $request->input('month', now()->format('Y-m'));
+        $start = Carbon::parse($request->query('start', now()->subDays(29)->format('Y-m-d')))->startOfDay();
+        $end = Carbon::parse($request->query('end', now()->format('Y-m-d')))->endOfDay();
 
-        // ✅ Tách chuỗi 'YYYY-MM' thành số năm và số tháng
-        $year = (int)substr($month, 0, 4);       // Lấy 4 ký tự đầu làm năm
-        $monthNum = (int)substr($month, 5, 2);   // Lấy 2 ký tự sau dấu '-' làm tháng
-
-        // ✅ Danh sách các trạng thái đơn hàng cần thống kê
         $statuses = ['pending', 'processing', 'shipped', 'delivered', 'completed', 'cancelled'];
 
-        // ✅ Truy vấn số lượng đơn hàng theo từng trạng thái trong tháng được chọn
         $orderCounts = DB::table('orders')
-            ->select('status', DB::raw('COUNT(*) as count'))     // Đếm số đơn theo trạng thái
-            ->whereYear('created_at', $year)                     // Lọc theo năm
-            ->whereMonth('created_at', $monthNum)                // Lọc theo tháng
-            ->groupBy('status')                                  // Gom nhóm theo trạng thái
-            ->pluck('count', 'status');                          // Trả về dạng mảng [status => count]
+            ->select('status', DB::raw('COUNT(*) as count'))
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy('status')
+            ->pluck('count', 'status');
 
-        // ✅ Tính tổng số đơn hàng trong tháng
         $totalOrders = DB::table('orders')
-            ->whereYear('created_at', $year)
-            ->whereMonth('created_at', $monthNum)
+            ->whereBetween('created_at', [$start, $end])
             ->count();
 
-        // ✅ Lấy số lượng đơn bị huỷ (nếu không có thì mặc định là 0)
         $canceledOrders = $orderCounts['cancelled'] ?? 0;
+        $cancelRate = $totalOrders > 0 ? round(($canceledOrders / $totalOrders) * 100, 2) : 0;
 
-        // ✅ Tính tỷ lệ huỷ đơn hàng (%) = số đơn huỷ / tổng đơn * 100
-        $cancelRate = $totalOrders > 0
-            ? round(($canceledOrders / $totalOrders) * 100, 2)   // Làm tròn 2 chữ số sau dấu phẩy
-            : 0;
-
-        // ✅ Trả về JSON gồm:
-        // - Danh sách trạng thái (đảm bảo đủ thứ tự)
-        // - Mảng số lượng tương ứng từng trạng thái
-        // - Tỷ lệ huỷ đơn
         return response()->json([
-            'statusCounts' => $statuses, // Trả về thứ tự trạng thái (giúp frontend vẽ biểu đồ theo đúng thứ tự)
-            'counts' => array_map(fn($status) => $orderCounts[$status] ?? 0, $statuses), // Mảng số lượng tương ứng từng trạng thái
-            'cancelRate' => $cancelRate, // Tỷ lệ huỷ đơn hàng (%)
+            'statusCounts' => $statuses,
+            'counts' => array_map(fn($status) => $orderCounts[$status] ?? 0, $statuses),
+            'cancelRate' => $cancelRate
         ]);
     }
+
 
     public function lowStockVariants()
     {
