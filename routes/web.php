@@ -40,9 +40,9 @@
         Route::get('/admin', [StatisticsController::class, 'index'])->name('statistical');
         // Route API dùng để lấy top sản phẩm bán chạy theo tháng
         Route::get('/admin/statistics/filter-revenue', [StatisticsController::class, 'filterRevenue']);
+        Route::get('/admin/statistics/orders-per-day', [StatisticsController::class, 'getOrdersPerDay']);
         Route::get('/admin/statistics/top-products', [StatisticsController::class, 'getTopSellingProducts']);
-        Route::get('/admin/statistics/order-status', [StatisticsController::class, 'orderStatusByMonth'])
-            ->name('admin.statistics.order_status');
+        Route::get('/admin/statistics/order-status', [StatisticsController::class, 'orderStatusByDate']);
         Route::get('/admin/statistics/low-stock', [StatisticsController::class, 'lowStockVariants'])->name('admin.statistics.low-stock');
         Route::get('/admin/statistics/pending-reviews', [StatisticsController::class, 'getPendingReviews']);
 
@@ -186,6 +186,8 @@
     // gửi thông báo cho admin khi khách hàng chọn huỷ đơn hàng
     Route::post('/order/cancel/{order}/request', [ClientOrderController::class, 'createOrderCancelNotificationToAdmin'])
         ->name('order.cancel.request');
+    // xác nhận đã nhận đơn từ phía client
+    Route::post('/order/{id}/received', [ClientOrderController::class, 'received'])->name('order.received');
 
     // ✅ Route xác thực (Auth)
     Route::middleware('web')->group(function () {
