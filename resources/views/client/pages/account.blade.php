@@ -151,11 +151,15 @@
                                             <div class="row mb-3">
                                                 <div class="col-md-3 col-12 mb-2">
                                                     <h6 class="mb-1"><strong>Phương thức thanh toán:</strong></h6>
-                                                    <p class="mb-0">{{ $order->payment_method }}</p>
+                                                    <p class="mb-0"
+                                                        style='color: {{ $order->getPaymentMethod($order->payment_method)['color'] }};'>
+                                                        {{ $order->getPaymentMethod($order->payment_method)['label'] }}</p>
                                                 </div>
                                                 <div class="col-md-3 col-12 mb-2">
                                                     <h6 class="mb-1"><strong>Trạng thái thanh toán:</strong></h6>
-                                                    <p class="mb-0">{{ $order->payment_status }}</p>
+                                                    <p class="mb-0"
+                                                        style='color: {{ $order->getPaymentStatus($order->payment_status)['color'] }};'>
+                                                        {{ $order->getPaymentStatus($order->payment_status)['label'] }}</p>
                                                 </div>
                                                 <div class="col-md-3 col-12 mb-2">
                                                     <h6 class="mb-1"><strong>Trạng thái đơn hàng:</strong></h6>
@@ -178,7 +182,6 @@
                                                         <th>Size</th>
                                                         <th>Số lượng</th>
                                                         <th>Đơn giá</th>
-                                                        <th>Giảm</th>
                                                         <th>Tổng</th>
                                                     </tr>
                                                 </thead>
@@ -190,13 +193,49 @@
                                                             <td>{{ $detail->productVariant->size }}</td>
                                                             <td>{{ $detail->quantity }}</td>
                                                             <td>{{ number_format($detail->price, 0, ',', '.') }}₫</td>
-                                                            <td>{{ number_format($detail->discount, 0, ',', '.') }}₫</td>
                                                             <td>{{ number_format($detail->subtotal, 0, ',', '.') }}
                                                                 ₫</td>
                                                         </tr>
                                                     @endforeach
                                                 </tbody>
                                             </table>
+
+                                            <div class="row mb-3">
+                                                <div class="col-md-12 col-12 mb-2 text-end">
+                                                    <li
+                                                        class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
+                                                        Tổng tiền hàng:
+                                                        <span>{{ number_format($order->total, 0, ',', '.') }}₫</span>
+                                                    </li>
+                                                    {{-- xử lý mã mã giảm giá --}}
+                                                    @if ($order->calculated_discount > 0)
+                                                        <li
+                                                            class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
+                                                            Giảm:
+                                                            <span>-{{ number_format($order->calculated_discount, 0, ',', '.') }}₫</span>
+                                                        </li>
+                                                    @else
+                                                        <li
+                                                            class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
+                                                            Giảm:
+                                                            <span>-0 đ</span>
+                                                        </li>
+                                                    @endif
+
+                                                    <li
+                                                        class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
+                                                        Phí vận chuyển:
+                                                        <span>20.000₫</span>
+                                                    </li>
+
+                                                    <li
+                                                        class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
+                                                        Thành tiền:
+                                                        <span>{{ number_format($order->total_price, 0, ',', '.') }}₫</span>
+                                                    </li>
+                                                </div>
+
+                                            </div>
 
                                             @if (in_array($order->status, ['pending', 'processing']))
                                                 <div class="text-end">
@@ -207,6 +246,26 @@
                                                         <button type="submit" class="btn btn-danger"
                                                             onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')"><i
                                                                 class="bi bi-x-circle"></i> Hủy đơn hàng</button>
+                                                    </form>
+                                                </div>
+                                            @elseif($order->status === 'delivered')
+                                                <div class="d-flex justify-content-end gap-2 mt-3 flex-wrap">
+                                                    <form action="{{ route('order.received', $order->id) }}"
+                                                        method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-outline-success"
+                                                            onclick="return confirm('Chỉ chọn nút này khi bạn đã nhận được hàng! Xác nhận?')">
+                                                            <i class="bi bi-box-seam"></i> Đã nhận được hàng
+                                                        </button>
+                                                    </form>
+
+                                                    <form action="{{ route('order.cancel.request', $order->id) }}"
+                                                        method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-outline-primary"
+                                                            onclick="return confirm('Bạn có chắc muốn yêu cầu trả hàng không?')">
+                                                            <i class="bi bi-caret-left"></i> Trả hàng / Hoàn tiền
+                                                        </button>
                                                     </form>
                                                 </div>
                                             @else
@@ -225,4 +284,68 @@
             </div>
         </div>
     </div>
+
+    <!-- modal thông báo thành công -->
+    <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header bg-success text-white rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="orderModalLabel">
+                        <i class="bi bi-heart-fill me-2"></i> Thông báo
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <i class="bi bi-check-circle-fill text-success display-4 mb-3"></i>
+                    <p class="mb-0 fs-5">{{ session('received-success') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- modal báo lỗi -->
+    <div class="modal fade" id="orderErrorModal" tabindex="-1" aria-labelledby="orderErrorModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header bg-danger text-white rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="orderErrorModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Lỗi
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <i class="bi bi-x-circle-fill text-danger display-4 mb-3"></i>
+                    <p class="mb-0 fs-5">{{ session('received-error') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@section('scripts')
+    @if (session('received-success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+                modal.show();
+            });
+        </script>
+    @endif
+
+    @if (session('received-error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = new bootstrap.Modal(document.getElementById('orderErrorModal'));
+                modal.show();
+
+                // Tự đóng sau 4 giây
+                setTimeout(() => {
+                    modal.hide();
+                }, 4000);
+            });
+        </script>
+    @endif
 @endsection

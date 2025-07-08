@@ -101,7 +101,7 @@
             </div>
 
             <div class="col-md-12 mt-2 mb-2">
-                @if (!in_array($order->status, ['delivered', 'cancelled']))
+                @if (!in_array($order->status, ['delivered', 'completed', 'cancelled']))
                     {{-- Nút Xác nhận tương ứng với trạng thái --}}
                     @php
                         // Xác định thông điệp huỷ đơn dựa trên trạng thái
@@ -183,7 +183,7 @@
                                 <td>{{ $item->productVariant->product->short_description }}</td>
                                 <td>{{ $item->quantity }}</td>
                                 <td>{{ number_format($item->price, 0, ',', '.') }}</td>
-                                <td>{{ number_format($item->discount, 0, ',', '.') }}</td>
+                                <td>{{ number_format($discount, 0, ',', '.') }}</td>
                                 <td>{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
@@ -208,21 +208,29 @@
                 </div>
                 <div class="col-md-4">
                     <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
+                            Tổng tiền hàng:
+                            <span>{{ number_format($order->orderDetails->sum('subtotal'), 0, ',', '.') }}₫</span>
+                        </li>
                         {{-- xử lý mã mã giảm giá --}}
                         @if ($order->coupon)
                             <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
                                 Giảm:
-                                <span>{{ number_format($discount, 0, ',', '.') }}đ</span>
+                                <span>-{{ number_format($discount, 0, ',', '.') }}₫</span>
                             </li>
                         @else
                             <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
                                 Giảm:
-                                <span>0 đ</span>
+                                <span>-0₫</span>
                             </li>
                         @endif
                         <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
+                            Phí vận chuyển:
+                            <span>20.000₫</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
                             Thành tiền:
-                            <span>{{ number_format($order->total_price, 0, ',', '.') }}đ</span>
+                            <span>{{ number_format($order->total_price, 0, ',', '.') }}₫</span>
                         </li>
                     </ul>
                 </div>

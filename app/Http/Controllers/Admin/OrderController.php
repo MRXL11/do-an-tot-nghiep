@@ -36,8 +36,18 @@ class OrderController extends Controller
             $hasSearch = true;
         }
 
-        // Lấy danh sách sản phẩm với phân trang
-        $orders = $query->orderByDesc('id')->paginate(10);
+        // Lấy danh sách sản phẩm, ưu tiên đơn online đã thnah toán,
+        //  nhưng nếu có đơn cod chen ngang thì vẫn hiện đơn cod với phân trang
+        $orders = $query
+            ->orderByRaw("CASE 
+                WHEN payment_method = 'online' THEN 1
+                WHEN payment_method = 'cod' THEN 2
+                ELSE 3
+                END")
+            ->orderByDesc('created_at') // đơn mới nhất trước
+            ->paginate(10);
+
+
 
         // Kiểm tra nếu có tìm kiếm nhưng không có kết quả
         $noResults = $hasSearch && $orders->isEmpty();
@@ -62,6 +72,7 @@ class OrderController extends Controller
                 $discount = round($total * $order->coupon->discount_value / 100);
             }
         }
+
         return view('admin.orders.show', compact('order', 'discount', 'total'));
     }
 
@@ -86,10 +97,6 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Chuyển trạng thái không hợp lệ.');
         }
 
-        if ($order->payment_method === 'cod') {
-            $order->payment_status = 'completed';
-        }
-
         // Lưu trạng thái mới
         $order->status = $newStatus;
         $order->save();
@@ -103,11 +110,12 @@ class OrderController extends Controller
 
     public function cancel(Order $order)
     {
-        if (in_array($order->status, ['delivered', 'cancelled'])) {
+        if (in_array($order->status, ['delivered', 'completed', 'cancelled'])) {
             return redirect()->back()->with('error', 'Không thể huỷ đơn hàng đã hoàn tất hoặc đã huỷ.');
         }
 
         $order->status = 'cancelled';
+        $order->payment_status = 'failed';
         $order->save();
 
         // Tạo thông báo cho người dùng
@@ -117,7 +125,7 @@ class OrderController extends Controller
         return redirect()->back()->with('success', 'Đã huỷ đơn hàng thành công.');
     }
 
-    private function createOrderNotificationToClient(Order $order, $message, $title)
+    public function createOrderNotificationToClient(Order $order, $message, $title)
     {
         try {
             $client = $order->user; // Người đã đặt đơn
