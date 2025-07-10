@@ -26,8 +26,9 @@ class AddVariantsRequest extends FormRequest
             'variants' => 'required|array|min:1',
             'variants.*.color' => 'required|string|max:50',
             'variants.*.size' => 'required|string|max:50',
+            'variants.*.import_price' => 'required|numeric|min:0',
             'variants.*.price' => 'required|numeric|min:0',
-            'variants.*.quantity' => 'required|integer|min:0', // Đổi từ stock_quantity thành quantity
+            'variants.*.quantity' => 'required|integer|min:0', 
             'variants.*.sku' => 'nullable|string|max:100',
             'variants.*.status' => 'nullable|in:active,inactive',
         ];
@@ -44,10 +45,13 @@ class AddVariantsRequest extends FormRequest
             'variants.*.size.required' => 'Kích cỡ của biến thể là bắt buộc.',
             'variants.*.size.string' => 'Kích cỡ phải là chuỗi ký tự.',
             'variants.*.size.max' => 'Kích cỡ không được vượt quá 50 ký tự.',
-            'variants.*.price.required' => 'Giá của biến thể là bắt buộc.',
-            'variants.*.price.numeric' => 'Giá phải là số.',
-            'variants.*.price.min' => 'Giá không được nhỏ hơn 0.',
-            'variants.*.quantity.required' => 'Số lượng tồn kho là bắt buộc.', // Đổi từ stock_quantity thành quantity
+            'variants.*.price.required' => 'Giá bán của biến thể là bắt buộc.',
+            'variants.*.price.numeric' => 'Giá bán phải là số.',
+            'variants.*.price.min' => 'Giá bán không được nhỏ hơn 0.',
+            'variants.*.import_price.required' => 'Giá nhập của biến thể là bắt buộc.',
+            'variants.*.import_price.numeric' => 'Giá nhập phải là số.',
+            'variants.*.import_price.min' => 'Giá nhập không được nhỏ hơn 0.',  
+            'variants.*.quantity.required' => 'Số lượng tồn kho là bắt buộc.', 
             'variants.*.quantity.integer' => 'Số lượng tồn kho phải là số nguyên.',
             'variants.*.quantity.min' => 'Số lượng tồn kho không được nhỏ hơn 0.',
             'variants.*.status.in' => 'Trạng thái của biến thể phải là "active" hoặc "inactive".',

@@ -6,9 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreProductRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
@@ -23,13 +20,6 @@ class StoreProductRequest extends FormRequest
         }
     }
 
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
-
     public function rules(): array
     {
         return [
@@ -40,19 +30,29 @@ class StoreProductRequest extends FormRequest
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string|max:2000',
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-
-            'variants' => 'required|array',
+            'variants' => [
+                'required',
+                'array',
+                function ($attribute, $value, $fail) {
+                    $combinations = [];
+                    foreach ($value as $index => $variant) {
+                        $key = $variant['color'] . '|' . $variant['size'];
+                        if (in_array($key, $combinations)) {
+                            $fail("Biến thể tại vị trí $index trùng lặp (màu: {$variant['color']}, kích cỡ: {$variant['size']}).");
+                        }
+                        $combinations[] = $key;
+                    }
+                },
+            ],
             'variants.*.color' => 'required|string|max:50',
             'variants.*.size' => 'required|string|max:50',
+            'variants.*.import_price' => 'required|numeric|min:0',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'variants.*.quantity' => 'required|integer|min:0',
         ];
     }
 
-    /**
-     * Thông điệp lỗi tùy chỉnh bằng tiếng Việt.
-     */
     public function messages(): array
     {
         return [
@@ -81,16 +81,18 @@ class StoreProductRequest extends FormRequest
             'variants.*.size.required' => 'Kích cỡ của biến thể là bắt buộc.',
             'variants.*.size.string' => 'Kích cỡ phải là chuỗi ký tự.',
             'variants.*.size.max' => 'Kích cỡ không được vượt quá 50 ký tự.',
-            'variants.*.price.required' => 'Giá của biến thể là bắt buộc.',
-            'variants.*.price.numeric' => 'Giá phải là số.',
-            'variants.*.price.min' => 'Giá không được nhỏ hơn 0.',
+            'variants.*.import_price.required' => 'Giá nhập của biến thể là bắt buộc.',
+            'variants.*.import_price.numeric' => 'Giá nhập phải là số.',
+            'variants.*.import_price.min' => 'Giá nhập không được nhỏ hơn 0.',
+            'variants.*.price.required' => 'Giá bán của biến thể là bắt buộc.',
+            'variants.*.price.numeric' => 'Giá bán phải là số.',
+            'variants.*.price.min' => 'Giá bán không được nhỏ hơn 0.',
             'variants.*.image.image' => 'Ảnh biến thể phải là file ảnh.',
             'variants.*.image.mimes' => 'Ảnh biến thể chỉ hỗ trợ định dạng JPG, JPEG, PNG.',
             'variants.*.image.max' => 'Ảnh biến thể không được vượt quá 2MB.',
             'variants.*.quantity.required' => 'Số lượng tồn kho là bắt buộc.',
             'variants.*.quantity.integer' => 'Số lượng tồn kho phải là số nguyên.',
             'variants.*.quantity.min' => 'Số lượng tồn kho không được nhỏ hơn 0.',
-            'variants.*.status.required' => 'Trạng thái của biến thể là bắt buộc.',
         ];
     }
 }
