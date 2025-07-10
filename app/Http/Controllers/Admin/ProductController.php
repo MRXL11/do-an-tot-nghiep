@@ -64,7 +64,7 @@ class ProductController extends Controller
         }
 
         // Lấy danh sách sản phẩm với phân trang
-        $products = $query->orderByDesc('id')->paginate(10);
+        $products = $query->orderByDesc('id')->paginate(9);
 
         // Kiểm tra nếu có tìm kiếm nhưng không có kết quả
         $noResults = $hasSearch && $products->isEmpty();
