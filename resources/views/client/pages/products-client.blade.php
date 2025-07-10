@@ -93,11 +93,11 @@
                                     <div class="shop__sidebar__price">
                                         @php
                                             $priceRanges = [
-                                                ['min' => 0, 'max' => 50, 'label' => '$0.00 - $50.00'],
-                                                ['min' => 50, 'max' => 100, 'label' => '$50.00 - $100.00'],
-                                                ['min' => 100, 'max' => 150, 'label' => '$100.00 - $150.00'],
-                                                ['min' => 150, 'max' => 200, 'label' => '$150.00 - $200.00'],
-                                                ['min' => 200, 'max' => 250, 'label' => '$200.00 - $250.00'],
+                                                ['min' => 0, 'max' => 50, 'label' => '0.00 - 50.00'],
+                                                ['min' => 50, 'max' => 100, 'label' => '50.00 - 100.00'],
+                                                ['min' => 100, 'max' => 150, 'label' => '100.00 - 150.00'],
+                                                ['min' => 150, 'max' => 200, 'label' => '150.00 - 200.00'],
+                                                ['min' => 200, 'max' => 250, 'label' => '200.00 - 250.00'],
                                                 ['min' => 250, 'max' => null, 'label' => '250.00+'],
                                             ];
                                         @endphp
@@ -200,8 +200,18 @@
                     @php
                         $filters = [];
 
-                        if (request()->has('category') && request()->category) {
-                            $category = $categories->firstWhere('id', request()->category);
+                        // if (request()->has('category') && request()->category) {
+                        //     $category = $categories->firstWhere('id', request()->category);
+
+                        //     $filters[] = 'Danh mục: ' . ($category ? $category->name : 'Không xác định');
+                        // }
+                        // if (request()->has('brand') && request()->brand) {
+                        //     $brand = $brands->firstWhere('slug', request()->brand);
+                        //     $filters[] = 'Thương hiệu: ' . ($brand ? $brand->name : 'Không xác định');
+                        // }
+                        if(request()->route('slug')) {
+                            $category = $categories->firstWhere('slug', request()->route('slug'));
+
 
                             $filters[] = 'Danh mục: ' . ($category ? $category->name : 'Không xác định');
                         }
@@ -209,6 +219,7 @@
                             $brand = $brands->firstWhere('slug', request()->brand);
                             $filters[] = 'Thương hiệu: ' . ($brand ? $brand->name : 'Không xác định');
                         }
+              //phần comment phía bên trên do aduong viết bị lỗi hiênt thị tạm thời comment lại
                         if (request()->has('size') && request()->size) {
                             $filters[] = 'Kích cỡ: ' . request()->size;
                         }

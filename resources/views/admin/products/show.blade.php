@@ -197,7 +197,17 @@
                                                 @enderror
                                             </div>
                                             <div class="col-6">
-                                                <label>Giá</label>
+                                                <label>Giá nhập</label>
+                                                <input type="number" class="form-control"
+                                                    name="variants[{{ $loop->parent->index * 2 + $j }}][import_price]"
+                                                    value="{{ old('variants.' . ($loop->parent->index * 2 + $j) . '.import_price', $variant->import_price) }}"
+                                                    step="any">
+                                                @error('variants.' . ($loop->parent->index * 2 + $j) . '.import_price')
+                                                    <div class="text-danger small">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-6">
+                                                <label>Giá bán</label>
                                                 <input type="number" class="form-control"
                                                     name="variants[{{ $loop->parent->index * 2 + $j }}][price]"
                                                     value="{{ old('variants.' . ($loop->parent->index * 2 + $j) . '.price', $variant->price) }}"
@@ -215,7 +225,7 @@
                                                     <div class="text-danger small">{{ $message }}</div>
                                                 @enderror
                                             </div>
-                                            <div class="col-12">
+                                            <div class="col-6">
                                                 <label>Trạng thái</label>
                                                 <select class="form-control"
                                                     name="variants[{{ $loop->parent->index * 2 + $j }}][status]">
@@ -261,6 +271,13 @@
                         <input type="text" id="sizes" class="form-control" placeholder="S,M,L,XL">
                         <div class="invalid-feedback" id="size_error"></div>
                     </div>
+                    {{-- giá nhập --}}
+                    <div class="col-md-6">
+                        <label>Giá nhập mặc định</label>
+                        <input type="number" id="default_import_price" class="form-control" step="any">
+                        <div class="invalid-feedback" id="default_import_price_error"></div>
+                    </div>
+
                     <div class="col-md-6">
                         <label>Giá mặc định</label>
                         <input type="number" id="default_price" class="form-control" step="any">

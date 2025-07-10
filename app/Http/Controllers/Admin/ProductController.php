@@ -64,7 +64,7 @@ class ProductController extends Controller
         }
 
         // Lấy danh sách sản phẩm với phân trang
-        $products = $query->orderByDesc('id')->paginate(10);
+        $products = $query->orderByDesc('id')->paginate(9);
 
         // Kiểm tra nếu có tìm kiếm nhưng không có kết quả
         $noResults = $hasSearch && $products->isEmpty();
@@ -95,7 +95,6 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         //
-
         DB::beginTransaction();
         if ($request->hasFile('thumbnail')) {
             // Lưu ảnh mới với tên có timestamp
@@ -119,12 +118,7 @@ class ProductController extends Controller
                 'thumbnail' => $filePath ?? null,
             ]);
 
-            // if (!$request->filled('variants_json')) {
-            //     return redirect()->back()->with('error', 'Vui lòng nhập thông tin biến thể sản phẩm.');
-            // }
-
             $variants = $request->variants; // Bây giờ đã là mảng PHP
-            // dd($variants);
 
             if (empty($variants)) {
                 return redirect()
@@ -133,11 +127,11 @@ class ProductController extends Controller
             }
 
             foreach ($variants as $variant) {
-
                 $product->variants()->create([
                     'color' => $variant['color'],
                     'size' => $variant['size'],
                     'price' => $variant['price'],
+                    'import_price' => $variant['import_price'], // Thêm trường giá nhập
                     'stock_quantity' => $variant['quantity'],
                     'sku' => $variant['sku'],
                     'status' => 'active'
@@ -231,6 +225,7 @@ class ProductController extends Controller
                     $variant->color = $variantData['color'];
                     $variant->size = $variantData['size'];
                     $variant->price = $variantData['price'];
+                    $variant->import_price = $variantData['import_price']; // Thêm trường giá nhập
                     $variant->stock_quantity = $variantData['stock_quantity'];
                     $variant->status = $variantData['status'];
 
@@ -255,6 +250,7 @@ class ProductController extends Controller
             return back()->with('error', 'Đã xảy ra lỗi khi cập nhật sản phẩm: ' . $e->getMessage());
         }
     }
+
     /**
      * Remove the specified resource from storage.
      */
@@ -330,6 +326,7 @@ class ProductController extends Controller
                     $product->variants()->create([
                         'color' => $variant['color'],
                         'size' => $variant['size'],
+                        'import_price' => $variant['import_price'], // Thêm trường giá nhập
                         'price' => $variant['price'],
                         'stock_quantity' => $variant['quantity'],
                         'sku' => $variant['sku'],

@@ -73,332 +73,183 @@
 
 <script>
     // ApexChart: Visitors chart
-    new ApexCharts(document.querySelector('#visitors-chart'), {
-        series: [{
-                name: 'High - 2023',
-                data: [100, 120, 170, 167, 180, 177, 160]
-            },
-            {
-                name: 'Low - 2023',
-                data: [60, 80, 70, 67, 80, 77, 100]
-            },
-        ],
-        chart: {
-            height: 200,
-            type: 'line',
-            toolbar: {
-                show: false
-            }
-        },
-        colors: ['#0d6efd', '#adb5bd'],
-        stroke: {
-            curve: 'smooth'
-        },
-        grid: {
-            borderColor: '#e7e7e7',
-            row: {
-                colors: ['#f3f3f3', 'transparent'],
-                opacity: 0.5
-            },
-        },
-        legend: {
-            show: false
-        },
-        markers: {
-            size: 1
-        },
-        xaxis: {
-            categories: ['22th', '23th', '24th', '25th', '26th', '27th', '28th']
-        },
-    }).render();
+    // new ApexCharts(document.querySelector('#visitors-chart'), {
+    //     series: [{
+    //             name: 'High - 2023',
+    //             data: [100, 120, 170, 167, 180, 177, 160]
+    //         },
+    //         {
+    //             name: 'Low - 2023',
+    //             data: [60, 80, 70, 67, 80, 77, 100]
+    //         },
+    //     ],
+    //     chart: {
+    //         height: 200,
+    //         type: 'line',
+    //         toolbar: {
+    //             show: false
+    //         }
+    //     },
+    //     colors: ['#0d6efd', '#adb5bd'],
+    //     stroke: {
+    //         curve: 'smooth'
+    //     },
+    //     grid: {
+    //         borderColor: '#e7e7e7',
+    //         row: {
+    //             colors: ['#f3f3f3', 'transparent'],
+    //             opacity: 0.5
+    //         },
+    //     },
+    //     legend: {
+    //         show: false
+    //     },
+    //     markers: {
+    //         size: 1
+    //     },
+    //     xaxis: {
+    //         categories: ['22th', '23th', '24th', '25th', '26th', '27th', '28th']
+    //     },
+    // }).render();
 
-    // ApexChart: Sales chart
-    new ApexCharts(document.querySelector('#sales-chart'), {
-        series: [{
-                name: 'Net Profit',
-                data: [44, 55, 57, 56, 61, 58, 63, 60, 66]
-            },
-            {
-                name: 'Revenue',
-                data: [76, 85, 101, 98, 87, 105, 91, 114, 94]
-            },
-            {
-                name: 'Free Cash Flow',
-                data: [35, 41, 36, 26, 45, 48, 52, 53, 41]
-            },
-        ],
-        chart: {
-            type: 'bar',
-            height: 200
-        },
-        plotOptions: {
-            bar: {
-                horizontal: false,
-                columnWidth: '55%',
-                endingShape: 'rounded'
-            },
-        },
-        legend: {
-            show: false
-        },
-        colors: ['#0d6efd', '#20c997', '#ffc107'],
-        dataLabels: {
-            enabled: false
-        },
-        stroke: {
-            show: true,
-            width: 2,
-            colors: ['transparent']
-        },
-        xaxis: {
-            categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']
-        },
-        fill: {
-            opacity: 1
-        },
-        tooltip: {
-            y: {
-                formatter: (val) => '$ ' + val + ' thousands'
-            },
-        },
-    }).render();
+    // // ApexChart: Sales chart
+    // new ApexCharts(document.querySelector('#sales-chart'), {
+    //     series: [{
+    //             name: 'Net Profit',
+    //             data: [44, 55, 57, 56, 61, 58, 63, 60, 66]
+    //         },
+    //         {
+    //             name: 'Revenue',
+    //             data: [76, 85, 101, 98, 87, 105, 91, 114, 94]
+    //         },
+    //         {
+    //             name: 'Free Cash Flow',
+    //             data: [35, 41, 36, 26, 45, 48, 52, 53, 41]
+    //         },
+    //     ],
+    //     chart: {
+    //         type: 'bar',
+    //         height: 200
+    //     },
+    //     plotOptions: {
+    //         bar: {
+    //             horizontal: false,
+    //             columnWidth: '55%',
+    //             endingShape: 'rounded'
+    //         },
+    //     },
+    //     legend: {
+    //         show: false
+    //     },
+    //     colors: ['#0d6efd', '#20c997', '#ffc107'],
+    //     dataLabels: {
+    //         enabled: false
+    //     },
+    //     stroke: {
+    //         show: true,
+    //         width: 2,
+    //         colors: ['transparent']
+    //     },
+    //     xaxis: {
+    //         categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']
+    //     },
+    //     fill: {
+    //         opacity: 1
+    //     },
+    //     tooltip: {
+    //         y: {
+    //             formatter: (val) => '$ ' + val + ' thousands'
+    //         },
+    //     },
+    // }).render();
 
-    // ApexChart: Revenue chart
-    new ApexCharts(document.querySelector('#revenue-chart'), {
-        series: [{
-                name: 'Digital Goods',
-                data: [28, 48, 40, 19, 86, 27, 90]
-            },
-            {
-                name: 'Electronics',
-                data: [65, 59, 80, 81, 56, 55, 40]
-            },
-        ],
-        chart: {
-            height: 300,
-            type: 'area',
-            toolbar: {
-                show: false
-            }
-        },
-        legend: {
-            show: false
-        },
-        colors: ['#0d6efd', '#20c997'],
-        dataLabels: {
-            enabled: false
-        },
-        stroke: {
-            curve: 'smooth'
-        },
-        xaxis: {
-            type: 'datetime',
-            categories: [
-                '2023-01-01',
-                '2023-02-01',
-                '2023-03-01',
-                '2023-04-01',
-                '2023-05-01',
-                '2023-06-01',
-                '2023-07-01',
-            ],
-        },
-        tooltip: {
-            x: {
-                format: 'MMMM yyyy'
-            }
-        },
-    }).render();
+    // // ApexChart: Revenue chart
+    // new ApexCharts(document.querySelector('#revenue-chart'), {
+    //     series: [{
+    //             name: 'Digital Goods',
+    //             data: [28, 48, 40, 19, 86, 27, 90]
+    //         },
+    //         {
+    //             name: 'Electronics',
+    //             data: [65, 59, 80, 81, 56, 55, 40]
+    //         },
+    //     ],
+    //     chart: {
+    //         height: 300,
+    //         type: 'area',
+    //         toolbar: {
+    //             show: false
+    //         }
+    //     },
+    //     legend: {
+    //         show: false
+    //     },
+    //     colors: ['#0d6efd', '#20c997'],
+    //     dataLabels: {
+    //         enabled: false
+    //     },
+    //     stroke: {
+    //         curve: 'smooth'
+    //     },
+    //     xaxis: {
+    //         type: 'datetime',
+    //         categories: [
+    //             '2023-01-01',
+    //             '2023-02-01',
+    //             '2023-03-01',
+    //             '2023-04-01',
+    //             '2023-05-01',
+    //             '2023-06-01',
+    //             '2023-07-01',
+    //         ],
+    //     },
+    //     tooltip: {
+    //         x: {
+    //             format: 'MMMM yyyy'
+    //         }
+    //     },
+    // }).render();
 
-    // jsVectorMap: World map
-    new jsVectorMap({
-        selector: '#world-map',
-        map: 'world'
-    });
+    // // jsVectorMap: World map
+    // new jsVectorMap({
+    //     selector: '#world-map',
+    //     map: 'world'
+    // });
 
-    // ApexCharts: Sparklines
-    const sparklineOptions = (data) => ({
-        series: [{
-            data
-        }],
-        chart: {
-            type: 'area',
-            height: 50,
-            sparkline: {
-                enabled: true
-            }
-        },
-        stroke: {
-            curve: 'straight'
-        },
-        fill: {
-            opacity: 0.3
-        },
-        yaxis: {
-            min: 0
-        },
-        colors: ['#DCE6EC'],
-    });
+    // // ApexCharts: Sparklines
+    // const sparklineOptions = (data) => ({
+    //     series: [{
+    //         data
+    //     }],
+    //     chart: {
+    //         type: 'area',
+    //         height: 50,
+    //         sparkline: {
+    //             enabled: true
+    //         }
+    //     },
+    //     stroke: {
+    //         curve: 'straight'
+    //     },
+    //     fill: {
+    //         opacity: 0.3
+    //     },
+    //     yaxis: {
+    //         min: 0
+    //     },
+    //     colors: ['#DCE6EC'],
+    // });
 
-    new ApexCharts(document.querySelector('#sparkline-1'), sparklineOptions([1000, 1200, 920, 927, 931, 1027, 819, 930,
-        1021
-    ])).render();
-    new ApexCharts(document.querySelector('#sparkline-2'), sparklineOptions([515, 519, 520, 522, 652, 810, 370, 627,
-        319, 630, 921
-    ])).render();
-    new ApexCharts(document.querySelector('#sparkline-3'), sparklineOptions([15, 19, 20, 22, 33, 27, 31, 27, 19, 30,
-        21
-    ])).render();
+    // new ApexCharts(document.querySelector('#sparkline-1'), sparklineOptions([1000, 1200, 920, 927, 931, 1027, 819, 930,
+    //     1021
+    // ])).render();
+    // new ApexCharts(document.querySelector('#sparkline-2'), sparklineOptions([515, 519, 520, 522, 652, 810, 370, 627,
+    //     319, 630, 921
+    // ])).render();
+    // new ApexCharts(document.querySelector('#sparkline-3'), sparklineOptions([15, 19, 20, 22, 33, 27, 31, 27, 19, 30,
+    //     21
+    // ])).render();
 
-    // Hàm preview ảnh thumbnail
-    function previewThumbnail(input) {
-        const preview = document.getElementById('preview_thumbnail');
-        const file = input.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    // Hàm preview ảnh variant
-    function previewImage(input, index) {
-        const preview = document.getElementById(`preview_variant_${index}`);
-        const file = input.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    function generateSku(length = 8) {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let sku = '';
-        for (let i = 0; i < length; i++) {
-            sku += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return sku;
-    }
-
-    // auto generate variants
-    function generateVariants() {
-        const colors = document.getElementById('colors').value.split(',').map(c => c.trim()).filter(c => c);
-        const sizes = document.getElementById('sizes').value.split(',').map(s => s.trim()).filter(s => s);
-        const price = document.getElementById('default_price').value;
-        const quantity = document.getElementById('default_quantity').value;
-
-        if (!colors.length || !sizes.length || !price || !quantity) {
-            alert("Vui lòng nhập đủ màu, size, giá và số lượng!");
-            return;
-        } else if (parseFloat(price) < 0) {
-            alert("Giá phải lớn hơn hoặc bằng 0!");
-            return;
-        } else if (parseInt(quantity) < 0) {
-            alert("Số lượng phải lớn hơn hoặc bằng 0!");
-            return;
-        }
-
-        const variants = [];
-        let html = '';
-        colors.forEach(color => {
-            sizes.forEach(size => {
-                const sku = generateSku();
-                variants.push({
-                    color,
-                    size,
-                    price,
-                    quantity,
-                    sku
-                });
-                html += `<li>${color} - ${size} | SL: ${quantity} | Giá: ${price} | SKU: ${sku}</li>`;
-            });
-        });
-
-        document.getElementById('variantList').innerHTML = html;
-        // Sửa ID từ variants_json -> variants
-        document.getElementById('variants').value = JSON.stringify(variants);
-
-    }
-
-    // Mở/đóng form thêm biến thể
-    document.getElementById('add_variant').addEventListener('click', function() {
-        const formContainer = document.getElementById('variant_form_container');
-        formContainer.classList.toggle('d-none');
-    });
-
-    function showError(inputId, message) {
-        const input = document.getElementById(inputId);
-        const error = document.getElementById(inputId + '_error');
-        input.classList.add('is-invalid');
-        error.textContent = message;
-    }
-
-    function clearErrors() {
-        ['color', 'size', 'default_price', 'default_quantity'].forEach(id => {
-            document.getElementById(id).classList.remove('is-invalid');
-            document.getElementById(id + '_error').textContent = '';
-        });
-    }
-
-    // validate input fields before generating variants
-    document.getElementById('generate_variants').addEventListener('click', function() {
-        clearErrors();
-        const colorInput = document.getElementById('color');
-        const sizeInput = document.getElementById('size');
-        const priceInput = document.getElementById('default_price');
-        const quantityInput = document.getElementById('default_quantity');
-
-        let hasError = false;
-
-        const colors = colorInput.value.split(',').map(c => c.trim()).filter(Boolean);
-        const sizes = sizeInput.value.split(',').map(s => s.trim()).filter(Boolean);
-        const price = priceInput.value;
-        const quantity = quantityInput.value;
-
-        if (!colors.length) {
-            showError('color', 'Vui lòng nhập ít nhất một màu.');
-            hasError = true;
-        }
-
-        if (!sizes.length) {
-            showError('size', 'Vui lòng nhập ít nhất một kích cỡ.');
-            hasError = true;
-        }
-
-        if (!price || parseFloat(price) < 0) {
-            showError('default_price', 'Giá phải lớn hơn hoặc bằng 0.');
-            hasError = true;
-        }
-
-        if (!quantity || parseInt(quantity) < 0) {
-            showError('default_quantity', 'Số lượng phải lớn hơn hoặc bằng 0.');
-            hasError = true;
-        }
-
-        if (hasError) return;
-
-    });
-
-    // show cancel confirmation modal
-    function showCancelModal(url, message) {
-        document.getElementById('cancelForm').action = url;
-        document.getElementById('cancelConfirmMessage').innerText = message;
-        new bootstrap.Modal(document.getElementById('cancelConfirmModal')).show();
-    }
-
-    // submit status update form
-    function submitStatusUpdate(url, nextStatus, actionLabel) {
-        if (confirm(`Bạn có chắc muốn thực hiện hành động: "${actionLabel}" không?`)) {
-            const form = document.getElementById('statusUpdateForm');
-            form.action = url;
-            document.getElementById('statusInput').value = nextStatus;
-            form.submit();
-        }
-    }
+   
 </script>
 <!--end::Optional Scripts-->

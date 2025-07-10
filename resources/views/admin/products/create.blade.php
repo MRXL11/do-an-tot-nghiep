@@ -11,9 +11,6 @@
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
-        {{-- @if (session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif --}}
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">
@@ -133,16 +130,22 @@
                                 value="{{ old('sizes') }}">
                         </div>
 
-                        <div class="col-md-6">
-                            <label>Giá mặc định</label>
-                            <input type="number" id="default_price" name='default_price' class="form-control"
-                                step="any" value="{{ old('default_price') }}">
-                        </div>
 
+                        <div class="col-md-6">
+                            <label>Giá nhập mặc định</label>
+                            <input type="number" id="default_import_price" name='default_import_price' class="form-control"
+                                step="any" value="{{ old('default_import_price') }}">
+                        </div>
+                        
                         <div class="col-md-6">
                             <label>Số lượng mặc định</label>
                             <input type="number" id="default_quantity" name='default_quantity' class="form-control"
                                 value="{{ old('default_quantity') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label>Giá bán mặc định</label>
+                            <input type="number" id="default_price" name='default_price' class="form-control"
+                                step="any" value="{{ old('default_price') }}">
                         </div>
                     </div>
                 </div>
@@ -165,6 +168,171 @@
             </div>
         </form>
 
-
     </div>
+   
+@endsection
+@section('scripts')
+     <script>// Hàm preview ảnh thumbnail
+    function previewThumbnail(input) {
+        const preview = document.getElementById('preview_thumbnail');
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Hàm preview ảnh variant
+    function previewImage(input, index) {
+        const preview = document.getElementById(`preview_variant_${index}`);
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function generateSku(length = 8) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let sku = '';
+        for (let i = 0; i < length; i++) {
+            sku += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return sku;
+    }
+
+    // auto generate variants
+    function generateVariants() {
+        const colors = document.getElementById('colors').value.split(',').map(c => c.trim()).filter(c => c);
+        const sizes = document.getElementById('sizes').value.split(',').map(s => s.trim()).filter(s => s);
+        const price = document.getElementById('default_price').value;
+        const importPrice = document.getElementById('default_import_price').value;
+        const quantity = document.getElementById('default_quantity').value;
+
+        if (!colors.length || !sizes.length || !price || !quantity) {
+            alert("Vui lòng nhập đủ màu, size, giá và số lượng!");
+            return;
+        } else if (parseFloat(price) < 0) {
+            alert("Giá bán phải lớn hơn hoặc bằng 0!");
+            return;
+        } else if (parseInt(quantity) < 0) {
+            alert("Số lượng phải lớn hơn hoặc bằng 0!");
+            return;
+        }    
+        else if (parseFloat(importPrice) < 0) {
+            alert("Giá nhập phải lớn hơn hoặc bằng 0!");
+            return;
+        }
+
+        const variants = [];
+        let html = '';
+        colors.forEach(color => {
+            sizes.forEach(size => {
+                const sku = generateSku();
+                variants.push({
+                    color,
+                    size,
+                    price,
+                    quantity,
+                    import_price: importPrice,
+                    sku
+                });
+                html += `<li>${color} - ${size} | SL: ${quantity} | Giá: ${price} | SKU: ${sku} | Giá nhập: ${importPrice}</li>`;
+            });
+        });
+
+        document.getElementById('variantList').innerHTML = html;
+        // Sửa ID từ variants_json -> variants
+        document.getElementById('variants').value = JSON.stringify(variants);
+
+    }
+
+    // Mở/đóng form thêm biến thể
+    document.getElementById('add_variant').addEventListener('click', function() {
+        const formContainer = document.getElementById('variant_form_container');
+        formContainer.classList.toggle('d-none');
+    });
+
+    function showError(inputId, message) {
+        const input = document.getElementById(inputId);
+        const error = document.getElementById(inputId + '_error');
+        input.classList.add('is-invalid');
+        error.textContent = message;
+    }
+
+    function clearErrors() {
+        ['color', 'size', 'default_price', 'default_quantity'].forEach(id => {
+            document.getElementById(id).classList.remove('is-invalid');
+            document.getElementById(id + '_error').textContent = '';
+        });
+    }
+
+    // validate input fields before generating variants
+    document.getElementById('generate_variants').addEventListener('click', function() {
+        clearErrors();
+        const colorInput = document.getElementById('color');
+        const sizeInput = document.getElementById('size');
+        const priceInput = document.getElementById('default_price');
+        const importPriceInput = document.getElementById('default_import_price');
+        const quantityInput = document.getElementById('default_quantity');
+
+        let hasError = false;
+
+        const colors = colorInput.value.split(',').map(c => c.trim()).filter(Boolean);
+        const sizes = sizeInput.value.split(',').map(s => s.trim()).filter(Boolean);
+        const price = priceInput.value;
+        const importPrice = importPriceInput.value;
+        const quantity = quantityInput.value;
+
+        if (!colors.length) {
+            showError('color', 'Vui lòng nhập ít nhất một màu.');
+            hasError = true;
+        }
+
+        if (!sizes.length) {
+            showError('size', 'Vui lòng nhập ít nhất một kích cỡ.');
+            hasError = true;
+        }
+
+        if (!price || parseFloat(price) < 0) {
+            showError('default_price', 'Giá phải lớn hơn hoặc bằng 0.');
+            hasError = true;
+        }
+        if (!importPrice || parseFloat(importPrice) < 0) {
+            showError('default_import_price', 'Giá nhập phải lớn hơn hoặc bằng 0.');
+            hasError = true;
+        }
+
+        if (!quantity || parseInt(quantity) < 0) {
+            showError('default_quantity', 'Số lượng phải lớn hơn hoặc bằng 0.');
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+    });
+
+    // show cancel confirmation modal
+    function showCancelModal(url, message) {
+        document.getElementById('cancelForm').action = url;
+        document.getElementById('cancelConfirmMessage').innerText = message;
+        new bootstrap.Modal(document.getElementById('cancelConfirmModal')).show();
+    }
+
+    // submit status update form
+    function submitStatusUpdate(url, nextStatus, actionLabel) {
+        if (confirm(`Bạn có chắc muốn thực hiện hành động: "${actionLabel}" không?`)) {
+            const form = document.getElementById('statusUpdateForm');
+            form.action = url;
+            document.getElementById('statusInput').value = nextStatus;
+            form.submit();
+        }
+    }
+    </script>
 @endsection

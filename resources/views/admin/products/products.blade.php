@@ -162,11 +162,13 @@
                                         </tr>
                                     @endforeach
                                 </tbody>
-                            </table>
+                            </table> 
+                            <!-- Phân trang -->
+                        <div class="d-flex justify-content-center mt-3">
+                            {{ $products->withQueryString()->links() }}
                         </div>
-
-                        <!-- Phân trang -->
-                        {{ $products->links() }}
+                       
+                        </div>
                     @endif
                 </div>
 

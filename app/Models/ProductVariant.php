@@ -13,6 +13,7 @@ class ProductVariant extends Model
         'color',
         'size',
         'status',
+        'import_price', // Thêm trường giá nhập để phục vụ tính lợi nhuận
         'price',
         'stock_quantity',
         'sku',

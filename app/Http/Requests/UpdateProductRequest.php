@@ -48,6 +48,8 @@ class UpdateProductRequest extends FormRequest
             'variants.*.id' => 'required|exists:product_variants,id',
             'variants.*.color' => 'required|string|max:50',
             'variants.*.size' => 'required|string|max:50',
+            // Thêm trường giá nhập vào validate
+            'variants.*.import_price' => 'required|numeric|min:0',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock_quantity' => 'required|integer|min:0',
             'variants.*.status' => 'required|in:active,inactive',
@@ -86,6 +88,10 @@ class UpdateProductRequest extends FormRequest
             'variants.*.color.max' => 'Màu sắc không được vượt quá 50 ký tự.',
             'variants.*.size.required' => 'Kích cỡ của biến thể là bắt buộc.',
             'variants.*.size.string' => 'Kích cỡ phải là chuỗi ký tự.',
+            // Thêm thông điệp lỗi cho trường giá nhập
+            'variants.*.import_price.required' => 'Giá nhập của biến thể là bắt buộc.',
+            'variants.*.import_price.numeric' => 'Giá nhập phải là số.',
+            'variants.*.import_price.min' => 'Giá nhập không được nhỏ hơn 0.',
             'variants.*.size.max' => 'Kích cỡ không được vượt quá 50 ký tự.',
             'variants.*.price.required' => 'Giá của biến thể là bắt buộc.',
             'variants.*.price.numeric' => 'Giá phải là số.',
