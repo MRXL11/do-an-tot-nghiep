@@ -1,7 +1,7 @@
 @extends('admin.layouts.AdminLayouts')
 
 @section('title-page')
-    <h3>Chi tiết & Chỉnh sửa sản phẩm   <strong class="text-primary">{{ $product->name }}</strong></h3>        
+    <h3>Chi tiết & Chỉnh sửa sản phẩm <strong class="text-primary">{{ $product->name }}</strong></h3>
 @endsection
 
 @section('content')
@@ -37,7 +37,7 @@
 
             <div class="row align-items-center mb-3">
                 <!-- Cột trái: Tiêu đề và mô tả -->
-                <div class="col-md-6">                 
+                <div class="col-md-6">
                     <p class="text-muted mb-0">
                         Bạn có thể chỉnh sửa thông tin sản phẩm ở đây!
                     </p>
@@ -306,4 +306,104 @@
             </form>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        // Hàm preview ảnh thumbnail
+        function previewThumbnail(input) {
+            const preview = document.getElementById('preview_thumbnail');
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Hàm preview ảnh variant
+        function previewImage(input, index) {
+            const preview = document.getElementById(`preview_variant_${index}`);
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function generateSku(length = 8) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let sku = '';
+            for (let i = 0; i < length; i++) {
+                sku += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return sku;
+        }
+
+        function generateSku(length = 8) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let sku = '';
+            for (let i = 0; i < length; i++) {
+                sku += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return sku;
+        }
+
+        // auto generate variants
+        function generateVariants() {
+            const colors = document.getElementById('colors').value.split(',').map(c => c.trim()).filter(c => c);
+            const sizes = document.getElementById('sizes').value.split(',').map(s => s.trim()).filter(s => s);
+            const price = document.getElementById('default_price').value;
+            const importPrice = document.getElementById('default_import_price').value;
+            const quantity = document.getElementById('default_quantity').value;
+
+            if (!colors.length || !sizes.length || !price || !quantity) {
+                alert("Vui lòng nhập đủ màu, size, giá và số lượng!");
+                return;
+            } else if (parseFloat(price) < 0) {
+                alert("Giá bán phải lớn hơn hoặc bằng 0!");
+                return;
+            } else if (parseInt(quantity) < 0) {
+                alert("Số lượng phải lớn hơn hoặc bằng 0!");
+                return;
+            } else if (parseFloat(importPrice) < 0) {
+                alert("Giá nhập phải lớn hơn hoặc bằng 0!");
+                return;
+            }
+
+            const variants = [];
+            let html = '';
+            colors.forEach(color => {
+                sizes.forEach(size => {
+                    const sku = generateSku();
+                    variants.push({
+                        color,
+                        size,
+                        price,
+                        quantity,
+                        import_price: importPrice,
+                        sku
+                    });
+                    html +=
+                        `<li>${color} - ${size} | SL: ${quantity} | Giá: ${price} | SKU: ${sku} | Giá nhập: ${importPrice}</li>`;
+                });
+            });
+
+            document.getElementById('variantList').innerHTML = html;
+            // Sửa ID từ variants_json -> variants
+            document.getElementById('variants').value = JSON.stringify(variants);
+
+        }
+
+        // Mở/đóng form thêm biến thể
+        document.getElementById('add_variant').addEventListener('click', function() {
+            const formContainer = document.getElementById('variant_form_container');
+            formContainer.classList.toggle('d-none');
+        });
+    </script>
 @endsection
