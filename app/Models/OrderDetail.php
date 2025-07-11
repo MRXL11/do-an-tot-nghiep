@@ -11,6 +11,7 @@ class OrderDetail extends Model
         'order_id',
         'product_variant_id',
         'quantity',
+        'import_price', // Thêm cột import_price
         'price',
         'discount',
         'subtotal'
