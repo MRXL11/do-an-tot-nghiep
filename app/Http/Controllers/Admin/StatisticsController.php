@@ -51,25 +51,28 @@ class StatisticsController extends Controller
 
             // ✅ Lấy lợi nhuận theo ngày bằng cách JOIN với order_details
             $profitData = DB::table('orders')
-                ->join('order_details', 'orders.id', '=', 'order_details.order_id')
                 ->selectRaw('
-                DATE(orders.created_at) as day,
-                SUM(order_details.subtotal - order_details.import_price * order_details.quantity) as profit
-            ')
-                ->where('orders.status', 'completed')
-                ->where('orders.payment_status', 'completed')
-                ->whereBetween('orders.created_at', [$start, $end])
+                    DATE(orders.created_at) as day,
+                    SUM(orders.total_price) as total_price
+                ')
+                ->where('status', 'completed')
+                ->where('payment_status', 'completed')
+                ->whereBetween('created_at', [$start, $end])
                 ->groupBy('day')
                 ->orderBy('day')
                 ->get()
                 ->keyBy('day');
 
-            // ✅ Lấy số lượng đơn hàng theo ngày
-            $orderCounts = DB::table('orders')
-                ->selectRaw('DATE(created_at) as day, COUNT(*) as count')
-                ->where('status', 'completed')
-                ->where('payment_status', 'completed')
-                ->whereBetween('created_at', [$start, $end])
+            // Tổng giá vốn theo ngày
+            $costData = DB::table('orders')
+                ->join('order_details', 'orders.id', '=', 'order_details.order_id')
+                ->selectRaw('
+                    DATE(orders.created_at) as day,
+                    SUM(order_details.import_price * order_details.quantity) as total_cost
+                ')
+                ->where('orders.status', 'completed')
+                ->where('orders.payment_status', 'completed')
+                ->whereBetween('orders.created_at', [$start, $end])
                 ->groupBy('day')
                 ->orderBy('day')
                 ->get()
@@ -92,7 +95,10 @@ class StatisticsController extends Controller
                 $key = $date->format('Y-m-d');
 
                 $revenue = $revenueData[$key]->revenue ?? 0;
-                $profit = $profitData[$key]->profit ?? 0;
+                $total_price = $profitData[$key]->total_price ?? 0;
+                $total_cost = $costData[$key]->total_cost ?? 0;
+
+                $profit = $total_price - $total_cost;
 
                 $days[] = [
                     'day' => $key,
@@ -103,7 +109,6 @@ class StatisticsController extends Controller
                 $totalRevenue += $revenue;
                 $totalProfit += $profit;
             }
-
 
             /*
         |--------------------------------------------------------------------------
