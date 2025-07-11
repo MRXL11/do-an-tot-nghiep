@@ -3,43 +3,60 @@
 @endsection
 @section('content')
     <div class="container-fluid">
-        {{-- doanh thu --}}
-        <!-- Bộ lọc từ ngày đến ngày -->
-        <!-- Tiêu đề doanh thu và tổng doanh thu -->
+        {{-- doanh thu và lợi nhuận --}}
         <div class="row mb-4">
             <div class="col text-center">
-                <!-- Tiêu đề chính (sẽ được cập nhật bằng JS) -->
-                <h2 class="fw-bold" id="revenue-title">
-                    Doanh thu
+                <h2 class="fw-bold text-primary" id="revenue-title">
+                    <i class="bi bi-graph-up-arrow me-2"></i> Doanh thu & Lợi nhuận
                 </h2>
             </div>
         </div>
 
-        <!-- Bộ lọc ngày và biểu đồ -->
+        {{-- Bộ lọc & biểu đồ --}}
         <div class="row mb-3">
             <div class="col-12">
-                <div class="card">
+                <div class="card shadow-sm border-0">
                     <div class="card-body">
 
-                        <!-- Bộ lọc từ ngày đến ngày -->
-                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                            <!-- Tổng doanh thu (sẽ được cập nhật bằng JS) -->
-                            <h5 class="fw-semibold text-primary mt-2" id="revenue-total"></h5>
+                        {{-- Thanh thông tin và bộ lọc --}}
+                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+                            {{-- Tổng doanh thu và lợi nhuận --}}
+                            <div>
+                                <h5 class="fw-semibold mb-0" id="revenue-total">
+                                    <!-- Nội dung được JS cập nhật -->
+                                </h5>
+                                <h5 class="fw-semibold mb-0" id="profit-total">
+                                    <!-- Nội dung được JS cập nhật -->
+                                </h5>
+                            </div>
 
-                            <div class="d-flex align-items-center gap-2 flex-wrap flex-md-nowrap">
-                                <label for="startDate" class="form-label mb-0">Từ:</label>
-                                <input type="date" id="startDate" class="form-control" style="max-width: 160px;">
+                            {{-- Bộ lọc ngày --}}
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="input-group">
+                                    <label class="input-group-text bg-white" for="startDate">
+                                        <i class="bi bi-calendar-event"></i>
+                                    </label>
+                                    <input type="date" id="startDate" class="form-control" style="max-width: 160px;">
+                                </div>
 
-                                <label for="endDate" class="form-label mb-0">Đến:</label>
-                                <input type="date" id="endDate" class="form-control" style="max-width: 160px;">
+                                <span class="fw-semibold">–</span>
 
-                                <button class="btn btn-primary" onclick="applyDateFilter()">Lọc</button>
+                                <div class="input-group">
+                                    <label class="input-group-text bg-white" for="endDate">
+                                        <i class="bi bi-calendar-check"></i>
+                                    </label>
+                                    <input type="date" id="endDate" class="form-control" style="max-width: 160px;">
+                                </div>
+
+                                <button class="btn btn-primary d-flex align-items-center gap-1" onclick="applyDateFilter()">
+                                    <i class="bi bi-funnel-fill"></i> Lọc
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Biểu đồ doanh thu -->
-                        <div style="overflow-x: auto;" class="mb-3">
-                            <canvas id="monthlyRevenueChart" height="500"></canvas>
+                        {{-- Biểu đồ --}}
+                        <div class="border rounded bg-light p-3" style="overflow-x: auto;">
+                            <canvas id="revenueChart" height="500"></canvas>
                         </div>
 
                     </div>
@@ -255,48 +272,86 @@
 
     {{-- xử lý biểu đồ doanh thu --}}
     <script>
-        let monthlyRevenueChart;
+        let monthlyRevenueChart; // Biến lưu biểu đồ để huỷ và vẽ lại
 
-        // Gửi request và render biểu đồ theo khoảng ngày
+        // Hàm vẽ biểu đồ doanh thu & lợi nhuận theo khoảng ngày
         function renderRevenueChart(startDate, endDate) {
             fetch(`/admin/statistics/filter-revenue?start=${startDate}&end=${endDate}`)
                 .then(res => res.json())
                 .then(res => {
-                    const labels = res.days.map(item => item.day);
-                    const values = res.days.map(item => item.total);
+                    // Lấy nhãn trục X và dữ liệu cho biểu đồ
+                    const labels = res.days.map(item => item.day); // ngày
+                    const revenues = res.days.map(item => item.revenue); // doanh thu từng ngày
+                    const profits = res.days.map(item => item.profit); // lợi nhuận từng ngày
 
-                    const ctx = document.getElementById('monthlyRevenueChart').getContext('2d');
+                    // Tạo context vẽ biểu đồ
+                    const ctx = document.getElementById('revenueChart').getContext('2d');
 
+                    // Xoá biểu đồ cũ nếu có
                     if (monthlyRevenueChart) {
                         monthlyRevenueChart.destroy();
                     }
 
+                    // Vẽ biểu đồ cột (doanh thu) + đường (lợi nhuận)
                     monthlyRevenueChart = new Chart(ctx, {
                         type: 'bar',
                         data: {
                             labels: labels,
                             datasets: [{
-                                label: 'Doanh thu (VNĐ)',
-                                data: values,
-                                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                                borderRadius: 5
-                            }]
+                                    type: 'line',
+                                    label: 'Lợi nhuận (VNĐ)',
+                                    data: profits,
+                                    borderColor: 'rgba(255, 99, 132, 0.9)', // Xanh đậm
+                                    pointRadius: 5,
+                                    pointHoverRadius: 7,
+                                    pointBackgroundColor: '#d63384', // Chấm hồng tươi
+                                    pointBorderColor: '#fff', // Viền trắng
+                                    pointBorderWidth: 2,
+                                    tension: 0.4, // Làm mượt đường
+                                    yAxisID: 'y2' // 👉 Trục bên phải
+                                },
+                                {
+                                    type: 'bar',
+                                    label: 'Doanh thu (VNĐ)',
+                                    data: revenues,
+                                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                                    borderRadius: 5,
+                                    yAxisID: 'y1' // 👉 Trục bên trái
+                                },
+
+                            ]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
                             scales: {
-                                y: {
-                                    beginAtZero: true
+                                y1: {
+                                    type: 'linear',
+                                    position: 'left',
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Doanh thu'
+                                    }
+                                },
+                                y2: {
+                                    type: 'linear',
+                                    position: 'right',
+                                    beginAtZero: true,
+                                    grid: {
+                                        drawOnChartArea: false // Không vẽ lưới bên phải để không bị rối
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Lợi nhuận'
+                                    }
                                 }
                             },
                             plugins: {
                                 tooltip: {
                                     callbacks: {
-                                        label: function(context) {
-                                            return context.dataset.label + ': ' +
-                                                new Intl.NumberFormat('vi-VN').format(context.parsed.y) +
-                                                '₫';
+                                        label: function(ctx) {
+                                            return `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('vi-VN')}₫`;
                                         }
                                     }
                                 }
@@ -304,13 +359,19 @@
                         }
                     });
 
-                    // Cập nhật tiêu đề và tổng doanh thu
+                    // Hiển thị tiêu đề theo ngày
                     const from = new Date(startDate).toLocaleDateString('vi-VN');
                     const to = new Date(endDate).toLocaleDateString('vi-VN');
                     document.getElementById('revenue-title').textContent = `Doanh thu từ ${from} đến ${to}`;
-                    document.getElementById('revenue-total').textContent =
-                        `Tổng doanh thu: ${formatCurrency(res.total)}`;
 
+                    // Hiển thị tổng doanh thu và tổng lợi nhuận
+                    document.getElementById('revenue-total').innerHTML = `
+                    <strong>Tổng doanh thu:</strong> ${formatCurrency(res.total)}`;
+
+                    document.getElementById('profit-total').innerHTML = `
+                    <strong>Tổng lợi nhuận:</strong> ${formatCurrency(res.total_profit)}`;
+
+                    // Nếu có tăng trưởng thì hiển thị thêm
                     if (res.growth_rate !== null) {
                         const trend = res.growth_rate >= 0 ? '↑' : '↓';
                         const color = res.growth_rate >= 0 ? 'green' : 'red';
