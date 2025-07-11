@@ -167,6 +167,7 @@ class CheckoutController extends Controller
                     'order_id' => $order->id,
                     'product_variant_id' => $item->product_variant_id,
                     'quantity' => $item->quantity,
+                    'import_price' => $item->productVariant->import_price, // Thêm cột import_price
                     'price' => $item->productVariant->price,
                     'discount' => 0,
                     'subtotal' => $item->productVariant->price * $item->quantity,
