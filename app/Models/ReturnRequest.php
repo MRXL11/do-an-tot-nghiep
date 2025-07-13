@@ -68,7 +68,6 @@ class ReturnRequest extends Model
             'approved'  => ['label' => 'Đã chấp nhận trả hàng',   'color' => 'primary'],
             'rejected'  => ['label' => 'Yêu cầu bị từ chối',      'color' => 'danger'],
             'refunded'  => ['label' => 'Đã hoàn tiền',            'color' => 'success'],
-            'canceled'  => ['label' => 'Đã huỷ yêu cầu',          'color' => 'secondary'],
         ];
 
         return $statusLabels[$status] ?? ['label' => 'Không xác định', 'color' => 'dark'];

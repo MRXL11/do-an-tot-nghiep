@@ -41,6 +41,7 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
     Route::get('/admin/statistics/order-status', [StatisticsController::class, 'orderStatusByDate']);
     Route::get('/admin/statistics/low-stock', [StatisticsController::class, 'lowStockVariants'])->name('admin.statistics.low-stock');
     Route::get('/admin/statistics/pending-reviews', [StatisticsController::class, 'getPendingReviews']);
+    Route::get('/admin/statistics/latest-return-requests', [StatisticsController::class, 'getLatestReturnRequests']);
 
     // Nhóm route admin với prefix và name
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -52,9 +53,12 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
         // Đơn hàng (Orders)
         Route::resource('orders', OrderController::class)
             ->except(['store', 'create', 'edit', 'destroy']);
-        Route::patch('/admin/return-requests/{id}', [OrderController::class, 'updateReturnStatus'])
+        // Cập nhật trạng thái trả hàng
+        Route::patch('/return-requests/{id}', [OrderController::class, 'updateReturnStatus'])
             ->name('return-requests.update');
+        // Hủy đơn hàng
         Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+
 
         // Danh mục (Categories)
         Route::get('/categories/trashed', [CategoryController::class, 'trashed'])->name('categories.trashed');
