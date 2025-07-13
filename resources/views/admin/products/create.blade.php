@@ -319,21 +319,5 @@
 
         });
 
-        // show cancel confirmation modal
-        function showCancelModal(url, message) {
-            document.getElementById('cancelForm').action = url;
-            document.getElementById('cancelConfirmMessage').innerText = message;
-            new bootstrap.Modal(document.getElementById('cancelConfirmModal')).show();
-        }
-
-        // submit status update form
-        function submitStatusUpdate(url, nextStatus, actionLabel) {
-            if (confirm(`Bạn có chắc muốn thực hiện hành động: "${actionLabel}" không?`)) {
-                const form = document.getElementById('statusUpdateForm');
-                form.action = url;
-                document.getElementById('statusInput').value = nextStatus;
-                form.submit();
-            }
-        }
     </script>
 @endsection

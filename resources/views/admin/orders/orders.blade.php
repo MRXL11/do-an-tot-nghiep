@@ -64,6 +64,7 @@
                                 <th scope="col">Phương thức thanh toán</th>
                                 <th scope="col">Trạng thái thanh toán</th>
                                 <th scope="col">Trạng thái</th>
+                                <th scope="col">Trả hàng / Hoàn tiền</th>
                                 <th scope="col">Thao tác</th>
                             </tr>
                         </thead>
@@ -91,59 +92,110 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <a class="btn btn-sm btn-primary me-1"
-                                            href="{{ route('admin.orders.show', $order->id) }}">
-                                            <i class="bi bi-info-circle"></i> Chi tiết
-                                        </a>
-
-                                        @if (!in_array($order->status, ['delivered', 'completed', 'cancelled']))
-                                            {{-- Nút Xác nhận tương ứng với trạng thái --}}
+                                        @if ($order->returnRequest)
                                             @php
-                                                // Xác định thông điệp huỷ đơn dựa trên trạng thái
-                                                $cancelMessages = [
-                                                    'pending' =>
-                                                        'Đơn hàng đang chờ xác nhận. Bạn có chắc muốn huỷ không?',
-                                                    'processing' => 'Đơn hàng đang xử lý. Bạn có chắc muốn huỷ không?',
-                                                    'shipped' =>
-                                                        'Đơn đã giao cho đơn vị vận chuyển. Bạn có chắc muốn huỷ không?',
-                                                ];
-
-                                                $cancelMessage =
-                                                    $cancelMessages[$order->status] ??
-                                                    'Bạn có chắc muốn huỷ đơn hàng này không?';
-
-                                                $statusActions = [
-                                                    'pending' => [
-                                                        'label' => 'Xác nhận đơn',
-                                                        'next_status' => 'processing',
-                                                    ],
-                                                    'processing' => [
-                                                        'label' => 'Bắt đầu giao hàng',
-                                                        'next_status' => 'shipped',
-                                                    ],
-                                                    'shipped' => [
-                                                        'label' => 'Đã giao hàng',
-                                                        'next_status' => 'delivered',
-                                                    ],
-                                                ];
-
-                                                $action = $statusActions[$order->status] ?? null;
+                                                $returnStatus = $order->returnRequest->return_status;
+                                                $canUpdateReturn = in_array($order->returnRequest->status, [
+                                                    'requested',
+                                                    'approved',
+                                                ]);
                                             @endphp
 
-                                            @if ($action)
-                                                <button class="btn btn-sm btn-success me-1"
-                                                    onclick="submitStatusUpdate('{{ route('admin.orders.update', $order->id) }}',
-                                                    '{{ $action['next_status'] }}', '{{ $action['label'] }}')">
-                                                    <i class="bi bi-pencil-square"></i> {{ $action['label'] }}
+                                            <div class="d-flex flex-column gap-1">
+                                                {{-- Badge trạng thái --}}
+                                                <span class="badge bg-{{ $returnStatus['color'] }}">
+                                                    <i class="bi {{ $returnStatus['icon'] }}"></i>
+                                                    {{ $returnStatus['title'] }}
+                                                </span>
+
+                                                {{-- Form xử lý trạng thái tiếp theo --}}
+                                                @if ($canUpdateReturn)
+                                                    <form method="POST"
+                                                        action="{{ route('admin.return-requests.update', $order->returnRequest->id) }}">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <div class="input-group input-group-sm mt-1">
+                                                            <select class="form-select form-select-sm" name="status"
+                                                                required>
+                                                                <option value="">-- Cập nhật trạng thái --</option>
+
+                                                                @if ($order->returnRequest->status === 'requested')
+                                                                    <option value="approved">✅ Chấp nhận trả hàng</option>
+                                                                    <option value="rejected">❌ Từ chối yêu cầu</option>
+                                                                @elseif($order->returnRequest->status === 'approved')
+                                                                    <option value="refunded">💸 Đánh dấu hoàn tiền</option>
+                                                                @endif
+                                                            </select>
+                                                            <button class="btn btn-outline-primary" type="submit">
+                                                                <i class="bi bi-send"></i>
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            {{-- Nút Chi tiết đơn hàng --}}
+                                            <a class="btn btn-sm btn-primary"
+                                                href="{{ route('admin.orders.show', $order->id) }}">
+                                                <i class="bi bi-info-circle"></i> Chi tiết
+                                            </a>
+
+                                            @if (!in_array($order->status, ['delivered', 'completed', 'cancelled']))
+                                                {{-- Nút xác nhận trạng thái tiếp theo --}}
+                                                @php
+                                                    $cancelMessages = [
+                                                        'pending' =>
+                                                            'Đơn hàng đang chờ xác nhận. Bạn có chắc muốn huỷ không?',
+                                                        'processing' =>
+                                                            'Đơn hàng đang xử lý. Bạn có chắc muốn huỷ không?',
+                                                        'shipped' =>
+                                                            'Đơn đã giao cho đơn vị vận chuyển. Bạn có chắc muốn huỷ không?',
+                                                    ];
+
+                                                    $cancelMessage =
+                                                        $cancelMessages[$order->status] ??
+                                                        'Bạn có chắc muốn huỷ đơn hàng này không?';
+
+                                                    $statusActions = [
+                                                        'pending' => [
+                                                            'label' => 'Xác nhận đơn',
+                                                            'next_status' => 'processing',
+                                                        ],
+                                                        'processing' => [
+                                                            'label' => 'Bắt đầu giao hàng',
+                                                            'next_status' => 'shipped',
+                                                        ],
+                                                        'shipped' => [
+                                                            'label' => 'Đã giao hàng',
+                                                            'next_status' => 'delivered',
+                                                        ],
+                                                    ];
+
+                                                    $action = $statusActions[$order->status] ?? null;
+                                                @endphp
+
+                                                @if ($action)
+                                                    <button class="btn btn-sm btn-success"
+                                                        onclick="
+                                                        submitStatusUpdate('{{ route('admin.orders.update', $order->id) }}',
+                                                            '{{ $action['next_status'] }}', '{{ $action['label'] }}')">
+                                                        <i class="bi bi-pencil-square"></i> {{ $action['label'] }}
+                                                    </button>
+                                                @endif
+
+                                                {{-- Nút Hủy đơn --}}
+                                                <button class="btn btn-sm btn-danger"
+                                                    onclick="showCancelModal('{{ route('admin.orders.cancel', $order->id) }}', '{{ $cancelMessage }}')">
+                                                    <i class="bi bi-x-circle"></i> Huỷ đơn
                                                 </button>
                                             @endif
+                                        </div>
 
-                                            {{-- Nút Hủy đơn --}}
-                                            <button class="btn btn-sm btn-danger me-1"
-                                                onclick="showCancelModal('{{ route('admin.orders.cancel', $order->id) }}', '{{ $cancelMessage }}')">
-                                                <i class="bi bi-x-circle"></i> Huỷ đơn
-                                            </button>
-                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -188,4 +240,25 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        // submit status update form
+        function submitStatusUpdate(url, nextStatus, actionLabel) {
+            if (confirm(`Bạn có chắc muốn thực hiện hành động: "${actionLabel}" không?`)) {
+                const form = document.getElementById('statusUpdateForm');
+                form.action = url;
+                document.getElementById('statusInput').value = nextStatus;
+                form.submit();
+            }
+        }
+
+        // show cancel confirmation modal
+        function showCancelModal(url, message) {
+            document.getElementById('cancelForm').action = url;
+            document.getElementById('cancelConfirmMessage').innerText = message;
+            new bootstrap.Modal(document.getElementById('cancelConfirmModal')).show();
+        }
+    </script>
 @endsection

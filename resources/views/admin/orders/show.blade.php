@@ -52,53 +52,116 @@
             </div>
 
             {{-- Thông tin đơn hàng --}}
-            <div class="row mb-2">
-                <div class="col-md-2">
-                    <h6 class="text-muted">Đơn hàng</h6>
-                    <p class="fw-semibold">#{{ $order->order_code }}</p>
-                </div>
-                <div class="col-md-2">
-                    <h6 class="text-muted">Trạng thái</h6>
-                    <span class="badge {{ $order->getStatusLabel()['color'] }}">
-                        {{ $order->getStatusLabel()['label'] }}
-                    </span>
-                </div>
-                <div class="col-md-2">
-                    <h6 class="text-muted">Phương thức thanh toán</h6>
-                    <p class="fw-semibold">{{ strtoupper($order->payment_method) }}</p>
-                </div>
-                <div class="col-md-2">
-                    <h6 class="text-muted">Trạng thái thanh toán</h6>
-                    @if ($order->payment_status === 'completed')
-                        <span class="badge bg-success">Đã thanh toán</span>
-                    @elseif ($order->payment_status === 'pending')
-                        <span class="badge bg-warning text-dark">Đang chờ</span>
-                    @elseif ($order->payment_status === 'failed')
-                        <span class="badge bg-danger">Thanh toán thất bại</span>
-                    @else
-                        <span class="badge bg-secondary">Không xác định</span>
-                    @endif
-                </div>
-                <div class="col-md-2">
-                    <h6 class="text-muted">Phiếu giảm giá</h6>
-                    @if ($order->coupon)
-                        @php
-                            $coupon = $order->coupon;
-                            $label =
-                                $coupon->discount_type === 'percent'
-                                    ? 'Giảm ' . $coupon->discount_value . '%'
-                                    : 'Giảm ' . number_format($coupon->discount_value, 0, ',', '.') . ' đ';
-                        @endphp
-                        <p class="fw-semibold">{{ $coupon->code }} - {{ $label }}</p>
-                    @else
-                        <p class="fw-semibold">Không sử dụng</p>
-                    @endif
-                </div>
-                <div class="col-md-2">
-                    <h6 class="text-muted">Ngày đặt hàng</h6>
-                    <p class="fw-semibold">{{ $order->created_at->format('d/m/Y') }}</p>
+            <div class="row mb-3 align-items-end">
+                <div class="row mb-2">
+                    <div class="col-md-2">
+                        <h6 class="text-muted">Đơn hàng</h6>
+                        <p class="fw-semibold">#{{ $order->order_code }}</p>
+                    </div>
+
+                    <div class="col-md-2">
+                        <h6 class="text-muted">Trạng thái</h6>
+                        <span class="badge {{ $order->getStatusLabel()['color'] }}">
+                            {{ $order->getStatusLabel()['label'] }}
+                        </span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <h6 class="text-muted">Phương thức thanh toán</h6>
+                        <p class="fw-semibold">{{ strtoupper($order->payment_method) }}</p>
+                    </div>
+
+                    <div class="col-md-2">
+                        <h6 class="text-muted">Trạng thái thanh toán</h6>
+                        @if ($order->payment_status === 'completed')
+                            <span class="badge bg-success">Đã thanh toán</span>
+                        @elseif ($order->payment_status === 'pending')
+                            <span class="badge bg-warning text-dark">Đang chờ</span>
+                        @elseif ($order->payment_status === 'failed')
+                            <span class="badge bg-danger">Thanh toán thất bại</span>
+                        @else
+                            <span class="badge bg-secondary">Không xác định</span>
+                        @endif
+                    </div>
+
+                    <div class="col-md-2">
+                        <h6 class="text-muted">Phiếu giảm giá</h6>
+                        @if ($order->coupon)
+                            @php
+                                $coupon = $order->coupon;
+                                $label =
+                                    $coupon->discount_type === 'percent'
+                                        ? 'Giảm ' . $coupon->discount_value . '%'
+                                        : 'Giảm ' . number_format($coupon->discount_value, 0, ',', '.') . ' đ';
+                            @endphp
+                            <p class="fw-semibold">{{ $coupon->code }} - {{ $label }}</p>
+                        @else
+                            <p class="fw-semibold">Không sử dụng</p>
+                        @endif
+                    </div>
+
+                    <div class="col-md-2">
+                        <h6 class="text-muted">Ngày đặt hàng</h6>
+                        <p class="fw-semibold">{{ $order->created_at->format('d/m/Y') }}</p>
+                    </div>
                 </div>
             </div>
+
+            {{-- Nếu có yêu cầu trả hàng --}}
+            @if ($order->returnRequest)
+                @php
+                    $returnStatus = $order->returnRequest->return_status;
+                    $canUpdateReturn = in_array($order->returnRequest->status, ['requested', 'approved']);
+                @endphp
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="border rounded p-3 bg-light">
+                            <div class="row align-items-center">
+                                {{-- Cột hiển thị trạng thái --}}
+                                <div class="col-md-4">
+                                    <strong>Trả hàng / Hoàn tiền:</strong>
+                                    <span class="badge bg-{{ $returnStatus['color'] }}">
+                                        <i class="bi {{ $returnStatus['icon'] }}"></i> {{ $returnStatus['title'] }}
+                                    </span>
+                                </div>
+
+                                {{-- Cột form cập nhật trạng thái --}}
+                                @if ($canUpdateReturn)
+                                    <div class="col-md-8 d-flex justify-content-end">
+                                        <form method="POST"
+                                            action="{{ route('admin.return-requests.update', $order->returnRequest->id) }}"
+                                            class="row g-2 align-items-center">
+                                            @csrf
+                                            @method('PATCH')
+
+                                            <div class="col-auto">
+                                                <label for="return_status" class="col-form-label visually-hidden">Trạng
+                                                    thái</label>
+                                                <select class="form-select form-select-sm" name="status" id="return_status"
+                                                    required>
+                                                    <option value="">-- Cập nhật trạng thái --</option>
+                                                    @if ($order->returnRequest->status === 'requested')
+                                                        <option value="approved">✅ Chấp nhận trả hàng</option>
+                                                        <option value="rejected">❌ Từ chối yêu cầu</option>
+                                                    @elseif ($order->returnRequest->status === 'approved')
+                                                        <option value="refunded">💸 Đánh dấu hoàn tiền</option>
+                                                    @endif
+                                                </select>
+                                            </div>
+
+                                            <div class="col-auto">
+                                                <button type="submit" class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-send"></i> Cập nhật
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             <div class="col-md-12 mt-2 mb-2">
                 @if (!in_array($order->status, ['delivered', 'completed', 'cancelled']))
@@ -266,4 +329,25 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        // submit status update form
+        function submitStatusUpdate(url, nextStatus, actionLabel) {
+            if (confirm(`Bạn có chắc muốn thực hiện hành động: "${actionLabel}" không?`)) {
+                const form = document.getElementById('statusUpdateForm');
+                form.action = url;
+                document.getElementById('statusInput').value = nextStatus;
+                form.submit();
+            }
+        }
+
+        // show cancel confirmation modal
+        function showCancelModal(url, message) {
+            document.getElementById('cancelForm').action = url;
+            document.getElementById('cancelConfirmMessage').innerText = message;
+            new bootstrap.Modal(document.getElementById('cancelConfirmModal')).show();
+        }
+    </script>
 @endsection
