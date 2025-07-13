@@ -38,6 +38,11 @@ class Order extends Model
         return $this->belongsTo(Coupon::class);
     }
 
+    public function returnRequest()
+    {
+        return $this->hasOne(ReturnRequest::class);
+    }
+
     // gán hiển thị tiếng việt và định dạng cho trạng thái đơn hàng
     public function getStatusLabel()
     {

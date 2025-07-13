@@ -31,6 +31,7 @@
     use App\Http\Controllers\Client\CheckoutController;
     use App\Http\Controllers\Client\OrderController as ClientOrderController;
     use App\Http\Controllers\Client\WishlistController;
+    use App\Http\Controllers\Client\ReturnRequestController;
 
     // ✅ Route cho Admin
     // Route cho Admin
@@ -56,6 +57,10 @@
             // Đơn hàng (Orders)
             Route::resource('orders', OrderController::class)
                 ->except(['store', 'create', 'edit', 'destroy']);
+            // Cập nhật trạng thái trả hàng
+            Route::patch('/admin/return-requests/{id}', [OrderController::class, 'updateReturnStatus'])
+                ->name('return-requests.update');
+            // Hủy đơn hàng
             Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
 
@@ -188,6 +193,8 @@
         ->name('order.cancel.request');
     // xác nhận đã nhận đơn từ phía client
     Route::post('/order/{id}/received', [ClientOrderController::class, 'received'])->name('order.received');
+    // Route yêu cầu trả hàng
+    Route::post('/orders/{id}/return-request', [ReturnRequestController::class, 'requestReturn'])->name('orders.requestReturn');
 
     // ✅ Route xác thực (Auth)
     Route::middleware('web')->group(function () {

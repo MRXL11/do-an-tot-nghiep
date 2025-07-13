@@ -237,6 +237,7 @@
 
                                             </div>
 
+                                            {{-- Nếu đơn hàng đang chờ xử lý hoặc đang xử lý: cho phép huỷ --}}
                                             @if (in_array($order->status, ['pending', 'processing']))
                                                 <div class="text-end">
                                                     <form
@@ -244,31 +245,48 @@
                                                         method="POST">
                                                         @csrf
                                                         <button type="submit" class="btn btn-danger"
-                                                            onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')"><i
-                                                                class="bi bi-x-circle"></i> Hủy đơn hàng</button>
+                                                            onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
+                                                            <i class="bi bi-x-circle"></i> Hủy đơn hàng
+                                                        </button>
                                                     </form>
                                                 </div>
+
+                                                {{-- Nếu đơn hàng đã giao: cho phép xác nhận "Đã nhận hàng" và/hoặc yêu cầu trả hàng --}}
                                             @elseif($order->status === 'delivered')
                                                 <div class="d-flex justify-content-end gap-2 mt-3 flex-wrap">
-                                                    <form action="{{ route('order.received', $order->id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-outline-success"
-                                                            onclick="return confirm('Chỉ chọn nút này khi bạn đã nhận được hàng! Xác nhận?')">
-                                                            <i class="bi bi-box-seam"></i> Đã nhận được hàng
-                                                        </button>
-                                                    </form>
+                                                    {{-- Nếu chưa gửi yêu cầu trả hàng: hiện nút yêu cầu --}}
+                                                    @if (!$order->returnRequest)
+                                                        {{-- Nút xác nhận đã nhận hàng --}}
+                                                        <form action="{{ route('order.received', $order->id) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-outline-success"
+                                                                onclick="return confirm('Chỉ chọn nút này khi bạn đã nhận được hàng! Xác nhận?')">
+                                                                <i class="bi bi-box-seam"></i> Đã nhận được hàng
+                                                            </button>
+                                                        </form>
 
-                                                    <form action="{{ route('order.cancel.request', $order->id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-outline-primary"
-                                                            onclick="return confirm('Bạn có chắc muốn yêu cầu trả hàng không?')">
-                                                            <i class="bi bi-caret-left"></i> Trả hàng / Hoàn tiền
-                                                        </button>
-                                                    </form>
+                                                        {{-- Nút yêu cầu trả hàng --}}
+                                                        <form action="{{ route('orders.requestReturn', $order->id) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-outline-primary"
+                                                                onclick="return confirm('Bạn có chắc muốn yêu cầu trả hàng không?')">
+                                                                <i class="bi bi-caret-left"></i> Trả hàng / Hoàn tiền
+                                                            </button>
+                                                        </form>
+
+                                                        {{-- Nếu đã gửi yêu cầu trả hàng: hiển thị trạng thái yêu cầu --}}
+                                                    @else
+                                                        <span
+                                                            class="bg-{{ $order->returnRequest->return_status['color'] }} align-self-center"
+                                                            style="cursor: default; padding: 0.5rem 1rem; border-radius: 0.5rem;color: white;">
+                                                            <i
+                                                                class="{{ $order->returnRequest->return_status['icon'] }}"></i>
+                                                            {{ $order->returnRequest->return_status['label'] }}
+                                                        </span>
+                                                    @endif
                                                 </div>
-                                            @else
                                             @endif
                                         </div>
                                     </div>
