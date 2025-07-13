@@ -1,40 +1,10 @@
 @extends('client.pages.page-layout')
 
 @section('content')
-    @if (session('warning'))
-        <div class="container">
-            <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
-                {{ session('warning') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        </div>
-    @endif
-    @if (session('error'))
-        <div class="container">
-            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        </div>
-    @endif
-
-    @if ($errors->any())
-        <div class="container">
-            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        </div>
-    @endif
-    {{-- Bắt đầu form thanh toán --}}
     <form method="POST" action="{{ route('checkout.submit') }}">
         @csrf
-        <!-- Thêm input hidden để truyền cart_item_ids -->
         <input type="hidden" name="cart_item_ids" value="{{ implode(',', $cartItems->pluck('id')->toArray()) }}">
+        <input type="hidden" name="shipping_address_id" id="shipping-address-id">
         <div class="container">
             <div class="container">
                 <div class="row justify-content-center align-items-start">
@@ -51,8 +21,6 @@
                                 <p class="text-muted mb-3">
                                     Bạn đã chọn <strong class="text-danger">{{ count($cartItems) }} sản phẩm</strong>
                                 </p>
-
-                                <!-- Hiển thị từng sản phẩm đã chọn -->
                                 @foreach ($cartItems as $item)
                                     <div class="card mb-3 border-0 shadow-sm">
                                         <div class="card-body d-flex justify-content-between align-items-center">
@@ -87,8 +55,7 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="mb-0"><i class="bi bi-credit-card-fill me-2 text-primary"></i>Chi tiết
-                                        thanh
-                                        toán
+                                        thanh toán
                                     </h5>
                                     <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp"
                                         class="rounded-circle" width="40" alt="avatar">
@@ -125,7 +92,6 @@
                                         <i class="bi bi-truck me-2"></i> Thanh toán khi nhận hàng (COD)
                                     </div>
                                 </div>
-
                                 <div id="card-details" class="payment-method-details" style="display: none;">
                                     <div class="alert alert-info py-2 mb-3">
                                         <i class="bi bi-credit-card-2-front me-2"></i> Thanh toán bằng thẻ tín dụng/ghi nợ
@@ -154,68 +120,96 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Mã giảm giá</label>
                                     <div class="input-group">
-                                        <input type="text" id="coupon-code" name="coupon_code" class="form-control"
-                                            placeholder="Nhập mã">
+                                        <input type="text" id="coupon-code" name="coupon_code"
+                                            class="form-control @error('coupon_code') is-invalid @enderror"
+                                            placeholder="Nhập mã" value="{{ old('coupon_code', $coupon ?? '') }}">
                                         <button type="button" class="btn btn-outline-primary" id="apply-coupon">Áp
                                             dụng</button>
+                                        @error('coupon_code')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
-                                    <small id="coupon-feedback" class="text-danger d-block mt-1"
+                                    <small id="coupon-feedback" class="form-text mt-1"
                                         style="display: none;"></small>
                                 </div>
 
                                 <!-- Chọn địa chỉ có sẵn -->
-                                <!-- Dropdown chọn địa chỉ -->
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Chọn địa chỉ giao hàng:</label>
                                     <select class="form-select" id="address-select">
                                         <option value="">-- Chọn địa chỉ --</option>
                                         @foreach ($user->shippingAddresses ?? [] as $address)
-                                            <option value="{{ $address->id }}" data-name="{{ $address->user->name }}"
+                                            <option value="{{ $address->id }}" data-name="{{ $address->name }}"
                                                 data-phone="{{ $address->phone_number }}"
-                                                data-address="{{ $address->full_address }}">
+                                                data-address="{{ $address->address }}" data-ward="{{ $address->ward }}"
+                                                data-district="{{ $address->district }}"
+                                                data-city="{{ $address->city }}"
+                                                data-full-address="{{ $address->full_address }}">
                                                 {{ $address->full_address }}
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
 
-                                <!-- Hiển thị chi tiết bên dưới -->
+                                <!-- Hiển thị chi tiết địa chỉ đã chọn -->
                                 <div id="address-details" class="border p-3 rounded bg-light d-none">
                                     <p class="mb-1"><strong>Người nhận:</strong> <span id="detail-name"></span></p>
                                     <p class="mb-1"><strong>Số điện thoại:</strong> <span id="detail-phone"></span></p>
                                     <p class="mb-0"><strong>Địa chỉ:</strong> <span id="detail-address"></span></p>
                                 </div>
 
-                                <!-- THÔNG TIN GIAO HÀNG -->
-                                <div class="mb-4 mt-4">
+                                <!-- Thông tin giao hàng (nhập thủ công) -->
+                                <div class="mb-4 mt-4" id="manual-address-input">
                                     <label class="form-label fw-semibold">Thông tin giao hàng</label>
-
                                     <div class="mb-2">
-                                        <input type="text" name="name" class="form-control"
-                                            placeholder="Họ và tên người nhận">
+                                        <input type="text" name="name"
+                                            class="form-control @error('name') is-invalid @enderror"
+                                            placeholder="Họ và tên người nhận" value="{{ old('name') }}">
+                                        @error('name')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
-
                                     <div class="mb-2">
-                                        <input type="text" name="phone_number" class="form-control"
-                                            placeholder="Số điện thoại">
+                                        <input type="text" name="phone_number"
+                                            class="form-control @error('phone_number') is-invalid @enderror"
+                                            placeholder="Số điện thoại" value="{{ old('phone_number') }}">
+                                        @error('phone_number')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
-
                                     <div class="mb-2">
-                                        <input type="text" name="address" class="form-control"
-                                            placeholder="Địa chỉ cụ thể (Số nhà, tên đường...)">
+                                        <input type="text" name="address"
+                                            class="form-control @error('address') is-invalid @enderror"
+                                            placeholder="Địa chỉ cụ thể (Số nhà, tên đường...)"
+                                            value="{{ old('address') }}">
+                                        @error('address')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
-
                                     <div class="row">
                                         <div class="col-md-4 mb-2">
-                                            <input type="text" name="ward" class="form-control" placeholder="Xã">
+                                            <input type="text" name="ward"
+                                                class="form-control @error('ward') is-invalid @enderror" placeholder="Xã"
+                                                value="{{ old('ward') }}">
+                                            @error('ward')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                         <div class="col-md-4 mb-2">
-                                            <input type="text" name="district" class="form-control"
-                                                placeholder="Quận">
+                                            <input type="text" name="district"
+                                                class="form-control @error('district') is-invalid @enderror"
+                                                placeholder="Quận" value="{{ old('district') }}">
+                                            @error('district')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                         <div class="col-md-4 mb-2">
-                                            <input type="text" name="city" class="form-control"
-                                                placeholder="Thành phố">
+                                            <input type="text" name="city"
+                                                class="form-control @error('city') is-invalid @enderror"
+                                                placeholder="Thành phố" value="{{ old('city') }}">
+                                            @error('city')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                     </div>
                                 </div>
@@ -224,23 +218,20 @@
                                 <hr>
                                 <div class="d-flex justify-content-between">
                                     <span>Tạm tính:</span>
-                                    <strong>{{ number_format($subtotal, 0, ',', '.') }} ₫
-                                    </strong>
+                                    <strong>{{ number_format($subtotal, 0, ',', '.') }} ₫</strong>
                                 </div>
                                 <div class="d-flex justify-content-between">
                                     <span>Phí vận chuyển:</span>
                                     <strong>20.000 ₫</strong>
                                 </div>
-                                {{-- Hiển thị thông tin giảm giá --}}
-                                {{-- Cần sửa lại để thay đổi khi mã giảm giá được nhập --}}
                                 <div class="d-flex justify-content-between">
                                     <span>Giảm giá:</span>
-                                    <strong>-0 ₫</strong>
+                                    <strong id="discount-amount">-{{ number_format($discount, 0, ',', '.') }} ₫</strong>
                                 </div>
                                 <div class="d-flex justify-content-between fs-5 mt-2">
                                     <span>Tổng cộng:</span>
-                                    <strong class="text-danger">
-                                        {{ number_format($subtotal + 20000, 0, ',', '.') }} ₫
+                                    <strong class="text-danger" id="total-amount">
+                                        {{ number_format($total, 0, ',', '.') }} ₫
                                     </strong>
                                 </div>
 
@@ -256,23 +247,20 @@
                                 <!-- Nút thanh toán -->
                                 <button type="submit" class="btn btn-success w-100 mt-3" id="submit-btn">
                                     <i class="bi bi-cart-check me-2"></i>Thanh toán
-                                    ({{ number_format($subtotal + 20000, 0, ',', '.') }} ₫)
+                                    ({{ number_format($total, 0, ',', '.') }} ₫)
                                 </button>
-                                
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-    </form> {{-- Kết thúc form --}}
+        </div>
+    </form>
 @endsection
 
 @section('scripts')
- {{-- <script src="https://www.paypal.com/sdk/js?client-id={{ env('PAYPAL_CLIENT_ID') }}&currency=USD"></script> --}}
     <script>
-        // Khởi tạo khi trang được tải
         document.addEventListener("DOMContentLoaded", function() {
-            // Lấy các input radio và nút thanh toán
             const radios = document.querySelectorAll('input[name="paymentMethod"]');
             const submitBtn = document.getElementById('submit-btn');
             const details = {
@@ -280,31 +268,29 @@
                 momo: document.getElementById("momo-details"),
                 card: document.getElementById("card-details")
             };
-            const total = "{{ number_format($subtotal + 20000, 0, ',', '.') }} ₫"; // Tổng tiền
+            const totalElement = document.getElementById('total-amount');
+            const discountElement = document.getElementById('discount-amount');
+            const couponFeedback = document.getElementById('coupon-feedback');
+            const applyCouponBtn = document.getElementById('apply-coupon');
+            const couponInput = document.getElementById('coupon-code');
+            const cartItemIds = "{{ implode(',', $cartItems->pluck('id')->toArray()) }}";
 
-            // Hàm cập nhật giao diện nút thanh toán
             function updatePaymentButton() {
                 const selected = document.querySelector('input[name="paymentMethod"]:checked').value;
-
-                // Cập nhật văn bản và kiểu dáng nút theo phương thức thanh toán
+                const total = totalElement.textContent.trim();
                 if (selected === 'cod') {
                     submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Đặt hàng`;
-                    submitBtn.classList.remove('btn-primary');
-                    submitBtn.classList.remove('btn-warning');
+                    submitBtn.classList.remove('btn-primary', 'btn-warning');
                     submitBtn.classList.add('btn-success');
                 } else if (selected === 'card') {
                     submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán bằng thẻ (${total})`;
-                    submitBtn.classList.remove('btn-success');
-                    submitBtn.classList.remove('btn-warning');
+                    submitBtn.classList.remove('btn-success', 'btn-warning');
                     submitBtn.classList.add('btn-primary');
                 } else {
                     submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${total})`;
-                    submitBtn.classList.remove('btn-primary');
-                    submitBtn.classList.remove('btn-success');
+                    submitBtn.classList.remove('btn-primary', 'btn-success');
                     submitBtn.classList.add('btn-warning');
                 }
-
-                // Hiển thị chi tiết phương thức thanh toán
                 Object.keys(details).forEach(key => {
                     if (details[key]) {
                         details[key].style.display = (key === selected) ? "block" : "none";
@@ -312,42 +298,98 @@
                 });
             }
 
-            // Gắn sự kiện thay đổi cho radio buttons
             radios.forEach(radio => radio.addEventListener("change", updatePaymentButton));
-
-            // Gọi hàm để hiển thị trạng thái ban đầu
             updatePaymentButton();
-        });
 
-        // Hiển thị thông tin địa chỉ khi chọn
-        document.addEventListener('DOMContentLoaded', function() {
             const select = document.getElementById('address-select');
             const detailBox = document.getElementById('address-details');
+            const manualAddressInput = document.getElementById('manual-address-input');
+            const shippingAddressIdInput = document.getElementById('shipping-address-id');
             const nameSpan = document.getElementById('detail-name');
             const phoneSpan = document.getElementById('detail-phone');
             const addressSpan = document.getElementById('detail-address');
+            const nameInput = document.querySelector('input[name="name"]');
+            const phoneInput = document.querySelector('input[name="phone_number"]');
+            const addressInput = document.querySelector('input[name="address"]');
+            const wardInput = document.querySelector('input[name="ward"]');
+            const districtInput = document.querySelector('input[name="district"]');
+            const cityInput = document.querySelector('input[name="city"]');
 
-            // Cập nhật thông tin địa chỉ khi chọn từ dropdown
             select.addEventListener('change', function() {
                 const selected = select.options[select.selectedIndex];
-
                 if (selected.value) {
                     nameSpan.textContent = selected.dataset.name || '';
                     phoneSpan.textContent = selected.dataset.phone || '';
-                    addressSpan.textContent = selected.dataset.address || '';
+                    addressSpan.textContent = selected.dataset.fullAddress || '';
                     detailBox.classList.remove('d-none');
+                    nameInput.value = selected.dataset.name || '';
+                    phoneInput.value = selected.dataset.phone || '';
+                    addressInput.value = selected.dataset.address || '';
+                    wardInput.value = selected.dataset.ward || '';
+                    districtInput.value = selected.dataset.district || '';
+                    cityInput.value = selected.dataset.city || '';
+                    shippingAddressIdInput.value = selected.value;
+                    manualAddressInput.classList.add('d-none');
                 } else {
                     detailBox.classList.add('d-none');
+                    manualAddressInput.classList.remove('d-none');
+                    nameInput.value = '';
+                    phoneInput.value = '';
+                    addressInput.value = '';
+                    wardInput.value = '';
+                    districtInput.value = '';
+                    cityInput.value = '';
+                    shippingAddressIdInput.value = '';
                 }
             });
-        });
 
-        // Kiểm tra đồng ý với chính sách trước khi submit
-        document.querySelector('form').addEventListener('submit', function(e) {
-            if (!document.getElementById('agree').checked) {
-                e.preventDefault();
-                alert('Bạn cần đồng ý với chính sách mua hàng để tiếp tục.');
-            }
+            applyCouponBtn.addEventListener('click', function() {
+                const couponCode = couponInput.value.trim();
+                if (!couponCode) {
+                    couponFeedback.textContent = 'Vui lòng nhập mã giảm giá.';
+                    couponFeedback.className = 'form-text text-danger mt-1';
+                    couponFeedback.style.display = 'block';
+                    return;
+                }
+
+                fetch('{{ route('checkout.applyCoupon') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        coupon_code: couponCode,
+                        cart_item_ids: cartItemIds
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    couponFeedback.style.display = 'block';
+                    if (data.success) {
+                        couponFeedback.textContent = data.message;
+                        couponFeedback.className = 'form-text text-success mt-1';
+                        discountElement.textContent = `-${data.formatted_discount}`;
+                        totalElement.textContent = data.formatted_total;
+                        submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${data.formatted_total})`;
+                    } else {
+                        couponFeedback.textContent = data.message;
+                        couponFeedback.className = 'form-text text-danger mt-1';
+                    }
+                })
+                .catch(error => {
+                    couponFeedback.textContent = 'Có lỗi xảy ra khi áp dụng mã giảm giá.';
+                    couponFeedback.className = 'form-text text-danger mt-1';
+                    couponFeedback.style.display = 'block';
+                });
+            });
+
+            document.querySelector('form').addEventListener('submit', function(e) {
+                if (!document.getElementById('agree').checked) {
+                    e.preventDefault();
+                    alert('Bạn cần đồng ý với chính sách mua hàng để tiếp tục.');
+                }
+            });
         });
     </script>
 @endsection
