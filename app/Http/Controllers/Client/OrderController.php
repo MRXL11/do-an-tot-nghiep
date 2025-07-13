@@ -111,7 +111,7 @@ class OrderController extends Controller
             return $detail->price * $detail->quantity;
         });
         $shippingFee = 20000;
-        $total = $subtotal + $shippingFee;
+        $total = $order->total_price;
 
         $cartItems = Cart::where('user_id', Auth::id())->get();
         \Log::info('Cart items after redirect to pay: ' . $cartItems->toJson());
