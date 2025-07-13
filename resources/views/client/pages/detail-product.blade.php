@@ -8,52 +8,52 @@
                 <div class="mb-4">
                     <div class="main-image-container position-relative">
                         @php
-                            $mainImage = $selectedVariant->image ?? $product->thumbnail ?? 'assets/images/single-product-01.jpg';
+                            $mainImage =
+                                $selectedVariant->image ??
+                                ($product->thumbnail ?? 'assets/images/single-product-01.jpg');
                         @endphp
-                        <img src="{{ asset($mainImage) }}" 
-                             class="img-fluid rounded main-product-image shadow-sm" 
-                             alt="Ảnh sản phẩm chính"
-                             style="max-height: 400px; object-fit: cover;">
+                        <img src="{{ asset($mainImage) }}" class="img-fluid rounded main-product-image shadow-sm"
+                            alt="Ảnh sản phẩm chính" style="max-height: 400px; object-fit: cover;">
                     </div>
                 </div>
-                
+
                 <!-- Variant images strip -->
-                <div class="variant-images-strip d-flex overflow-x-auto pb-3" style="scroll-behavior: smooth; user-select: none;">
+                <div class="variant-images-strip d-flex overflow-x-auto pb-3"
+                    style="scroll-behavior: smooth; user-select: none;">
                     @php
                         $variantImages = [];
-                        foreach ($product->variants->where('status', 'active')->where('stock_quantity', '>', 0) as $variant) {
-                            if ($variant->image) {
-                                $variantImages[$variant->color][] = [
-                                    'image' => asset($variant->image),
-                                    'variant_id' => $variant->id
-                                ];
-                            } else {
-                                $variantImages[$variant->color][] = [
-                                    'image' => asset('assets/images/single-product-01.jpg'),
-                                    'variant_id' => $variant->id
-                                ];
-                            }
+                        // Lấy danh sách các màu duy nhất và ảnh đại diện cho mỗi màu
+                        foreach (
+                            $product->variants
+                                ->where('status', 'active')
+                                ->where('stock_quantity', '>', 0)
+                                ->groupBy('color')
+                            as $color => $variants
+                        ) {
+                            // Lấy biến thể đầu tiên của màu đó
+                            $variant = $variants->first();
+                            $variantImages[$color] = [
+                                'image' => $variant->image
+                                    ? asset($variant->image)
+                                    : asset('assets/images/single-product-01.jpg'),
+                                'variant_id' => $variant->id,
+                            ];
                         }
                     @endphp
-                    @foreach ($variantImages as $color => $images)
-                        @foreach ($images as $index => $imageData)
-                            <div class="position-relative me-2">
-                                <img src="{{ $imageData['image'] }}" 
-                                     class="variant-image rounded shadow-sm {{ $index === 0 ? 'first-variant-image border border-success' : '' }}"
-                                     data-variant-id="{{ $imageData['variant_id'] }}"
-                                     data-color="{{ $color }}"
-                                     style="width: 100px; height: 100px; object-fit: cover; cursor: pointer; transition: transform 0.2s;"
-                                     alt="Ảnh biến thể {{ $color }}"
-                                     onmouseover="this.style.transform='scale(1.1)'"
-                                     onmouseout="this.style.transform='scale(1)'">
-                                @if ($index === 0)
-                                    <span class="badge bg-success position-absolute top-0 start-0" style="font-size: 10px;">{{ $color }}</span>
-                                @endif
-                            </div>
-                        @endforeach
+                    @foreach ($variantImages as $color => $imageData)
+                        <div class="position-relative me-2">
+                            <img src="{{ $imageData['image'] }}"
+                                class="variant-image rounded shadow-sm {{ $selectedVariant->color === $color ? 'border border-success' : '' }}"
+                                data-variant-id="{{ $imageData['variant_id'] }}" data-color="{{ $color }}"
+                                style="width: 100px; height: 100px; object-fit: cover; cursor: pointer; transition: transform 0.2s;"
+                                alt="Ảnh biến thể {{ $color }}" onmouseover="this.style.transform='scale(1.1)'"
+                                onmouseout="this.style.transform='scale(1)'">
+                            <span class="badge bg-success position-absolute top-0 start-0"
+                                style="font-size: 10px;">{{ $color }}</span>
+                        </div>
                     @endforeach
                 </div>
-                
+
                 <!-- Scroll buttons -->
                 <div class="d-flex justify-content-between mt-3">
                     <button class="btn btn-outline-secondary btn-sm scroll-left" type="button">
@@ -88,8 +88,7 @@
                         @endphp
                         <button
                             class="btn btn-outline-{{ $selectedVariant->color === $color && $isAvailable ? 'success' : 'secondary' }} btn-sm me-2 variant-btn {{ !$isAvailable ? 'disabled' : '' }}"
-                            data-color="{{ $color }}"
-                            data-price="{{ $variants->first()->price }}"
+                            data-color="{{ $color }}" data-price="{{ $variants->first()->price }}"
                             data-stock="{{ $variants->first()->stock_quantity }}"
                             {{ !$isAvailable ? 'disabled title="Không khả dụng hoặc hết hàng"' : '' }}>
                             {{ $color }}
@@ -102,12 +101,12 @@
                     <label class="form-label fw-semibold">Kích thước:</label>
                     <select class="form-select w-auto" id="size-select">
                         @foreach ($product->variants->where('color', $selectedVariant->color) as $variant)
-                            <option value="{{ $variant->id }}" 
-                                    data-price="{{ $variant->price }}"
-                                    data-stock="{{ $variant->stock_quantity }}"
-                                    {{ $selectedVariant->id === $variant->id ? 'selected' : '' }}
-                                    {{ $variant->status !== 'active' || $variant->stock_quantity <= 0 ? 'disabled' : '' }}>
-                                {{ $variant->size }} {{ $variant->status !== 'active' || $variant->stock_quantity <= 0 ? '' : '' }}
+                            <option value="{{ $variant->id }}" data-price="{{ $variant->price }}"
+                                data-stock="{{ $variant->stock_quantity }}"
+                                {{ $selectedVariant->id === $variant->id ? 'selected' : '' }}
+                                {{ $variant->status !== 'active' || $variant->stock_quantity <= 0 ? 'disabled' : '' }}>
+                                {{ $variant->size }}
+                                {{ $variant->status !== 'active' || $variant->stock_quantity <= 0 ? '' : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -117,24 +116,21 @@
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Số lượng:</label>
                     <input type="number" class="form-control w-auto" value="1" min="1"
-                           max="{{ $selectedVariant->stock_quantity }}" id="quantity-input">
+                        max="{{ $selectedVariant->stock_quantity }}" id="quantity-input">
                     <small class="text-muted" id="stock-text">Còn {{ $selectedVariant->stock_quantity }} sản phẩm</small>
                 </div>
 
                 <!-- Action buttons -->
                 <div class="d-grid gap-2 d-md-block">
                     @if (Auth::check())
-                        <button 
-                            type="button"
-                            class="btn btn-outline-success btn-lg me-2 btn-add-cart" 
-                            data-qty="1"
-                            data-image="{{ asset($selectedVariant->image ?? $product->thumbnail) }}"
-                        >
+                        <button type="button" class="btn btn-outline-success btn-lg me-2 btn-add-cart" data-qty="1"
+                            data-image="{{ asset($selectedVariant->image ?? $product->thumbnail) }}">
                             <i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ
                         </button>
                     @else
                         <div class="alert alert-warning mt-3" role="alert">
-                            <i class="bi bi-exclamation-circle me-2"></i> Bạn cần <a href="{{ route('login') }}">đăng nhập</a> để mua sắm.
+                            <i class="bi bi-exclamation-circle me-2"></i> Bạn cần <a href="{{ route('login') }}">đăng
+                                nhập</a> để mua sắm.
                         </div>
                     @endif
 
@@ -212,63 +208,61 @@
             </div>
         </div>
 
-      <!-- Related products -->
-<div class="mt-5">
-    <h4 class="mb-4">
-        <i class="bi bi-stars text-warning me-2"></i>Sản phẩm liên quan
-    </h4>
+        <!-- Related products -->
+        <div class="mt-5">
+            <h4 class="mb-4">
+                <i class="bi bi-stars text-warning me-2"></i>Sản phẩm liên quan
+            </h4>
 
-    @if ($relatedProducts->isEmpty())
-        <p>Không có sản phẩm liên quan.</p>
-    @else
-        <div class="row row-cols-1 row-cols-md-4 g-4">
-            @foreach ($relatedProducts as $relatedProduct)
-                @php
-                    // Ưu tiên dùng thumbnail sản phẩm, nếu không có thì lấy ảnh variant đầu tiên, nếu vẫn không có thì dùng ảnh mặc định
-                    if (!empty($relatedProduct->thumbnail)) {
-                        $relatedThumbnail = 'storage/' . $relatedProduct->thumbnail;
-                    } elseif ($relatedProduct->variants->first()?->image) {
-                        $relatedThumbnail = 'storage/' . $relatedProduct->variants->first()->image;
-                    } else {
-                        $relatedThumbnail = 'assets/images/single-product-01.jpg'; // fallback ảnh mặc định
-                    }
-                @endphp
+            @if ($relatedProducts->isEmpty())
+                <p>Không có sản phẩm liên quan.</p>
+            @else
+                <div class="row row-cols-1 row-cols-md-4 g-4">
+                    @foreach ($relatedProducts as $relatedProduct)
+                        @php
+                            // Ưu tiên dùng thumbnail sản phẩm, nếu không có thì lấy ảnh variant đầu tiên, nếu vẫn không có thì dùng ảnh mặc định
+                            if (!empty($relatedProduct->thumbnail)) {
+                                $relatedThumbnail = 'storage/' . $relatedProduct->thumbnail;
+                            } elseif ($relatedProduct->variants->first()?->image) {
+                                $relatedThumbnail = 'storage/' . $relatedProduct->variants->first()->image;
+                            } else {
+                                $relatedThumbnail = 'assets/images/single-product-01.jpg'; // fallback ảnh mặc định
+                            }
+                        @endphp
 
-                <div class="col">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <img src="{{ asset($relatedThumbnail) }}" 
-                             class="card-img-top"
-                             alt="{{ $relatedProduct->name }}"
-                             style="height: 200px; object-fit: cover;">
-                        <div class="card-body">
-                            <h6 class="card-title">{{ $relatedProduct->name }}</h6>
-                            <p class="text-primary fw-semibold">
-                                {{ $relatedProduct->getPriceRangeAttribute() }}
-                            </p>
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <img src="{{ asset($relatedThumbnail) }}" class="card-img-top"
+                                    alt="{{ $relatedProduct->name }}" style="height: 200px; object-fit: cover;">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ $relatedProduct->name }}</h6>
+                                    <p class="text-primary fw-semibold">
+                                        {{ $relatedProduct->getPriceRangeAttribute() }}
+                                    </p>
+                                </div>
+                                <div class="card-footer bg-white border-0">
+                                    <a href="{{ route('detail-product', $relatedProduct->id) }}"
+                                        class="btn btn-outline-primary w-100 btn-sm">
+                                        <i class="bi bi-eye"></i> Xem chi tiết
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-footer bg-white border-0">
-                            <a href="{{ route('detail-product', $relatedProduct->id) }}" 
-                               class="btn btn-outline-primary w-100 btn-sm">
-                                <i class="bi bi-eye"></i> Xem chi tiết
-                            </a>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
-            @endforeach
+            @endif
         </div>
-    @endif
-</div>
 
         <!-- Related categories -->
         <div class="mt-5">
             <h4 class="mb-3"><i class="bi bi-tags me-2"></i>Danh mục liên quan</h4>
             <div class="d-flex flex-wrap gap-2">
-                <a href="{{ route('products-client') }}?category={{ $product->category->slug }}" 
-                   class="btn btn-outline-secondary btn-sm">
+                <a href="{{ route('products-client') }}?category={{ $product->category->slug }}"
+                    class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-tag"></i> {{ $product->category->name }}
                 </a>
-                <a href="{{ route('products-client') }}?brand={{ $product->brand->slug }}" 
-                   class="btn btn-outline-secondary btn-sm">
+                <a href="{{ route('products-client') }}?brand={{ $product->brand->slug }}"
+                    class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-tag"></i> {{ $product->brand->name }}
                 </a>
             </div>
@@ -331,7 +325,8 @@
 
             // Update variant details (price, stock, and quantity input)
             function updateVariantDetails(variantId, price, stock) {
-                priceElement.textContent = `${Math.floor(price).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')} đ`;
+                priceElement.textContent =
+                `${Math.floor(price).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')} đ`;
                 quantityInput.max = stock;
                 quantityInput.value = Math.min(quantityInput.value, stock || 1);
                 stockText.textContent = `Còn ${stock} sản phẩm`;
@@ -355,38 +350,50 @@
                     button.classList.remove('btn-outline-secondary');
                     button.classList.add('btn-outline-success');
 
-                    fetch(`/detail-product/{{ $product->id }}/variants?color=${encodeURIComponent(color)}`)
+                    fetch(
+                            `/detail-product/{{ $product->id }}/variants?color=${encodeURIComponent(color)}`)
                         .then(response => response.json())
                         .then(data => {
                             sizeSelect.innerHTML = '';
                             data.variants.forEach(variant => {
                                 const option = document.createElement('option');
                                 option.value = variant.id;
-                                option.textContent = variant.status === 'active' && variant.stock_quantity > 0 
-                                    ? variant.size 
-                                    : `${variant.size} `;
+                                option.textContent = variant.status === 'active' &&
+                                    variant.stock_quantity > 0 ?
+                                    variant.size :
+                                    `${variant.size} `;
                                 option.dataset.price = variant.price;
                                 option.dataset.stock = variant.stock_quantity;
-                                if (variant.status !== 'active' || variant.stock_quantity <= 0) {
+                                if (variant.status !== 'active' || variant
+                                    .stock_quantity <= 0) {
                                     option.disabled = true;
                                 }
                                 sizeSelect.appendChild(option);
                             });
 
-                            const firstAvailableVariant = data.variants.find(v => v.status === 'active' && v.stock_quantity > 0);
+                            const firstAvailableVariant = data.variants.find(v => v.status ===
+                                'active' && v.stock_quantity > 0);
                             if (firstAvailableVariant) {
-                                updateVariantDetails(firstAvailableVariant.id, firstAvailableVariant.price, firstAvailableVariant.stock_quantity);
+                                updateVariantDetails(firstAvailableVariant.id,
+                                    firstAvailableVariant.price, firstAvailableVariant
+                                    .stock_quantity);
                                 sizeSelect.value = firstAvailableVariant.id;
                             } else {
-                                updateVariantDetails(data.variants[0].id, data.variants[0].price, 0);
+                                updateVariantDetails(data.variants[0].id, data.variants[0]
+                                    .price, 0);
                             }
 
-                            const firstImage = document.querySelector(`.variant-image[data-color="${color}"]`);
+                            const firstImage = document.querySelector(
+                                `.variant-image[data-color="${color}"]`);
                             if (firstImage) {
                                 mainImage.src = firstImage.src;
-                                variantImages.forEach(img => img.classList.remove('border', 'border-primary'));
+                                variantImages.forEach(img => img.classList.remove('border',
+                                    'border-primary'));
                                 firstImage.classList.add('border', 'border-primary');
-                                firstImage.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+                                firstImage.scrollIntoView({
+                                    behavior: 'smooth',
+                                    inline: 'start'
+                                });
                             }
 
                             window.scrollTo(0, scrollY);
@@ -416,11 +423,17 @@
 
             // Handle scroll buttons
             scrollLeftBtn.addEventListener('click', () => {
-                variantImagesStrip.scrollBy({ left: -150, behavior: 'smooth' });
+                variantImagesStrip.scrollBy({
+                    left: -150,
+                    behavior: 'smooth'
+                });
             });
 
             scrollRightBtn.addEventListener('click', () => {
-                variantImagesStrip.scrollBy({ left: 150, behavior: 'smooth' });
+                variantImagesStrip.scrollBy({
+                    left: 150,
+                    behavior: 'smooth'
+                });
             });
 
             // Drag to scroll
@@ -490,7 +503,8 @@
                             })
                             .then(data => {
                                 if (!data.status || data.status !== 'active') {
-                                    alert("❌ Sản phẩm này hiện không còn kinh doanh và không thể thêm vào wishlist.");
+                                    alert(
+                                        "❌ Sản phẩm này hiện không còn kinh doanh và không thể thêm vào wishlist.");
                                     window.location.href = "{{ route('home') }}";
                                     return;
                                 }
