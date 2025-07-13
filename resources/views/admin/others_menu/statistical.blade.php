@@ -3,6 +3,40 @@
 @endsection
 @section('content')
     <div class="container-fluid">
+
+        {{-- đơn được yêu cầu trả hàng/hoàn tiền --}}
+        <div class="row mb-3">
+            <div class="col-lg-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <!-- Tiêu đề -->
+                        <div class="row mb-4">
+                            <div class="col d-flex justify-content-between">
+                                <h4 class="fw-bold">Yêu cầu trả hàng / hoàn tiền mới nhất đang chờ xử lý</h4>
+                                <a href='{{ route('admin.orders.index') }}'
+                                    class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                                    Xem tất cả</a>
+                            </div>
+                        </div>
+
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-striped align-middle mb-0">
+                                <thead id="returnRequestsHead">
+                                    <!-- Sẽ được render bằng JS -->
+                                </thead>
+                                <tbody id="returnRequestsBody">
+                                    <!-- Dữ liệu sẽ được render bằng JS -->
+                                </tbody>
+                            </table>
+                            <div class="text-center py-2 text-muted" id="noReturnRequests" style="display: none;">
+                                Không có yêu cầu trả hàng/hoàn tiền nào.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- doanh thu và lợi nhuận --}}
         <div class="row mb-4">
             <div class="col text-center">
@@ -231,7 +265,6 @@
                 </div>
                 <!-- end::đánh giá mới-->
             </div>
-
         </div>
 
     </div>
@@ -362,7 +395,8 @@
                     // Hiển thị tiêu đề theo ngày
                     const from = new Date(startDate).toLocaleDateString('vi-VN');
                     const to = new Date(endDate).toLocaleDateString('vi-VN');
-                    document.getElementById('revenue-title').textContent = `Doanh thu từ ${from} đến ${to}`;
+                    document.getElementById('revenue-title').innerHTML =
+                        `<i class="bi bi-graph-up-arrow me-2"></i>Doanh thu từ ${from} đến ${to}`;
 
                     // Hiển thị tổng doanh thu và tổng lợi nhuận
                     document.getElementById('revenue-total').innerHTML = `
@@ -930,6 +964,239 @@
                     });
                 }
             });
+        }
+    </script>
+
+    <script>
+        // Tải danh sách yêu cầu trả hàng mới nhất
+        function loadLatestReturnRequests() {
+            fetch('/admin/statistics/latest-return-requests')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('returnRequestsBody');
+                    const thead = document.getElementById('returnRequestsHead');
+                    const noData = document.getElementById('noReturnRequests');
+
+                    tbody.innerHTML = '';
+                    thead.innerHTML = '';
+
+                    if (data.length === 0) {
+                        noData.style.display = 'block';
+                        return;
+                    } else {
+                        noData.style.display = 'none';
+
+                        thead.innerHTML = `
+                        <tr>
+                            <th>Khách hàng</th>
+                            <th>Mã đơn</th>
+                            <th>SĐT</th>
+                            <th>Phương thức thanh toán</th>
+                            <th>Trạng thái thanh toán đơn hàng</th>
+                            <th>Ngày yêu cầu</th>
+                            <th>Trạng thái yêu cầu</th>
+                            <th>Hành động</th>
+                        </tr>
+                    `;
+                    }
+
+                    data.forEach(item => {
+                        const row = document.createElement('tr');
+                        let actionHtml = '';
+
+                        if (item.status === 'requested') {
+                            actionHtml = `
+                                <button class="btn btn-success btn-sm me-1"
+                                    onclick="handleReturnAction(${item.id}, 'approved')">
+                                    <i class="bi bi-check-circle"></i> Duyệt
+                                </button>
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="handleReturnAction(${item.id}, 'rejected')">
+                                    <i class="bi bi-x-circle"></i> Từ chối
+                                </button>
+                            `;
+                        } else if (item.status === 'approved') {
+                            const paymentMethod = item.order?.payment_method;
+                            const paymentStatus = item.order?.payment_status;
+
+                            const showRefundButton = paymentMethod === 'online' && paymentStatus === 'completed';
+                            const label = showRefundButton ? 'Hoàn tất hoàn tiền' : 'Hoàn tất hoàn hàng';
+
+                            actionHtml = `
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="handleReturnAction(${item.id}, 'refunded')">
+                                    <i class="bi bi-check-lg"></i> ${label}
+                                </button>
+                            `;
+                        }
+
+
+                        row.innerHTML = `
+                        <td>${item.order.shipping_address?.name || 'Ẩn danh'}</td>
+                        <td>#${item.order?.order_code || 'Không rõ'}</td>
+                        <td>${item.order?.shipping_address?.phone_number || 'Không rõ số điện thoại'}</td>
+                        <td>
+                            <span class="badge" style="background-color: ${getPaymentMethod(item.order?.payment_method).color};">
+                                ${getPaymentMethod(item.order?.payment_method).label}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge" style="background-color: ${getPaymentStatus(item.order?.payment_status).color};">
+                                ${getPaymentStatus(item.order?.payment_status).label}
+                            </span>
+                        </td>
+                        <td>${new Date(item.created_at).toLocaleDateString('vi-VN')}</td>
+                        <td>
+                            <span class="badge ${getReturnStatusBadge(item.status).class}">
+                                ${getReturnStatusBadge(item.status).label}
+                            </span>
+                        </td>
+                        <td>${actionHtml}</td>
+                    `;
+
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error("Lỗi khi tải danh sách yêu cầu trả hàng:", error);
+                });
+        }
+
+        // Gọi hàm khi trang load
+        window.addEventListener('DOMContentLoaded', loadLatestReturnRequests);
+
+        // Hàm xử lý duyệt hoặc từ chối yêu cầu trả hàng
+        function handleReturnAction(id, status) {
+            // Xác nhận lại với người dùng
+            let actionText = '';
+
+            switch (status) {
+                case 'approved':
+                    actionText = 'duyệt';
+                    break;
+                case 'rejected':
+                    actionText = 'từ chối';
+                    break;
+                case 'refunded':
+                    actionText = 'đánh dấu đã hoàn tất';
+                    break;
+                default:
+                    actionText = 'cập nhật';
+            }
+
+            Swal.fire({
+                title: `Bạn chắc chắn muốn ${actionText} yêu cầu này?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Xác nhận',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admin/return-requests/${id}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                status: status
+                            })
+                        })
+                        .then(res => {
+                            if (res.redirected) {
+                                window.location.href = res.url; // Nếu Laravel redirect, tự chuyển trang
+                                return;
+                            }
+
+                            if (!res.ok) throw new Error('Lỗi cập nhật trạng thái');
+
+                            return res.json();
+                        })
+                        .then(data => {
+                            Swal.fire({
+                                title: '✅ Thành công',
+                                text: 'Trạng thái đã được cập nhật.',
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            loadLatestReturnRequests(); // Gọi lại để refresh
+                        })
+                        .catch(err => {
+                            Swal.fire('Lỗi', err.message || 'Cập nhật thất bại!', 'error');
+                        });
+                }
+            });
+        }
+
+        function getPaymentMethod(method) {
+            const methods = {
+                'cod': {
+                    label: 'Thanh toán khi nhận hàng',
+                    color: '#CC6666'
+                },
+                'online': {
+                    label: 'Thanh toán trực tuyến',
+                    color: '#6699CC'
+                },
+                'bank_transfer': {
+                    label: 'Thanh toán qua ngân hàng',
+                    color: '#CC66CC'
+                },
+            };
+
+            return methods[method] || {
+                label: 'Không xác định',
+                color: '#999'
+            };
+        }
+
+        function getPaymentStatus(status) {
+            const paymentStatuses = {
+                'pending': {
+                    label: 'Chờ thanh toán',
+                    color: '#FF9966'
+                },
+                'completed': {
+                    label: 'Đã thanh toán',
+                    color: '#009900'
+                },
+                'failed': {
+                    label: 'Thanh toán thất bại',
+                    color: '#666666'
+                },
+            };
+
+            return paymentStatuses[status] || {
+                label: 'Không xác định',
+                color: '#999'
+            };
+        }
+
+        function getReturnStatusBadge(status) {
+            const statuses = {
+                'requested': {
+                    label: 'Chờ xử lý',
+                    class: 'bg-warning text-dark'
+                },
+                'approved': {
+                    label: 'Đã duyệt',
+                    class: 'bg-success'
+                },
+                'rejected': {
+                    label: 'Từ chối',
+                    class: 'bg-danger'
+                },
+                'refunded': {
+                    label: 'Yêu cầu hoàn tất',
+                    class: 'bg-primary'
+                },
+            };
+            return statuses[status] || {
+                label: 'Không xác định',
+                class: 'bg-secondary'
+            };
         }
     </script>
 @endsection

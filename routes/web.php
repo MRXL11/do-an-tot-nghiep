@@ -46,22 +46,23 @@
         Route::get('/admin/statistics/order-status', [StatisticsController::class, 'orderStatusByDate']);
         Route::get('/admin/statistics/low-stock', [StatisticsController::class, 'lowStockVariants'])->name('admin.statistics.low-stock');
         Route::get('/admin/statistics/pending-reviews', [StatisticsController::class, 'getPendingReviews']);
+        Route::get('/admin/statistics/latest-return-requests', [StatisticsController::class, 'getLatestReturnRequests']);
 
         // Nhóm route admin với prefix và name
-        Route::prefix('admin')->name('admin.')->group(function () {
-            // Sản phẩm (Products)
-            Route::resource('products', AdminProductController::class);
-            Route::post('/products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
-            Route::post('/products/{id}/addVariants', [AdminProductController::class, 'addVariants'])->name('products.addVariants');
+            Route::prefix('admin')->name('admin.')->group(function () {
+                // Sản phẩm (Products)
+                Route::resource('products', AdminProductController::class);
+                Route::post('/products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
+                Route::post('/products/{id}/addVariants', [AdminProductController::class, 'addVariants'])->name('products.addVariants');
 
-            // Đơn hàng (Orders)
-            Route::resource('orders', OrderController::class)
-                ->except(['store', 'create', 'edit', 'destroy']);
-            // Cập nhật trạng thái trả hàng
-            Route::patch('/admin/return-requests/{id}', [OrderController::class, 'updateReturnStatus'])
-                ->name('return-requests.update');
-            // Hủy đơn hàng
-            Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+                // Đơn hàng (Orders)
+                Route::resource('orders', OrderController::class)
+                    ->except(['store', 'create', 'edit', 'destroy']);
+                // Cập nhật trạng thái trả hàng
+                Route::patch('/return-requests/{id}', [OrderController::class, 'updateReturnStatus'])
+                    ->name('return-requests.update');
+                // Hủy đơn hàng
+                Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
 
             // Danh mục (Categories)
