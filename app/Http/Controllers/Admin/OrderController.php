@@ -7,6 +7,7 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Notification;
+use App\Models\ReturnRequest;
 use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
@@ -14,7 +15,8 @@ class OrderController extends Controller
     //
     public function index(Request $request)
     {
-        $query = Order::with(['user', 'shippingAddress', 'orderDetails.productVariant', 'coupon']);
+        $query = Order::with(['user', 'shippingAddress', 'orderDetails.productVariant', 'coupon', 'returnRequest'])
+            ->orderByDesc('created_at');
         $statuses = [
             'pending' => 'Đang chờ xử lý',
             'processing' => 'Đang xử lý',
@@ -46,8 +48,6 @@ class OrderController extends Controller
                 END")
             ->orderByDesc('created_at') // đơn mới nhất trước
             ->paginate(10);
-
-
 
         // Kiểm tra nếu có tìm kiếm nhưng không có kết quả
         $noResults = $hasSearch && $orders->isEmpty();
@@ -123,6 +123,54 @@ class OrderController extends Controller
         $this->createOrderNotificationToClient($order, $message, 'Đơn hàng đã được huỷ');
 
         return redirect()->back()->with('success', 'Đã huỷ đơn hàng thành công.');
+    }
+
+    public function updateReturnStatus(Request $request, $id)
+    {
+        // Lấy return request cần cập nhật
+        $returnRequest = ReturnRequest::with('order.user')->findOrFail($id);
+
+        // Lưu trạng thái cũ
+        $oldStatus = $returnRequest->status;
+        $oldLabel = $returnRequest->return_status['label'];
+
+        // Lấy trạng thái mới từ request
+        $newStatus = $request->input('status');
+        $newLabel = ReturnRequest::getStatusLabelStatic($newStatus)['label'] ?? 'Không xác định';
+
+        // Xác định các trạng thái chuyển đổi hợp lệ (giả sử flow logic)
+        $validTransitions = [
+            'requested' => ['approved', 'rejected'],
+            'approved' => ['refunded'],
+        ];
+
+        // Kiểm tra trạng thái chuyển đổi hợp lệ
+        if (!isset($validTransitions[$oldStatus]) || !in_array($newStatus, $validTransitions[$oldStatus])) {
+            return redirect()->back()->with('error', 'Chuyển trạng thái không hợp lệ.');
+        }
+
+        // Cập nhật trạng thái mới
+        $returnRequest->status = $newStatus;
+        $returnRequest->save();
+
+        // Gửi thông báo đến người dùng
+        try {
+            $user = $returnRequest->order->user;
+
+            Notification::create([
+                'user_id'   => $user->id,
+                'title'     => 'Cập nhật yêu cầu trả hàng',
+                'message'   => "Yêu cầu trả hàng của đơn #{$returnRequest->order->order_code} đã được cập nhật từ '{$oldLabel}' thành '{$newLabel}'.",
+                'type'      => 'order',
+                'is_read'   => false,
+                'order_id'  => $returnRequest->order->id,
+                'created_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi khi gửi thông báo cập nhật trả hàng: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Cập nhật trạng thái trả hàng thành công.');
     }
 
     public function createOrderNotificationToClient(Order $order, $message, $title)
