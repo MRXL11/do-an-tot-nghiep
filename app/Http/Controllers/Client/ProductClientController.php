@@ -121,4 +121,42 @@ class ProductClientController extends Controller
         // trả lại về trang sản phẩm
         return view('client.pages.products-client', compact('products', 'categories', 'brands', 'sizes', 'colors', 'noResults', 'searchTerm', 'sort', 'sortWarning'));
     }
+
+    /**
+     * Lấy sản phẩm mới nhất cho từng nhóm: Nam, Nữ, Trẻ em để hiển thị ở trang chủ
+     */
+    public function getHomeSections()
+    {
+        // Lấy group_id cho từng nhóm
+        $menGroupId = 1;
+        $womenGroupId = 2;
+        $kidsGroupId = 3;
+
+        // Lấy các category_id theo group
+        $menCategoryIds = Category::where('group_id', $menGroupId)->pluck('id');
+        $womenCategoryIds = Category::where('group_id', $womenGroupId)->pluck('id');
+        $kidsCategoryIds = Category::where('group_id', $kidsGroupId)->pluck('id');
+
+        // Lấy sản phẩm mới nhất cho từng nhóm
+        $menProducts = Product::with(['variants' => function($q){ $q->where('status', 'active'); }])
+            ->whereIn('category_id', $menCategoryIds)
+            ->where('status', 'active')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+        $womenProducts = Product::with(['variants' => function($q){ $q->where('status', 'active'); }])
+            ->whereIn('category_id', $womenCategoryIds)
+            ->where('status', 'active')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+        $kidsProducts = Product::with(['variants' => function($q){ $q->where('status', 'active'); }])
+            ->whereIn('category_id', $kidsCategoryIds)
+            ->where('status', 'active')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return view('client.layouts.index', compact('menProducts', 'womenProducts', 'kidsProducts'));
+    }
 }

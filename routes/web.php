@@ -107,9 +107,7 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
 });
 
 // Trang chủ Khách hàng (Client)
-Route::get('/', function () {
-    return view('client.layouts.index');
-})->name('home');
+Route::get('/', [ProductClientController::class, 'getHomeSections'])->name('home');
 
 // Route riêng cho Khách hàng (Client) đã đăng nhập
 Route::middleware('auth')->prefix('client')->group(function () {

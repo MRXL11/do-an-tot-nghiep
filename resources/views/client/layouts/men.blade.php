@@ -16,98 +16,34 @@
                 <div class="col-lg-12">
                     <div class="men-item-carousel">
                         <div class="owl-men-item owl-carousel">
-                            <div class="item">
-                                <div class="thumb">
-                                    <div class="hover-content">
-                                        <ul>
-                                            <li><a href="single-product.html"><i class="fa fa-eye"></i></a></li>
-                                            <li><a href="single-product.html"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="single-product.html"><i class="fa fa-shopping-cart"></i></a></li>
+                            @foreach($menProducts as $product)
+                                <div class="item">
+                                    <div class="thumb">
+                                        <div class="hover-content">
+                                            <ul>
+                                                <li><a href="{{ route('detail-product', $product->id) }}"><i class="fa fa-eye"></i></a></li>
+                                                <li><a href="{{ route('detail-product', $product->id) }}"><i class="fa fa-star"></i></a></li>
+                                                <li><a href="{{ route('detail-product', $product->id) }}"><i class="fa fa-shopping-cart"></i></a></li>
+                                            </ul>
+                                        </div>
+                                        <img src="{{ asset('storage/' . $product->thumbnail) }}" style="width:350px;height: 450px"  >
+                                    </div>
+                                    <div class="down-content">
+                                        <h4 style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:250px;" title="{{ $product->name }}">{{ $product->name }}</h4>
+                                        <span>
+                                            @php
+                                                $minPrice = $product->variants->min('price');
+                                            @endphp
+                                            {{ $minPrice ? number_format($minPrice, 0, ',', '.') . ' VNĐ' : 'Liên hệ' }}
+                                        </span>
+                                        <ul class="stars">
+                                            @for($i=0; $i<5; $i++)
+                                                <li><i class="fa fa-star"></i></li>
+                                            @endfor
                                         </ul>
                                     </div>
-                                    <img src="assets/images/men-01.jpg" alt="">
                                 </div>
-                                <div class="down-content">
-                                    <h4>Phong cách mùa xuân</h4>
-                                    <span>$120.00</span>
-                                    <ul class="stars">
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="item">
-                                <div class="thumb">
-                                    <div class="hover-content">
-                                        <ul>
-                                            <li><a href="single-product.html"><i class="fa fa-eye"></i></a></li>
-                                            <li><a href="single-product.html"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="single-product.html"><i class="fa fa-shopping-cart"></i></a></li>
-                                        </ul>
-                                    </div>
-                                    <img src="assets/images/men-02.jpg" alt="">
-                                </div>
-                                <div class="down-content">
-                                    <h4>Air Force 1 X</h4>
-                                    <span>$90.00</span>
-                                    <ul class="stars">
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="item">
-                                <div class="thumb">
-                                    <div class="hover-content">
-                                        <ul>
-                                            <li><a href="single-product.html"><i class="fa fa-eye"></i></a></li>
-                                            <li><a href="single-product.html"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="single-product.html"><i class="fa fa-shopping-cart"></i></a></li>
-                                        </ul>
-                                    </div>
-                                    <img src="assets/images/men-03.jpg" alt="">
-                                </div>
-                                <div class="down-content">
-                                    <h4>Love Nana '20</h4>
-                                    <span>$150.00</span>
-                                    <ul class="stars">
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="item">
-                                <div class="thumb">
-                                    <div class="hover-content">
-                                        <ul>
-                                            <li><a href="single-product.html"><i class="fa fa-eye"></i></a></li>
-                                            <li><a href="single-product.html"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="single-product.html"><i class="fa fa-shopping-cart"></i></a></li>
-                                        </ul>
-                                    </div>
-                                    <img src="assets/images/men-01.jpg" alt="">
-                                </div>
-                                <div class="down-content">
-                                    <h4>Phong cách mùa xuân</h4>
-                                    <span>$120.00</span>
-                                    <ul class="stars">
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                        <li><i class="fa fa-star"></i></li>
-                                    </ul>
-                                </div>
-                            </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
