@@ -135,7 +135,7 @@
                                                 {{ $size }}
                                                 <input type="radio" name="size" id="size-{{ $size }}"
                                                     onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['size' => $size])) }}'"
-                                                    {{ request()->size == $size ? 'checked' : '' }}>
+                                                    @if(request()->size == $size) checked @endif>
                                             </label>
                                         @endforeach
                                     </div>
@@ -163,7 +163,7 @@
                                                 for="color-{{ $color }}">
                                                 <input type="radio" name="color" id="color-{{ $color }}"
                                                     onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['color' => $color])) }}'"
-                                                    {{ strtolower(request()->color) == strtolower($color) ? 'checked' : '' }}>
+                                                    @if(strtolower(request()->color) == strtolower($color)) checked @endif>
                                             </label>
                                         @endforeach
                                     </div>
@@ -199,10 +199,14 @@
                 <div class="mb-4">
                     @php
                         $filters = [];
-
+                        $isHeaderSearch = request()->has('header_search') && request()->header_search;
+                    @endphp
+                    @if ($isHeaderSearch)
+                        <h5 class="mb-3">Kết quả tìm kiếm cho từ khoá '<span class="text-primary">{{ request()->header_search }}</span>'</h5>
+                    @endif
+                    @php
                         // if (request()->has('category') && request()->category) {
                         //     $category = $categories->firstWhere('id', request()->category);
-
                         //     $filters[] = 'Danh mục: ' . ($category ? $category->name : 'Không xác định');
                         // }
                         // if (request()->has('brand') && request()->brand) {
@@ -211,15 +215,15 @@
                         // }
                         if(request()->route('slug')) {
                             $category = $categories->firstWhere('slug', request()->route('slug'));
-
-
                             $filters[] = 'Danh mục: ' . ($category ? $category->name : 'Không xác định');
                         }
+                        // Lọc theo brand
                         if (request()->has('brand') && request()->brand) {
-                            $brand = $brands->firstWhere('slug', request()->brand);
+                            // Sidebar truyền brand là id
+                            $brand = $brands->firstWhere('id', request()->brand);
                             $filters[] = 'Thương hiệu: ' . ($brand ? $brand->name : 'Không xác định');
                         }
-              //phần comment phía bên trên do aduong viết bị lỗi hiênt thị tạm thời comment lại
+                        // Nếu là tìm kiếm header thì không thêm filter brand ở đây
                         if (request()->has('size') && request()->size) {
                             $filters[] = 'Kích cỡ: ' . request()->size;
                         }
@@ -233,7 +237,7 @@
                                 ' đ - ' .
                                 (request()->price_max ? number_format(request()->price_max) . ' đ' : '+');
                         }
-                        if ($searchTerm) {
+                        if ($searchTerm && !$isHeaderSearch) {
                             $filters[] = 'Tìm kiếm: ' . $searchTerm;
                         }
                     @endphp
@@ -241,7 +245,12 @@
                         <p class="text-muted">Lọc theo: {{ implode(', ', $filters) }}</p>
                         <a href="{{ route('products-client') }}" class="btn btn-sm btn-outline-danger">Xóa bộ lọc</a>
                     @endif
-                    @if ($noResults)
+                    @if ($noResults && $isHeaderSearch)
+                        <div class="alert alert-warning mt-3">
+                            Không tìm thấy sản phẩm nào phù hợp với từ khoá '<span class="fw-bold text-danger">{{ request()->header_search }}</span>'.
+                            <a href="{{ route('products-client') }}" class="alert-link">Xóa tìm kiếm</a> để xem tất cả sản phẩm.
+                        </div>
+                    @elseif ($noResults)
                         <div class="alert alert-warning mt-3">
                             Không tìm thấy sản phẩm nào phù hợp. <a href="{{ route('products-client') }}"
                                 class="alert-link">Xóa bộ lọc</a> để xem tất cả sản phẩm.

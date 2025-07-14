@@ -34,10 +34,13 @@
                         </li>
 
                         <!-- Tìm kiếm -->
-                        <li>
-                            <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Tìm kiếm">
+                        <li class="nav-item position-relative">
+                            <a href="#" id="searchToggle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Tìm kiếm">
                                 <i class="bi bi-search fs-5 text-dark"></i>
                             </a>
+                            <form action="{{ route('products-client') }}" method="GET" class="position-absolute top-100 start-0 mt-2 d-none" id="headerSearchForm" style="min-width: 250px; z-index: 1000;">
+                                <input type="text" name="header_search" class="form-control form-control-sm" placeholder="Tìm kiếm..."  value="{{ request()->is('products-client*') ? request('header_search') : '' }}">
+                            </form>
                         </li>
 
                         <!-- Giỏ hàng -->
@@ -119,3 +122,31 @@
         </div>
     </div>
 </header>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('searchToggle');
+    const form = document.getElementById('headerSearchForm');
+    const input = form.querySelector('input[name=\"header_search\"]');
+    // Nếu đang ở trang products-client và có từ khóa, tự động hiện form
+    if (window.location.pathname.includes('products-client') && input.value) {
+        form.classList.remove('d-none');
+    } else {
+        form.classList.add('d-none');
+        input.value = '';
+    }
+    // Click icon thì toggle form
+    toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        form.classList.toggle('d-none');
+        if (!form.classList.contains('d-none')) {
+            input.focus();
+        }
+    });
+    // Click ra ngoài thì ẩn form
+    document.addEventListener('click', function(e) {
+        if (!form.contains(e.target) && !toggle.contains(e.target)) {
+            form.classList.add('d-none');
+        }
+    });
+});
+</script>
