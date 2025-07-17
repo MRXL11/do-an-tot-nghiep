@@ -326,7 +326,7 @@
             // Update variant details (price, stock, and quantity input)
             function updateVariantDetails(variantId, price, stock) {
                 priceElement.textContent =
-                `${Math.floor(price).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')} đ`;
+                    `${Math.floor(price).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')} đ`;
                 quantityInput.max = stock;
                 quantityInput.value = Math.min(quantityInput.value, stock || 1);
                 stockText.textContent = `Còn ${stock} sản phẩm`;
@@ -351,7 +351,8 @@
                     button.classList.add('btn-outline-success');
 
                     fetch(
-                            `/detail-product/{{ $product->id }}/variants?color=${encodeURIComponent(color)}`)
+                            `/detail-product/{{ $product->id }}/variants?color=${encodeURIComponent(color)}`
+                            )
                         .then(response => response.json())
                         .then(data => {
                             sizeSelect.innerHTML = '';
@@ -504,7 +505,8 @@
                             .then(data => {
                                 if (!data.status || data.status !== 'active') {
                                     alert(
-                                        "❌ Sản phẩm này hiện không còn kinh doanh và không thể thêm vào wishlist.");
+                                        "❌ Sản phẩm này hiện không còn kinh doanh và không thể thêm vào wishlist."
+                                        );
                                     window.location.href = "{{ route('home') }}";
                                     return;
                                 }
@@ -538,6 +540,18 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const modal = new bootstrap.Modal(document.getElementById('wishlistModal'));
+                modal.show();
+                setTimeout(() => {
+                    modal.hide();
+                }, 3000);
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = new bootstrap.Modal(document.getElementById('wishlistErrorModal'));
                 modal.show();
                 setTimeout(() => {
                     modal.hide();
