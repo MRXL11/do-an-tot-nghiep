@@ -42,6 +42,8 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
     Route::get('/admin/statistics/low-stock', [StatisticsController::class, 'lowStockVariants'])->name('admin.statistics.low-stock');
     Route::get('/admin/statistics/pending-reviews', [StatisticsController::class, 'getPendingReviews']);
     Route::get('/admin/statistics/latest-return-requests', [StatisticsController::class, 'getLatestReturnRequests']);
+    Route::get('/admin/statistics/latest-notifications', [StatisticsController::class, 'getLatestNotifications']);
+
 
     // Nhóm route admin với prefix và name
     Route::prefix('admin')->name('admin.')->group(function () {

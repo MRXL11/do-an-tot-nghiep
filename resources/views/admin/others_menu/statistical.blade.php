@@ -6,7 +6,7 @@
 
         {{-- đơn được yêu cầu trả hàng/hoàn tiền --}}
         <div class="row mb-3">
-            <div class="col-lg-12">
+            <div class="col-lg-9">
                 <div class="card shadow-sm border-0">
                     <div class="card-body">
                         <!-- Tiêu đề -->
@@ -19,7 +19,7 @@
                             </div>
                         </div>
 
-                        <div style="max-height: 300px; overflow-y: auto;">
+                        <div style="max-height: 100px; overflow-y: auto;">
                             <table class="table table-striped align-middle mb-0">
                                 <thead id="returnRequestsHead">
                                     <!-- Sẽ được render bằng JS -->
@@ -29,28 +29,59 @@
                                 </tbody>
                             </table>
                             <div class="text-center py-2 text-muted" id="noReturnRequests" style="display: none;">
-                                Không có yêu cầu trả hàng/hoàn tiền nào.
+                                Không có yêu cầu .
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">🔔 Thông báo hôm nay</h5>
+
+                        <div id="notificationsCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner" id="carouselNotificationInner">
+                                <!-- Các thông báo sẽ được thêm bằng JS -->
+                            </div>
+
+                            <!-- Nút điều hướng -->
+                            <button class="carousel-control-prev" type="button" data-bs-target="#notificationsCarousel"
+                                data-bs-slide="prev">
+                                <span class="visually-hidden">Trước</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#notificationsCarousel"
+                                data-bs-slide="next">
+                                <span class="visually-hidden">Sau</span>
+                            </button>
+                        </div>
+
+                        <div class="text-center text-muted mt-3" id="noNotifications" style="display: none;">
+                            Không có thông báo.
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- doanh thu và lợi nhuận --}}
-        <div class="row mb-4">
-            <div class="col text-center">
-                <h2 class="fw-bold text-primary" id="revenue-title">
-                    <i class="bi bi-graph-up-arrow me-2"></i> Doanh thu & Lợi nhuận
-                </h2>
-            </div>
-        </div>
+
 
         {{-- Bộ lọc & biểu đồ --}}
         <div class="row mb-3">
+            {{-- Biểu đồ doanh thu --}}
             <div class="col-12">
+                {{-- begin::doanh thu va loi nhuan --}}
                 <div class="card shadow-sm border-0">
                     <div class="card-body">
+                        {{-- doanh thu và lợi nhuận --}}
+                        <div class="row mb-2 mt-2">
+                            <div class="col text-center">
+                                <h2 class="fw-bold text-primary" id="revenue-title">
+                                    <i class="bi bi-graph-up-arrow me-2"></i> Doanh thu & Lợi nhuận
+                                </h2>
+                            </div>
+                        </div>
 
                         {{-- Thanh thông tin và bộ lọc --}}
                         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
@@ -985,19 +1016,6 @@
                         return;
                     } else {
                         noData.style.display = 'none';
-
-                        thead.innerHTML = `
-                        <tr>
-                            <th>Khách hàng</th>
-                            <th>Mã đơn</th>
-                            <th>SĐT</th>
-                            <th>Phương thức thanh toán</th>
-                            <th>Trạng thái thanh toán đơn hàng</th>
-                            <th>Ngày yêu cầu</th>
-                            <th>Trạng thái yêu cầu</th>
-                            <th>Hành động</th>
-                        </tr>
-                    `;
                     }
 
                     data.forEach(item => {
@@ -1019,7 +1037,8 @@
                             const paymentMethod = item.order?.payment_method;
                             const paymentStatus = item.order?.payment_status;
 
-                            const showRefundButton = paymentMethod === 'online' && paymentStatus === 'completed';
+                            const showRefundButton = paymentMethod === 'online' && paymentStatus ===
+                                'completed';
                             const label = showRefundButton ? 'Hoàn tất hoàn tiền' : 'Hoàn tất hoàn hàng';
 
                             actionHtml = `
@@ -1198,5 +1217,78 @@
                 class: 'bg-secondary'
             };
         }
+    </script>
+
+    <script>
+        let currentPage = 1;
+
+        function loadUserNotifications(page = 1) {
+            fetch(`/admin/statistics/latest-notifications?page=${page}`)
+                .then(res => res.json())
+                .then(data => {
+                    const noData = document.getElementById('noNotifications');
+                    const carouselInner = document.getElementById('carouselNotificationInner');
+                    const pagination = document.getElementById('paginationControls');
+                    currentPage = data.pagination?.current_page || 1;
+
+                    const notifications = data.notifications || [];
+
+                    // ✅ Hiển thị thông báo theo dạng slide
+                    if (notifications.length > 0) {
+                        noData.style.display = 'none';
+                        carouselInner.innerHTML = notifications.map((item, index) => `
+                        <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                            <div class="p-2 text-dark small">
+                                <span class="fw-semibold">${item.title}</span><br>
+                                <small class="text-muted">${new Date(item.created_at).toLocaleString('vi-VN')}</small><br>
+                                <span>${item.message}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                    } else {
+                        noData.style.display = 'block';
+                        carouselInner.innerHTML = '';
+                    }
+
+                    // ✅ Phân trang
+                    renderPagination(data.pagination);
+                })
+                .catch(error => {
+                    console.error("Lỗi khi tải thông báo:", error);
+                });
+        }
+
+        function renderPagination(paginationData) {
+            const pagination = document.getElementById('paginationControls');
+            pagination.innerHTML = '';
+
+            if (!paginationData || paginationData.last_page <= 1) return;
+
+            const current = paginationData.current_page;
+            const last = paginationData.last_page;
+
+            if (current > 1) {
+                pagination.innerHTML += `
+                <li class="page-item"><a class="page-link" href="#" onclick="loadUserNotifications(${current - 1}); return false;">«</a></li>
+            `;
+            }
+
+            for (let i = 1; i <= last; i++) {
+                pagination.innerHTML += `
+                <li class="page-item ${i === current ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="loadUserNotifications(${i}); return false;">${i}</a>
+                </li>
+            `;
+            }
+
+            if (current < last) {
+                pagination.innerHTML += `
+                <li class="page-item"><a class="page-link" href="#" onclick="loadUserNotifications(${current + 1}); return false;">»</a></li>
+            `;
+            }
+        }
+
+        // Gọi khi trang load
+        window.addEventListener('DOMContentLoaded', () => loadUserNotifications());
     </script>
 @endsection

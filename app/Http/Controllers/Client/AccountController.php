@@ -20,7 +20,7 @@ class AccountController extends Controller
         }
 
         // Lấy danh sách đơn hàng của người dùng 
-        $orders = Order::with('orderDetails.productVariant.product', 'coupon')
+        $orders = Order::with('orderDetails.productVariant.product', 'coupon', 'returnRequest')
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
