@@ -163,10 +163,20 @@
                                                 </div>
                                                 <div class="col-md-3 col-12 mb-2">
                                                     <h6 class="mb-1"><strong>Trạng thái đơn hàng:</strong></h6>
-                                                    <span
-                                                        class="badge {{ $order->getStatusMeta($order->status)['color'] }} p-2">
-                                                        {{ $order->getStatusMeta($order->status)['label'] }}
-                                                    </span>
+                                                    @if ($order->returnRequest && in_array($order->returnRequest->status, ['refunded']))
+                                                        {{-- Nếu có yêu cầu trả hàng, hiển thị trạng thái trả hàng --}}
+                                                        <span
+                                                            class="badge bg-{{ $order->returnRequest->return_status['color'] }} p-2">
+                                                            <i
+                                                                class="{{ $order->returnRequest->return_status['icon'] }}"></i>
+                                                            {{ $order->returnRequest->return_status['title'] }}
+                                                        </span>
+                                                    @else
+                                                        <span
+                                                            class="badge {{ $order->getStatusMeta($order->status)['color'] }} p-2">
+                                                            {{ $order->getStatusMeta($order->status)['label'] }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                                 <div class="col-md-3 col-12 mb-2">
                                                     <h6 class="mb-1"><strong>Địa chỉ nhận hàng:</strong></h6>

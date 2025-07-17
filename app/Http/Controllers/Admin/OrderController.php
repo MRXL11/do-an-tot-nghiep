@@ -151,6 +151,12 @@ class OrderController extends Controller
 
         // Cập nhật trạng thái mới
         $returnRequest->status = $newStatus;
+        // Cập nhật trạng thái thanh toán của hoá đơn
+        if ($newStatus === 'refunded') {
+            $returnRequest->order->payment_status = 'failed';
+            $returnRequest->order->save();
+        }
+        // Cập nhật trạng thái trả hàng
         $returnRequest->save();
 
         // Gửi thông báo đến người dùng

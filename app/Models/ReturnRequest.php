@@ -42,11 +42,11 @@ class ReturnRequest extends Model
             ],
             'refunded'  => [
                 'label' => ($this->order->payment_status === 'pending' && $this->order->payment_method === 'cod')
-                    ? 'Hàng đã được hoàn trả lại'
+                    ? 'Đã hoàn trả hàng'
                     : 'Đã hoàn tiền',
                 'color' => 'success',
                 'title' => ($this->order->payment_status === 'pending' && $this->order->payment_method === 'cod')
-                    ? 'Đã nhận lại hàng'
+                    ? 'Đã hoàn trả hàng'
                     : 'Đã hoàn tiền',
                 'icon'  => ($this->order->payment_status === 'pending' && $this->order->payment_method === 'cod')
                     ? 'bi-box-arrow-in-left' // Icon nhận lại hàng

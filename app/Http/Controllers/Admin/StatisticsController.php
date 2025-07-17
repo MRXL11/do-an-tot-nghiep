@@ -12,6 +12,7 @@ use App\Models\ProductVariant;
 use App\Models\ReturnRequest;
 use App\Models\Review;
 use Carbon\CarbonPeriod;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Support\Facades\DB;
 
 class StatisticsController extends Controller
@@ -289,7 +290,7 @@ class StatisticsController extends Controller
             ->where(function ($query) use ($today) {
                 $query->whereDate('created_at', now()->toDateString()) // Yêu cầu trong ngày hôm nay
                     ->orWhere(function ($sub) use ($today) {
-                        $sub->where('status', 'requested') // Hoặc các yêu cầu chưa xử lý
+                        $sub->whereIn('status', ['requested', 'approved']) // Hoặc các yêu cầu chưa xử lý 
                             ->where('created_at', '<', $today); // Từ những ngày trước
                     });
             })
@@ -305,5 +306,28 @@ class StatisticsController extends Controller
             });
 
         return response()->json($returns);
+    }
+
+    public function getLatestNotifications(Request $request)
+    {
+        $userId = auth()->id(); // lấy user đăng nhập
+        $today = Carbon::today(); // Ngày hôm nay
+        $perPage = $request->query('per_page', 10);
+
+        // Lấy tất cả thông báo được gửi trong hôm nay
+        $todayNotifications = Notification::where('user_id', $userId)
+            ->whereBetween('created_at', [$today, Carbon::tomorrow()])
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+
+        return response()->json([
+            'notifications' => $todayNotifications->items(), // danh sách
+            'pagination' => [
+                'current_page' => $todayNotifications->currentPage(),
+                'last_page' => $todayNotifications->lastPage(),
+                'per_page' => $todayNotifications->perPage(),
+                'total' => $todayNotifications->total(),
+            ]
+        ]);
     }
 }
