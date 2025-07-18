@@ -1,3 +1,5 @@
+
+
 <?php
 
 use App\Http\Controllers\Admin\CouponController;
@@ -30,6 +32,7 @@ use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\Client\WishlistController;
 use App\Http\Controllers\Client\ReturnRequestController;
+use App\Http\Controllers\Client\ContactController;
 
 // Route cho Admin
 Route::middleware(['auth', 'restrict.admin'])->group(function () {
@@ -147,6 +150,9 @@ Route::get('/about', function () {
 Route::get('/contact', function () {
     return view('client.pages.contact');
 })->name('contact');
+Route::get('/contact', [ContactController::class, 'show'])->name('contact');
+Route::post('/contact/send', [ContactController::class, 'send'])->name('contact.send');
+Route::get('/subscribe', [ContactController::class, 'subscribe'])->name('newsletter.subscribe');
 
 // Route hiển thị danh sách yêu thích
 Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
