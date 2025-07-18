@@ -62,7 +62,7 @@ class OrderController extends Controller
             ->findOrFail($id);
 
         $discount = 0;
-        $total = $order->total_price;
+        $total = $order->orderDetails->sum('subtotal');
 
         // Tính toán giảm giá nếu có coupon
         if ($order->coupon) {
