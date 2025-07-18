@@ -87,4 +87,5 @@ class Product extends Model
         // Trả về "Liên hệ" nếu không có biến thể
         return 'Liên hệ';
     }
+    
 }
