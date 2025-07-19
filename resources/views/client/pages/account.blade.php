@@ -190,7 +190,7 @@
                                 <h5 class="mb-0 fw-bold">Lịch sử đơn hàng</h5>
                             </div>
                             <span class="badge bg-white text-primary rounded-pill px-3 py-2">
-                                {{ count($orders) }} đơn hàng
+                                {{ $totalOrderCount }} đơn hàng
                             </span>
                         </div>
                     </div>
@@ -218,6 +218,7 @@
                                                                 <i class="bi bi-calendar3 me-1"></i>
                                                                 {{ $order->created_at->format('d/m/Y - H:i') }}
                                                             </small>
+                                                            {{-- hiển thị trnagj thái yêu cầu huỷ (nếu có) --}}
                                                             @php
                                                                 $isRequested = $order->cancellation_requested;
                                                                 $isConfirmed = $order->cancel_confirmed;
@@ -285,16 +286,85 @@
                                                                     </div>
                                                                 </div>
                                                             @endif
+                                                            {{-- end --}}
+
+                                                            {{-- Hiển thị trạng thái yêu cầu trả hàng (nếu có) --}}
+                                                            @php
+                                                                $returnRequest = $order->returnRequest;
+                                                                $hasReturnRequest = $returnRequest !== null;
+                                                            @endphp
+
+                                                            @if ($hasReturnRequest)
+                                                                <div class="mt-2">
+                                                                    <div class="bg-light border rounded px-2 py-1 mt-1 small text-muted"
+                                                                        style="font-size: 0.85rem;">
+                                                                        {{-- 📦 Trạng thái trả hàng --}}
+                                                                        <i
+                                                                            class="bi bi-arrow-return-left text-primary me-1"></i>
+                                                                        <span class="text-dark">Bạn đã gửi yêu cầu trả
+                                                                            hàng:</span>
+                                                                        <em>{{ $returnRequest->reason ?? 'Không có lý do' }}</em><br>
+
+                                                                        @if ($returnRequest->status === 'requested')
+                                                                            <i class="bi bi-clock-history me-1"></i>
+                                                                            <span class="text-muted fst-italic">Đang chờ
+                                                                                phản hồi từ admin.</span>
+                                                                        @elseif ($returnRequest->status === 'approved')
+                                                                            <i
+                                                                                class="bi bi-shield-check text-success me-1"></i>
+                                                                            <span class="text-success">
+                                                                                {{ $returnRequest->admin_note }}
+                                                                            </span>
+                                                                        @elseif ($returnRequest->status === 'rejected')
+                                                                            <i class="bi bi-shield-x text-danger me-1"></i>
+                                                                            <span class="text-danger">
+                                                                                Yêu cầu trả hàng đã bị từ chối. Lý do:
+                                                                                {{ $returnRequest->admin_note ?? 'Không có lý do' }}
+                                                                            </span>
+                                                                        @elseif ($returnRequest->status === 'refunded')
+                                                                            <i
+                                                                                class="bi bi-check-circle-fill text-primary me-1"></i>
+                                                                            <span class="text-primary">
+                                                                                {{ $returnRequest->admin_note ?? 'Yêu cầu trả hàng / hoàn tiền đã hoàn tất.' }}
+                                                                            </span>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            @endif
+                                                            {{-- end --}}
                                                         </div>
                                                     </div>
 
                                                     <div class="text-end">
-                                                        @if ($order->returnRequest && in_array($order->returnRequest->status, ['refunded']))
+                                                        @php
+                                                            $return = $order->returnRequest;
+                                                            $cancelRequested =
+                                                                $order->cancellation_requested &&
+                                                                !$order->cancel_confirmed &&
+                                                                $order->status !== 'cancelled';
+                                                            $cancelConfirmed =
+                                                                $order->cancellation_requested &&
+                                                                $order->cancel_confirmed &&
+                                                                $order->status === 'cancelled';
+                                                            $returnStatus = $return ? $return->return_status : null;
+                                                        @endphp
+
+                                                        {{-- Ưu tiên hiển thị: hoàn hàng > huỷ đơn > trạng thái đơn --}}
+                                                        @if ($return && in_array($return->status, ['requested', 'approved', 'rejected', 'refunded']))
                                                             <span
-                                                                class="badge bg-{{ $order->returnRequest->return_status['color'] }} px-3 py-2 rounded-pill">
-                                                                <i
-                                                                    class="{{ $order->returnRequest->return_status['icon'] }} me-1"></i>
-                                                                {{ $order->returnRequest->return_status['title'] }}
+                                                                class="badge bg-{{ $returnStatus['color'] }} px-3 py-2 rounded-pill">
+                                                                <i class="{{ $returnStatus['icon'] }} me-1"></i>
+                                                                {{ $returnStatus['title'] }}
+                                                            </span>
+                                                        @elseif ($cancelRequested)
+                                                            <span
+                                                                class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                                                                <i class="bi bi-hourglass-split me-1"></i> Yêu cầu huỷ đang
+                                                                chờ xử lý
+                                                            </span>
+                                                        @elseif ($cancelConfirmed)
+                                                            <span class="badge bg-danger px-3 py-2 rounded-pill">
+                                                                <i class="bi bi-x-octagon me-1"></i> Đơn hàng đã huỷ
                                                             </span>
                                                         @else
                                                             <span
@@ -302,6 +372,8 @@
                                                                 {{ $order->getStatusMeta($order->status)['label'] }}
                                                             </span>
                                                         @endif
+
+                                                        {{-- Tổng tiền --}}
                                                         <div class="mt-1">
                                                             <span class="fw-bold text-primary">
                                                                 {{ number_format($order->total_price, 0, ',', '.') }}₫
@@ -309,11 +381,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-
-
                                             </button>
-
-
                                         </div>
                                     </h2>
 
@@ -473,11 +541,15 @@
                                                             <i class="bi bi-x-circle me-2"></i>Huỷ đơn hàng
                                                         </button>
                                                     </div>
-                                                @else
                                                 @endif
                                             @elseif($order->status === 'delivered')
                                                 <div class="d-flex justify-content-end gap-3 mt-4 flex-wrap">
-                                                    @if (!$order->returnRequest)
+                                                    @php
+                                                        $return = $order->returnRequest;
+                                                    @endphp
+
+                                                    {{-- Nếu chưa gửi yêu cầu trả hàng --}}
+                                                    @if (!$return)
                                                         <form action="{{ route('order.received', $order->id) }}"
                                                             method="POST">
                                                             @csrf
@@ -487,23 +559,34 @@
                                                                 <i class="bi bi-check-circle me-2"></i>Đã nhận hàng
                                                             </button>
                                                         </form>
-                                                        <form action="{{ route('orders.requestReturn', $order->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            <button type="submit"
-                                                                class="btn btn-outline-primary btn-lg rounded-pill px-4"
-                                                                onclick="return confirm('Bạn có chắc muốn yêu cầu trả hàng không?')">
-                                                                <i class="bi bi-arrow-return-left me-2"></i>Trả hàng/Hoàn
-                                                                tiền
-                                                            </button>
-                                                        </form>
+
+                                                        <button type="button"
+                                                            class="btn btn-outline-primary btn-lg rounded-pill px-4"
+                                                            onclick="showReturnRequestPrompt({{ $order->id }})">
+                                                            <i class="bi bi-arrow-return-left me-2"></i>Trả hàng/Hoàn tiền
+                                                        </button>
+
+                                                        {{-- Nếu đã gửi yêu cầu trả hàng --}}
                                                     @else
                                                         <span
-                                                            class="badge bg-{{ $order->returnRequest->return_status['color'] }} px-4 py-3 rounded-pill fs-6">
-                                                            <i
-                                                                class="{{ $order->returnRequest->return_status['icon'] }} me-2"></i>
-                                                            {{ $order->returnRequest->return_status['label'] }}
+                                                            class="badge bg-{{ $return->return_status['color'] }} px-4 py-3 rounded-pill fs-6">
+                                                            <i class="{{ $return->return_status['icon'] }} me-2"></i>
+                                                            {{ $return->return_status['label'] }}
                                                         </span>
+
+                                                        {{-- Trạng thái: Bị từ chối → cho khách xác nhận lại là đã nhận hàng --}}
+                                                        @if ($return->status === 'rejected' && !$order->is_received)
+                                                            <form action="{{ route('order.received', $order->id) }}"
+                                                                method="POST">
+                                                                @csrf
+                                                                <button type="submit"
+                                                                    class="btn btn-success btn-lg rounded-pill px-4"
+                                                                    onclick="return confirm('Yêu cầu hoàn hàng của bạn đã bị từ chối. Bạn xác nhận đã nhận hàng?')">
+                                                                    <i class="bi bi-check-circle me-2"></i>Xác nhận đã nhận
+                                                                    hàng
+                                                                </button>
+                                                            </form>
+                                                        @endif
                                                     @endif
                                                 </div>
                                             @endif
@@ -522,6 +605,9 @@
                                     </a>
                                 </div>
                             @endforelse
+                        </div>
+                        <div>
+                            {{ $orders->links() }}
                         </div>
                     </div>
                 </div>
@@ -664,6 +750,7 @@
 @endsection
 
 @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @if (session('received-success'))
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -687,6 +774,7 @@
         </script>
     @endif
 
+    {{-- xử lý hiển thị modal yêu cầu huỷ đơn --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const buttons = document.querySelectorAll('.open-client-cancel-modal');
@@ -717,5 +805,54 @@
                 }
             });
         });
+    </script>
+
+    {{-- Xử lý hiển thị modal yêu cầu trả hàng --}}
+    <script>
+        function showReturnRequestPrompt(orderId) {
+            Swal.fire({
+                title: 'Yêu cầu trả hàng',
+                input: 'textarea',
+                inputLabel: 'Lý do yêu cầu trả hàng (bắt buộc)',
+                inputPlaceholder: 'Vui lòng mô tả vấn đề của bạn...',
+                inputAttributes: {
+                    'aria-label': 'Lý do trả hàng',
+                    'rows': 4
+                },
+                inputValidator: (value) => {
+                    if (!value.trim()) {
+                        return 'Bạn phải nhập lý do trả hàng!';
+                    }
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Gửi yêu cầu',
+                cancelButtonText: 'Huỷ'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/orders/${orderId}/return-request`;
+
+                    // CSRF
+                    const token = document.createElement('input');
+                    token.type = 'hidden';
+                    token.name = '_token';
+                    token.value = csrfToken;
+                    form.appendChild(token);
+
+                    // Lý do
+                    const reason = document.createElement('input');
+                    reason.type = 'hidden';
+                    reason.name = 'reason';
+                    reason.value = result.value;
+                    form.appendChild(reason);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
     </script>
 @endsection

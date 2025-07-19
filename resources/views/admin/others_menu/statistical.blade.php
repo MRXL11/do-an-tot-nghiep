@@ -1030,7 +1030,7 @@
         }
     </script>
 
-    {{-- // Tải danh sách yêu cầu trả hàng mới nhất --}}
+    {{-- Tải danh sách yêu cầu trả hàng mới nhất --}}
     <script>
         function loadLatestReturnRequests() {
             fetch('/admin/statistics/latest-return-requests')
@@ -1118,26 +1118,23 @@
 
         // Hàm xử lý duyệt hoặc từ chối yêu cầu trả hàng
         function handleReturnAction(id, status) {
-            // Xác nhận lại với người dùng
-            let actionText = '';
-
-            switch (status) {
-                case 'approved':
-                    actionText = 'duyệt';
-                    break;
-                case 'rejected':
-                    actionText = 'từ chối';
-                    break;
-                case 'refunded':
-                    actionText = 'đánh dấu đã hoàn tất';
-                    break;
-                default:
-                    actionText = 'cập nhật';
-            }
+            const isRejecting = status === 'rejected';
+            const title = isRejecting ? 'Từ chối yêu cầu trả hàng' : 'Xác nhận cập nhật trạng thái';
+            const inputLabel = isRejecting ? 'Lý do từ chối (bắt buộc)' : 'Ghi chú nội bộ (tuỳ chọn)';
 
             Swal.fire({
-                title: `Bạn chắc chắn muốn ${actionText} yêu cầu này?`,
-                icon: 'warning',
+                title: title,
+                input: 'textarea',
+                inputLabel: inputLabel,
+                inputPlaceholder: 'Nhập nội dung...',
+                inputAttributes: {
+                    rows: 4
+                },
+                inputValidator: (value) => {
+                    if (isRejecting && !value.trim()) {
+                        return 'Bạn phải cung cấp lý do từ chối!';
+                    }
+                },
                 showCancelButton: true,
                 confirmButtonText: 'Xác nhận',
                 cancelButtonText: 'Hủy'
@@ -1151,12 +1148,13 @@
                                     .getAttribute('content')
                             },
                             body: JSON.stringify({
-                                status: status
+                                status: status,
+                                admin_note: result.value || ''
                             })
                         })
                         .then(res => {
                             if (res.redirected) {
-                                window.location.href = res.url; // Nếu Laravel redirect, tự chuyển trang
+                                window.location.href = res.url;
                                 return;
                             }
 
@@ -1172,7 +1170,7 @@
                                 timer: 2000,
                                 showConfirmButton: false
                             });
-                            loadLatestReturnRequests(); // Gọi lại để refresh
+                            loadLatestReturnRequests();
                         })
                         .catch(err => {
                             Swal.fire('Lỗi', err.message || 'Cập nhật thất bại!', 'error');
