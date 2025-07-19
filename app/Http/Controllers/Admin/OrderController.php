@@ -207,7 +207,6 @@ class OrderController extends Controller
         return redirect()->back()->with('success', 'Đã từ chối yêu cầu huỷ đơn hàng.');
     }
 
-
     public function markRefunded(Order $order)
     {
         if ($order->payment_status === 'refund_in_processing' && $order->status === 'cancelled') {
@@ -272,49 +271,79 @@ class OrderController extends Controller
 
     public function updateReturnStatus(Request $request, $id)
     {
-        // Lấy return request cần cập nhật
+        // Lấy yêu cầu trả hàng kèm đơn hàng và người dùng
         $returnRequest = ReturnRequest::with('order.user')->findOrFail($id);
 
-        // Lưu trạng thái cũ
+        $order = $returnRequest->order;
+        $user = $order->user;
+
+        // Trạng thái hiện tại của yêu cầu trả hàng
         $oldStatus = $returnRequest->status;
         $oldLabel = $returnRequest->return_status['label'];
 
-        // Lấy trạng thái mới từ request
+        // Trạng thái mới từ request
         $newStatus = $request->input('status');
+        $returnRequest->admin_note = trim($request->input('admin_note') ?? 'Yêu cầu trả hàng đã được cập nhật');
+
+        // Nếu là rejected thì bắt buộc phải có lý do
+        if ($newStatus === 'rejected' && !$request->filled('admin_note')) {
+            return redirect()->back()->with('error', 'Bạn phải nhập lý do từ chối yêu cầu trả hàng.');
+        }
+
+        // Lấy nhãn trạng thái mới
         $newLabel = ReturnRequest::getStatusLabelStatic($newStatus)['label'] ?? 'Không xác định';
 
-        // Xác định các trạng thái chuyển đổi hợp lệ (giả sử flow logic)
+        // Định nghĩa các bước chuyển trạng thái hợp lệ
         $validTransitions = [
             'requested' => ['approved', 'rejected'],
-            'approved' => ['refunded'],
+            'approved' => ['refunded'], // Chỉ cho phép từ approved → refunded
         ];
 
-        // Kiểm tra trạng thái chuyển đổi hợp lệ
+        // Kiểm tra nếu bước chuyển không hợp lệ
         if (!isset($validTransitions[$oldStatus]) || !in_array($newStatus, $validTransitions[$oldStatus])) {
             return redirect()->back()->with('error', 'Chuyển trạng thái không hợp lệ.');
         }
 
-        // Cập nhật trạng thái mới
+        // Cập nhật trạng thái mới cho yêu cầu trả hàng
         $returnRequest->status = $newStatus;
-        // Cập nhật trạng thái thanh toán của hoá đơn
-        if ($newStatus === 'refunded') {
-            $returnRequest->order->payment_status = 'failed';
-            $returnRequest->order->save();
+
+        // Xử lý cập nhật trạng thái thanh toán tương ứng
+        if ($newStatus === 'approved') {
+            $returnRequest->admin_note =  'Yêu cầu trả hàng đã được phê duyệt';
+            // Nếu đơn dùng phương thức thanh toán online hoặc chuyển khoản
+            if (in_array($order->payment_method, ['online', 'bank_transfer'])) {
+                $order->payment_status = 'refund_in_processing';
+            }
+            // Với COD thì giữ nguyên
+            $order->save();
         }
-        // Cập nhật trạng thái trả hàng
+
+        if ($newStatus === 'refunded') {
+            $returnRequest->admin_note = 'Yêu cầu trả hàng đã hoàn tất và tiền đã được hoàn lại';
+            // Chỉ cho phép cập nhật 'refunded' nếu phương thức có hoàn tiền
+            if (in_array($order->payment_method, ['online', 'bank_transfer'])) {
+                $order->payment_status = 'refunded';
+                $order->save();
+            }
+            // Với COD: không cập nhật vì không qua hệ thống
+            // Với COD
+            if ($order->payment_method === 'cod') {
+                $returnRequest->admin_note = 'Yêu cầu trả hàng đã hoàn tất.';
+            }
+        }
+
+        // Lưu thay đổi yêu cầu trả hàng
         $returnRequest->save();
 
         // Gửi thông báo đến người dùng
         try {
-            $user = $returnRequest->order->user;
-
             Notification::create([
                 'user_id'   => $user->id,
                 'title'     => 'Cập nhật yêu cầu trả hàng',
-                'message'   => "Yêu cầu trả hàng của đơn #{$returnRequest->order->order_code} đã được cập nhật từ '{$oldLabel}' thành '{$newLabel}'.",
+                'message'   => "Yêu cầu trả hàng của đơn #{$order->order_code} đã được cập nhật từ '{$oldLabel}' thành '{$newLabel}'.",
                 'type'      => 'order',
                 'is_read'   => false,
-                'order_id'  => $returnRequest->order->id,
+                'order_id'  => $order->id,
                 'created_at' => now(),
             ]);
         } catch (\Exception $e) {

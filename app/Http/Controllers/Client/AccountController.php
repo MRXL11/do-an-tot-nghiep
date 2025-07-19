@@ -23,7 +23,7 @@ class AccountController extends Controller
         $orders = Order::with('orderDetails.productVariant.product', 'coupon', 'returnRequest')
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(6);
 
         // Duyệt qua từng đơn hàng để tính discount (nếu có coupon)
         foreach ($orders as $order) {
@@ -51,7 +51,9 @@ class AccountController extends Controller
             // Nếu total đã bao gồm ship
         }
 
-        return view('client.pages.account', compact('user', 'orders'));
+        $totalOrderCount = Order::where('user_id', auth()->id())->count();
+
+        return view('client.pages.account', compact('user', 'orders', 'totalOrderCount'));
     }
 
 

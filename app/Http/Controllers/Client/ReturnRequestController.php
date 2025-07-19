@@ -12,7 +12,7 @@ use App\Http\Controllers\Controller;
 
 class ReturnRequestController extends Controller
 {
-    public function requestReturn($orderId)
+    public function requestReturn($orderId, Request $request)
     {
         $order = Order::findOrFail($orderId);
 
@@ -24,11 +24,23 @@ class ReturnRequestController extends Controller
             return back()->with('return-error', 'Bạn đã gửi yêu cầu trả hàng.');
         }
 
+        $reason = trim($request->input('reason'));
+
+        if (empty($reason)) {
+            return back()->with('return-error', 'Vui lòng cung cấp lý do trả hàng.');
+        }
+
         // Ghi nhận yêu cầu
         ReturnRequest::create([
             'order_id' => $order->id,
             'user_id' => Auth::id(),
             'status' => 'requested',
+            'reason' => trim($reason), // ✅ Lưu lý do từ client
+        ]);
+
+        \Log::info('Return request received', [
+            'order_id' => $orderId,
+            'reason' => $request->input('reason'),
         ]);
 
         // Gửi thông báo đến admin
