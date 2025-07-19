@@ -73,15 +73,9 @@
 
                     <div class="col-md-2">
                         <h6 class="text-muted">Trạng thái thanh toán</h6>
-                        @if ($order->payment_status === 'completed')
-                            <span class="badge bg-success">Đã thanh toán</span>
-                        @elseif ($order->payment_status === 'pending')
-                            <span class="badge bg-warning text-dark">Đang chờ</span>
-                        @elseif ($order->payment_status === 'failed')
-                            <span class="badge bg-danger">Thanh toán thất bại</span>
-                        @else
-                            <span class="badge bg-secondary">Không xác định</span>
-                        @endif
+                        <span style="color: {{ $order->getPaymentStatus($order->payment_status)['color'] }}">
+                            {{ $order->getPaymentStatus($order->payment_status)['label'] }}
+                        </span>
                     </div>
 
                     <div class="col-md-2">
@@ -256,19 +250,94 @@
 
             {{-- Tổng tiền và ghi chú --}}
             <div class="row mt-4">
-                <div class="col-md-8">
+                <div class="col-md-8 d-flex flex-column gap-2">
+
+                    {{-- 📝 Ghi chú đơn hàng (nếu có) --}}
                     @if ($order->note)
                         <div class="alert alert-secondary small" role="alert">
-                            <strong>Ghi chú:</strong><br>
-                            {{ $order->note }}<br>
-                        </div>
-                    @else
-                        <div class="alert alert-secondary small" role="alert">
-                            <strong>Ghi chú:</strong><br>
-                            Không có ghi chú nào cho đơn hàng này.<br>
+                            <strong>Ghi chú khách hàng:</strong><br>
+                            {{ $order->note }}
                         </div>
                     @endif
+
+                    {{-- ❌ Lý do khách yêu cầu huỷ --}}
+                    @if ($order->cancellation_requested)
+                        <div class="alert alert-warning small" role="alert">
+                            <strong>Yêu cầu huỷ đơn từ khách:</strong><br>
+                            {{ $order->cancel_reason ?? 'Không có lý do được cung cấp.' }}<br>
+
+                            <span class="{{ $order->cancel_confirmed ? 'text-success' : 'text-muted' }}">
+                                <span class="d-block mt-2 fw-semibold">
+                                    <i class="bi bi-info-circle me-1"></i> Trạng thái:
+                                    @if ($order->cancellation_requested && $order->cancel_confirmed && $order->status === 'cancelled')
+                                        <span class="text-success">Yêu cầu huỷ của khách đã được admin chấp nhận.</span>
+                                    @elseif ($order->cancellation_requested && !$order->cancel_confirmed)
+                                        <span class="text-muted">Đang chờ xác nhận từ admin.</span>
+                                    @elseif ($order->cancellation_requested && $order->cancel_confirmed && $order->status !== 'cancelled')
+                                        <span class="text-danger">Yêu cầu huỷ của khách đã bị admin từ chối.</span>
+                                    @elseif (!$order->cancellation_requested && $order->cancel_confirmed && $order->status === 'cancelled')
+                                        <span class="text-warning">Đơn hàng đã bị admin huỷ trực tiếp.</span>
+                                    @else
+                                        <span class="text-muted fst-italic">Không có yêu cầu huỷ hoặc trạng thái.</span>
+                                    @endif
+                                </span>
+                            </span>
+
+                            {{-- ✅ Nút duyệt & từ chối nếu chưa được xử lý --}}
+                            @if (!$order->cancel_confirmed && $order->status !== 'cancelled')
+                                <div class="mt-2 d-flex gap-2">
+                                    {{-- Nút Duyệt --}}
+                                    <button type="button" class="btn btn-success btn-sm"
+                                        onclick="handleCancelAction({{ $order->id }},
+                                         'approve', `{{ $order->cancel_reason }}`, `{{ $order->shippingAddress->name }}`)">
+                                        <i class="bi bi-check-circle me-1"></i> Chấp nhận
+                                    </button>
+
+                                    {{-- Nút Từ chối --}}
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                        onclick="handleCancelAction({{ $order->id }}, 'reject',
+                                         `{{ $order->cancel_reason }}`, `{{ $order->shippingAddress->name }}`)">
+                                        <i class="bi bi-x-circle me-1"></i> Từ chối yêu cầu
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
+                    {{-- ✅❌ Lý do admin chấp nhận hoặc từ chối yêu cầu huỷ --}}
+                    @if ($order->cancel_confirmed && $order->admin_cancel_note)
+                        <div class="alert alert-info small" role="alert">
+                            <strong>
+                                Lý do
+                                {{ $order->cancellation_requested
+                                    ? ($order->status === 'cancelled'
+                                        ? 'admin chấp nhận yêu cầu huỷ từ khách'
+                                        : 'admin từ chối yêu cầu huỷ từ khách')
+                                    : 'admin chủ động huỷ đơn' }}:
+                            </strong><br>
+                            {{ $order->admin_cancel_note }}
+
+                            {{-- Trạng thái hiển thị thêm nếu admin chủ động huỷ --}}
+                            @unless ($order->cancellation_requested)
+                                <div class="mt-1 text-muted fst-italic">
+                                    <i class="bi bi-shield-fill-exclamation text-primary me-1"></i>
+                                    Trạng thái: Admin đã chủ động huỷ đơn hàng.
+                                </div>
+                            @endunless
+                        </div>
+                    @endif
+
+                    {{-- ❔ Nếu không có gì hết --}}
+                    @if (!$order->note && !$order->cancellation_requested && !$order->admin_cancel_note)
+                        <div class="alert alert-secondary small" role="alert">
+                            <strong>Ghi chú:</strong><br>
+                            Không có ghi chú hay yêu cầu nào cho đơn hàng này.
+                        </div>
+                    @endif
+
                 </div>
+
+                {{-- Tổng tiền --}}
                 <div class="col-md-4">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
@@ -332,6 +401,7 @@
 @endsection
 
 @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // submit status update form
         function submitStatusUpdate(url, nextStatus, actionLabel) {
@@ -348,6 +418,97 @@
             document.getElementById('cancelForm').action = url;
             document.getElementById('cancelConfirmMessage').innerText = message;
             new bootstrap.Modal(document.getElementById('cancelConfirmModal')).show();
+        }
+
+        function escapeJs(str) {
+            if (!str) return '';
+            return str.replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '');
+        }
+
+        function handleCancelAction(orderId, action, customerReason = '', customerName = '') {
+            const actionLabel = action === 'approve' ? 'Xác nhận yêu cầu huỷ đơn' : 'Từ chối yêu cầu huỷ';
+            const actionColor = action === 'approve' ? '#198754' : '#dc3545'; // xanh hoặc đỏ
+
+            const htmlContent = `
+                <div class="text-start">
+                    <label class="form-label fw-bold text-dark mb-1">
+                        <i class="bi bi-person-fill text-primary me-1"></i> Lý do khách yêu cầu huỷ:
+                    </label>
+                    <div class="bg-light border rounded p-2 mb-3">
+                        ${customerReason
+                            ? `<em>${customerReason}</em>`
+                            : '<span class="text-muted fst-italic">Không có lý do được cung cấp.</span>'}
+                    </div>
+
+                    <div class="d-flex flex-column">
+                        <label for="adminReason" class="form-label fw-bold text-dark mb-1">
+                        <i class="bi bi-shield-lock-fill text-danger me-1"></i> Lý do của bạn:
+                    </label>
+                    <textarea id="adminReason" class="swal2-textarea" placeholder="Nhập lý do của bạn..." rows="3"></textarea>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                title: `${actionLabel} từ khách hàng ${customerName || 'Ẩn danh'}`,
+                html: htmlContent,
+                showCancelButton: true,
+                confirmButtonText: 'Xác nhận',
+                confirmButtonColor: actionColor,
+                cancelButtonText: 'Hủy',
+                focusConfirm: false,
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'btn btn-secondary'
+                },
+                preConfirm: () => {
+                    const reason = document.getElementById('adminReason')?.value.trim();
+                    if (!reason || reason.length < 10) {
+                        Swal.showValidationMessage('Lý do phải có ít nhất 10 ký tự.');
+                        return false;
+                    }
+                    return reason;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const adminNote = result.value;
+
+                    fetch(`/admin/orders/cancel-request/${orderId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                    'content')
+                            },
+                            body: JSON.stringify({
+                                action: action,
+                                admin_cancel_note: adminNote
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công',
+                                    text: data.success,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => location.reload());
+                            } else {
+                                Swal.fire('Lỗi', data.error || 'Đã xảy ra lỗi khi xử lý yêu cầu.', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Lỗi', 'Không thể gửi yêu cầu. Vui lòng thử lại sau.', 'error');
+                        });
+                }
+            });
         }
     </script>
 @endsection
