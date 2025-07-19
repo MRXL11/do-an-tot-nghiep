@@ -6,6 +6,38 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property int $id
+ * @property string $title
+ * @property string $content
+ * @property string|null $image
+ * @property string $slug
+ * @property bool $status
+ * @property \Illuminate\Support\Carbon $published_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $views
+ * @property-read string $image_url
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereContent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereImage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News wherePublishedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereTitle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereViews($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|News withoutTrashed()
+ * @mixin \Eloquent
+ */
 class News extends Model
 {
     use SoftDeletes;

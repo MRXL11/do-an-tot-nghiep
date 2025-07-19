@@ -6,6 +6,39 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property int $id
+ * @property string $title
+ * @property string|null $image
+ * @property string|null $description
+ * @property int $order
+ * @property bool $status
+ * @property int|null $news_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $views
+ * @property-read string $image_url
+ * @property-read \App\Models\News|null $news
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide whereImage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide whereNewsId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide whereOrder($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide whereTitle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide whereViews($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Slide withoutTrashed()
+ * @mixin \Eloquent
+ */
 class Slide extends Model
 {
     use SoftDeletes;
