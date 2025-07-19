@@ -22,4 +22,14 @@
     <link rel="stylesheet" href="{{ asset('assets/css/owl-carousel.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/lightbox.css') }}">
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Sửa lỗi slide bị ẩn do CSS hoặc JS */
+        .slideshow-container .mySlides {
+            display: none; /* Mặc định ẩn tất cả các slide */
+        }
+        /* Luôn hiển thị slide ĐẦU TIÊN */
+        .slideshow-container .mySlides:first-child {
+            display: block;
+        }
+    </style>
 </head>

@@ -8,7 +8,7 @@ use Illuminate\Pagination\Paginator;// Thư viện phân trang của Laravel
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-
+use App\Http\View\Composers\SlideComposer;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -43,5 +43,9 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('cartCount', $cartCount);
         });
+         // THÊM ĐOẠN CODE NÀY VÀO
+        // Dòng này có nghĩa là: "Mỗi khi view 'banner-left' được render,
+        // hãy chạy lớp SlideComposer để cung cấp dữ liệu cho nó."
+        View::composer('client.layouts.banner', SlideComposer::class);
     }
 }

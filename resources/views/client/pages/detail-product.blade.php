@@ -180,7 +180,7 @@
                 @endif
             </div>
 
-            <!-- Review form -->
+            {{-- <!-- Review form -->
             <div class="col-lg-6">
                 <h5><i class="bi bi-pencil-square me-2"></i>Viết đánh giá</h5>
                 @auth
@@ -205,7 +205,7 @@
                 @else
                     <p>Vui lòng <a href="{{ route('login') }}">đăng nhập</a> để viết đánh giá.</p>
                 @endauth
-            </div>
+            </div> --}}
         </div>
 
         <!-- Related products -->

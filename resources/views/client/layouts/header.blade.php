@@ -3,37 +3,31 @@
         <div class="row">
             <div class="col-12">
                 <nav class="main-nav">
-                    <!-- ***** Logo Start ***** -->
                     <a href="{{ url('/') }}" class="logo">
                         <img src="{{ asset('assets/images/logo.png') }}" height="60">
                     </a>
-                    <!-- ***** Logo End ***** -->
-
-                    <!-- ***** Menu Start ***** -->
                     <ul class="nav align-items-center">
-                        <li class="scroll-to-section">
-                            <a href="{{ url('/') }}" class="{{ Request::is('index') ? 'active' : '' }}">Trang
-                                chủ</a>
+                        {{-- SỬA LẠI CÁC LIÊN KẾT GÂY LỖI JAVASCRIPT --}}
+                        <li> <a href="{{ url('/') }}" class="{{ Request::is('/') ? 'active' : '' }}">Trang chủ</a>
                         </li>
-                        <li class="scroll-to-section"><a href="#men">Nam</a></li>
-                        <li class="scroll-to-section"><a href="#women">Nữ</a></li>
-                        <li class="scroll-to-section"><a href="#kids">Trẻ em</a></li>
-                        <li class="scroll-to-section">
-                            <a href="{{ url('/products-client') }}"
-                                class="{{ Request::is('products-client') ? 'active' : '' }}">Sản phẩm</a>
+                        <li class="scroll-to-section"><a href="{{ url('/#men') }}">Nam</a></li>
+                        <li class="scroll-to-section"><a href="{{ url('/#women') }}">Nữ</a></li>
+                        <li class="scroll-to-section"><a href="{{ url('/#kids') }}">Trẻ em</a></li>
+                        <li> <a href="{{ url('/products-client') }}"
+                                class="{{ Request::is('products-client*') ? 'active' : '' }}">Sản phẩm</a>
                         </li>
 
                         <li class="submenu">
                             <a href="javascript:;">Trang</a>
                             <ul>
-                                <li><a href="{{ url('/about') }}" class="{{ Request::is('about') ? 'active' : '' }}">Về
-                                        chúng tôi</a></li>
+                                <li><a href="{{ url('/about') }}" class="{{ Request::is('about') ? 'active' : '' }}">Về chúng tôi</a></li>
+                                <li><a href="{{ url('/fashion-newsletters') }}"
+                                            class="{{ Request::is('fashion-newsletters') ? 'active' : '' }}">Tin thời trang</a></li>        
                                 <li><a href="{{ url('/contact') }}"
                                         class="{{ Request::is('contact') ? 'active' : '' }}">Liên hệ</a></li>
                             </ul>
                         </li>
 
-                        <!-- Tìm kiếm -->
                         <li class="nav-item position-relative">
                             <a href="#" id="searchToggle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Tìm kiếm">
                                 <i class="bi bi-search fs-5 text-dark"></i>
@@ -43,30 +37,27 @@
                             </form>
                         </li>
 
-                        <!-- Giỏ hàng -->
-                        <li class="scroll-to-section position-relative">
+                        <li class="nav-item position-relative">
                             <a href="{{ route('cart.index') }}"
                                 class="{{ Request::routeIs('cart.index') ? 'active' : '' }}" data-bs-toggle="tooltip"
                                 title="Giỏ hàng">
                                 <i class="bi bi-cart3 fs-5 text-dark position-relative">
                                     <span id="cart-count"
-                                        class="position-absolute top-0 start-75 translate-middle badge rounded-pill bg-danger {{ $cartCount == 0 ? 'd-none' : '' }}"
+                                        class="position-absolute top-0 start-75 translate-middle badge rounded-pill bg-danger {{ ($cartCount ?? 0) == 0 ? 'd-none' : '' }}"
                                         style="font-size: 0.65rem;">
-                                        {{ $cartCount }}
+                                        {{ $cartCount ?? 0 }}
                                     </span>
                                 </i>
                             </a>
                         </li>
 
-                        <!-- Yêu thích -->
-                        <li class="scroll-to-section">
+                        <li class="nav-item">
                             <a href="{{ url('/wishlist') }}" class="{{ Request::is('wishlist') ? 'active' : '' }}"
                                 data-bs-toggle="tooltip" title="Yêu thích">
                                 <i class="bi bi-heart fs-5"></i>
                             </a>
                         </li>
 
-                        <!-- Tài khoản -->
                         <li class="submenu">
                             <a href="javascript:;">
                                 <i class="bi bi-person-circle me-1"></i>
@@ -116,37 +107,37 @@
                             </ul>
                         </li>
                     </ul>
-                    <!-- ***** Menu End ***** -->
-                </nav>
+                    </nav>
             </div>
         </div>
     </div>
 </header>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    const toggle = document.getElementById('searchToggle');
-    const form = document.getElementById('headerSearchForm');
-    const input = form.querySelector('input[name=\"header_search\"]');
-    // Nếu đang ở trang products-client và có từ khóa, tự động hiện form
-    if (window.location.pathname.includes('products-client') && input.value) {
-        form.classList.remove('d-none');
-    } else {
-        form.classList.add('d-none');
-        input.value = '';
-    }
-    // Click icon thì toggle form
-    toggle.addEventListener('click', function(e) {
-        e.preventDefault();
-        form.classList.toggle('d-none');
-        if (!form.classList.contains('d-none')) {
-            input.focus();
-        }
-    });
-    // Click ra ngoài thì ẩn form
-    document.addEventListener('click', function(e) {
-        if (!form.contains(e.target) && !toggle.contains(e.target)) {
+        const toggle = document.getElementById('searchToggle');
+        const form = document.getElementById('headerSearchForm');
+        if (!toggle || !form) return;
+
+        const input = form.querySelector('input[name=\"header_search\"]');
+        
+        if (window.location.pathname.includes('products-client') && input.value) {
+            form.classList.remove('d-none');
+        } else {
             form.classList.add('d-none');
         }
+        
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            form.classList.toggle('d-none');
+            if (!form.classList.contains('d-none')) {
+                input.focus();
+            }
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!form.contains(e.target) && !toggle.contains(e.target)) {
+                form.classList.add('d-none');
+            }
+        });
     });
-});
 </script>

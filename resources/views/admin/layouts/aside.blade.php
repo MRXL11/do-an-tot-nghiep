@@ -112,19 +112,19 @@
                          </p>
                      </a>
                      <ul class="nav nav-treeview">
-                         <li class="nav-item">
-                             <a href="" class="nav-link">
-                                 <i class="bi bi-file-earmark-text"></i>
-                                 <p>Bài viết</p>
-                             </a>
-                         </li>
-
-                         <li class="nav-item">
-                             <a href="" class="nav-link">
-                                 <i class="bi bi-image"></i>
-                                 <p>Banner</p>
-                             </a>
-                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.news.index') }}" class="nav-link">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <p>Bài viết</p>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a href="{{ route('admin.slides.index') }}" class="nav-link">
+                                <i class="bi bi-image"></i>
+                                <p>Banner</p>
+                            </a>
+                        </li>
                          <li class="nav-item">
                              <a href="" class="nav-link">
                                  <i class="bi bi-person-circle"></i>
