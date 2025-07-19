@@ -90,6 +90,8 @@ class Order extends Model
         $paymentStatuses = [
             'pending' => ['label' => 'Chờ thanh toán', 'color' => '#FF9966'],
             'completed' => ['label' => 'Đã thanh toán', 'color' => '#009900'],
+            'refund_in_processing' => ['label' => 'Đang xử lý hoàn tiền', 'color' => '#6699FF'],
+            'refunded' => ['label' => 'Đã hoàn tiền', 'color' => '#33CC99'],
             'failed' => ['label' => 'Thanh toán thất bại', 'color' => '#666666'],
         ];
 

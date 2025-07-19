@@ -17,11 +17,11 @@ class ReturnRequestController extends Controller
         $order = Order::findOrFail($orderId);
 
         if ($order->status !== 'delivered') {
-            return back()->with('error', 'Chỉ có thể yêu cầu trả hàng với đơn đã được giao.');
+            return back()->with('return-error', 'Chỉ có thể yêu cầu trả hàng với đơn đã được giao.');
         }
 
         if ($order->returnRequest) {
-            return back()->with('error', 'Bạn đã gửi yêu cầu trả hàng.');
+            return back()->with('return-error', 'Bạn đã gửi yêu cầu trả hàng.');
         }
 
         // Ghi nhận yêu cầu
@@ -34,7 +34,7 @@ class ReturnRequestController extends Controller
         // Gửi thông báo đến admin
         $this->notifyAdminsAboutReturnRequest($order);
 
-        return back()->with('success', 'Yêu cầu trả hàng đã được ghi nhận. Vui lòng chờ admin liên hệ.');
+        return back()->with('return-success', 'Yêu cầu trả hàng đã được ghi nhận. Vui lòng chờ admin liên hệ.');
     }
 
     /**

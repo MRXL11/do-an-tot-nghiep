@@ -330,4 +330,17 @@ class StatisticsController extends Controller
             ]
         ]);
     }
+
+    public function getPendingCancelRequests()
+    {
+        $pendingCancelOrders = Order::where('cancellation_requested', true)
+            ->where('cancel_confirmed', false)
+            ->where('status', '!=', 'cancelled')
+            ->whereNull('admin_cancel_note') // ❗ Kiểm tra chưa có lý do huỷ từ admin
+            ->with(['user', 'shippingAddress'])
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json($pendingCancelOrders);
+    }
 }
