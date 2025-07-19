@@ -218,6 +218,7 @@
                                                                 <i class="bi bi-calendar3 me-1"></i>
                                                                 {{ $order->created_at->format('d/m/Y - H:i') }}
                                                             </small>
+
                                                             {{-- hiển thị trnagj thái yêu cầu huỷ (nếu có) --}}
                                                             @php
                                                                 $isRequested = $order->cancellation_requested;
@@ -531,6 +532,45 @@
                                                 </div>
                                             </div>
 
+                                            {{-- review --}}
+                                            @if ($order->status === 'completed')
+                                                <div class="border-top pt-3 mt-3">
+                                                    <h6 class="fw-semibold">Đánh giá sản phẩm:</h6>
+                                                    <ul class="list-group">
+                                                        @foreach ($order->orderDetails as $detail)
+                                                            @php
+                                                                $review = \App\Models\Review::where(
+                                                                    'order_detail_id',
+                                                                    $detail->id,
+                                                                )->first();
+                                                            @endphp
+                                                            <li
+                                                                class="list-group-item d-flex justify-content-between align-items-center">
+                                                                <span>{{ $detail->productVariant->product->name }}</span>
+                                                                @if ($review)
+                                                                    <div class="text-warning">
+                                                                        @for ($i = 1; $i <= 5; $i++)
+                                                                            <i
+                                                                                class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
+                                                                        @endfor
+                                                                    </div>
+                                                                @else
+                                                                    <button class="btn btn-outline-warning btn-sm"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#reviewModal"
+                                                                        data-product-id="{{ $detail->productVariant->product->id }}"
+                                                                        data-product-name="{{ $detail->productVariant->product->name }}"
+                                                                        data-order-detail-id="{{ $detail->id }}">
+                                                                        <i class="bi bi-star"></i> Viết đánh giá
+                                                                    </button>
+                                                                @endif
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            @endif
+
+
                                             <!-- Action Buttons -->
                                             @if (in_array($order->status, ['pending', 'processing']))
                                                 @if (!$isRequested && !$isCancelled)
@@ -704,6 +744,41 @@
         </div>
     </div>
 
+    <!-- Review Modal -->
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reviewModalLabel">Đánh giá sản phẩm: <span
+                            id="productNameToReview"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reviewForm" action="{{ route('reviews.store') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="product_id" id="productIdToReview">
+                        <input type="hidden" name="order_detail_id" id="orderDetailIdToReview">
+                        <div class="mb-3">
+                            <label class="form-label">Điểm đánh giá</label>
+                            <select class="form-select w-auto" name="rating" required>
+                                <option value="">Chọn số sao</option>
+                                @for ($i = 5; $i >= 1; $i--)
+                                    <option value="{{ $i }}">{{ $i }} sao</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nội dung</label>
+                            <textarea class="form-control" rows="4" name="comment" placeholder="Nhận xét của bạn về sản phẩm..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100"><i class="bi bi-send me-1"></i>Gửi đánh
+                            giá</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <style>
         .bg-gradient-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -751,6 +826,7 @@
 
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     @if (session('received-success'))
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -773,6 +849,28 @@
             });
         </script>
     @endif
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const reviewModal = document.getElementById('reviewModal');
+            if (reviewModal) {
+                reviewModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const productId = button.getAttribute('data-product-id');
+                    const productName = button.getAttribute('data-product-name');
+                    const orderDetailId = button.getAttribute('data-order-detail-id');
+
+                    const modalTitle = reviewModal.querySelector('#productNameToReview');
+                    const productIdInput = reviewModal.querySelector('#productIdToReview');
+                    const orderDetailIdInput = reviewModal.querySelector('#orderDetailIdToReview');
+
+                    modalTitle.textContent = productName;
+                    productIdInput.value = productId;
+                    orderDetailIdInput.value = orderDetailId;
+                });
+            }
+        });
+    </script>
 
     {{-- xử lý hiển thị modal yêu cầu huỷ đơn --}}
     <script>
