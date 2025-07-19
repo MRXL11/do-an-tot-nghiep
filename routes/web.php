@@ -43,7 +43,7 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
     Route::get('/admin/statistics/pending-reviews', [StatisticsController::class, 'getPendingReviews']);
     Route::get('/admin/statistics/latest-return-requests', [StatisticsController::class, 'getLatestReturnRequests']);
     Route::get('/admin/statistics/latest-notifications', [StatisticsController::class, 'getLatestNotifications']);
-
+    Route::get('/admin/orders/cancel-requests/today', [StatisticsController::class, 'getPendingCancelRequests'])->name('admin.cancel-requests.today');
 
     // Nhóm route admin với prefix và name
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -60,7 +60,11 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
             ->name('return-requests.update');
         // Hủy đơn hàng
         Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
-
+        Route::post('/orders/{order}/cancel/reject', [OrderController::class, 'rejectCancel'])->name('orders.cancel.reject');
+        Route::post('/admin/orders/{order}/refunded', [OrderController::class, 'markRefunded'])->name('orders.refunded');
+        // Xác nhận hoặc từ chối yêu cầu huỷ đơn
+        Route::post('orders/cancel-request/{order}', [OrderController::class, 'handleCancelRequest'])
+            ->name('admin.orders.handleCancelRequest');
 
         // Danh mục (Categories)
         Route::get('/categories/trashed', [CategoryController::class, 'trashed'])->name('categories.trashed');
@@ -169,7 +173,7 @@ Route::get('/client/notifications', [ClientNotificationController::class, 'index
 Route::post('/client/notifications/mark-all-read', [ClientNotificationController::class, 'markAllRead'])->name('client.notifications.markAllRead');
 
 // Hủy đơn hàng và yêu cầu trả hàng
-Route::post('/order/cancel/{order}/request', [ClientOrderController::class, 'createOrderCancelNotificationToAdmin'])->name('order.cancel.request');
+Route::post('/order/{orderId}/cancel-request', [ClientOrderController::class, 'createOrderCancelNotificationToAdmin'])->name('order.cancel.request');
 Route::post('/order/{id}/received', [ClientOrderController::class, 'received'])->name('order.received');
 Route::post('/orders/{id}/return-request', [ReturnRequestController::class, 'requestReturn'])->name('orders.requestReturn');
 
