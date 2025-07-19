@@ -1,11 +1,8 @@
-<!-- jQuery -->
 <script src="{{ asset('assets/js/jquery-2.1.0.min.js') }}"></script>
 
-<!-- Bootstrap -->
 <script src="{{ asset('assets/js/popper.js') }}"></script>
 <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
 
-<!-- Plugins -->
 <script src="{{ asset('assets/js/owl-carousel.js') }}"></script>
 <script src="{{ asset('assets/js/accordions.js') }}"></script>
 <script src="{{ asset('assets/js/datepicker.js') }}"></script>
@@ -17,7 +14,6 @@
 <script src="{{ asset('assets/js/lightbox.js') }}"></script>
 <script src="{{ asset('assets/js/isotope.js') }}"></script>
 
-<!-- Global Init -->
 <script src="{{ asset('assets/js/custom.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -35,19 +31,31 @@
     });
 </script>
 
+{{-- SỬA LẠI SCRIPT CHO TRANG THANH TOÁN --}}
 <script>
-    document.querySelectorAll('input[name="paymentMethod"]').forEach((el) => {
-        el.addEventListener('change', function() {
-            document.querySelectorAll('.payment-method-details').forEach(div => div.classList.remove(
-                'active'));
-            const selected = this.value;
-            document.getElementById(selected + '-details').classList.add('active');
+    // Tìm phần tử chi tiết của phương thức COD
+    const paymentDetails = document.getElementById('cod-details');
+
+    // Chỉ thực thi mã này nếu phần tử 'cod-details' tồn tại (tức là đang ở trang thanh toán)
+    if (paymentDetails) {
+        // Xử lý khi người dùng thay đổi lựa chọn thanh toán
+        document.querySelectorAll('input[name="paymentMethod"]').forEach((el) => {
+            el.addEventListener('change', function() {
+                document.querySelectorAll('.payment-method-details').forEach(div => div.classList.remove('active'));
+                
+                const selected = this.value;
+                const selectedDetails = document.getElementById(selected + '-details');
+
+                if (selectedDetails) {
+                    selectedDetails.classList.add('active');
+                }
+            });
         });
-    });
 
-    // Mặc định hiển thị COD
-    document.getElementById('cod-details').classList.add('active');
+        // Mặc định hiển thị chi tiết cho COD khi tải trang
+        paymentDetails.classList.add('active');
+    }
 </script>
-{{-- checkout --}}
+{{-- end checkout script --}}
 
-
+@stack('scripts')

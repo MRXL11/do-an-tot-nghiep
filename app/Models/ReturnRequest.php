@@ -4,6 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $order_id
+ * @property int $user_id
+ * @property string $status
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $return_status
+ * @property-read \App\Models\Order $order
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnRequest newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnRequest newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnRequest query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnRequest whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnRequest whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnRequest whereOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnRequest whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnRequest whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnRequest whereUserId($value)
+ * @mixin \Eloquent
+ */
 class ReturnRequest extends Model
 {
     //

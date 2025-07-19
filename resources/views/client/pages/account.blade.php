@@ -12,7 +12,6 @@
                             <h5 class="mb-0 fw-bold">Thông tin cá nhân</h5>
                         </div>
                     </div>
-
                     @if (session('success'))
                         <div class="alert alert-success alert-dismissible fade show m-3 rounded-3 border-0 shadow-sm"
                             role="alert">
@@ -385,7 +384,6 @@
                                             </button>
                                         </div>
                                     </h2>
-
                                     <div id="collapse{{ $order->id }}" class="accordion-collapse collapse"
                                         data-bs-parent="#orderAccordion">
                                         <div class="accordion-body p-4 bg-white">
