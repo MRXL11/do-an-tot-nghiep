@@ -96,7 +96,7 @@ class OrderController extends Controller
 
     public function pay(Request $request)
     {
-        $orderId = session('pending_order_id');
+        $orderId = session('pending_order_id') ?? $request->input('order_id');
         if (!$orderId) {
             Log::warning('No pending_order_id found in session');
             return redirect()->route('cart.index')->with('error', 'Không tìm thấy đơn hàng để thanh toán.');
@@ -141,7 +141,7 @@ class OrderController extends Controller
 
     public function momo_payment(Request $request)
     {
-        $orderId = session('pending_order_id');
+        $orderId = session('pending_order_id') ?? $request->input('order_id');
         if (!$orderId) {
             \Log::warning('No pending_order_id found in session');
             return redirect()->route('cart.index')->with('error', 'Không tìm thấy đơn hàng để thanh toán.');
