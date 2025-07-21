@@ -199,7 +199,7 @@
                             @forelse ($orders as $order)
                                 <div class="accordion-item border-0 mb-4 rounded-4 shadow-sm overflow-hidden">
                                     <h2 class="accordion-header" id="heading{{ $order->id }}">
-                                        <div class="d-flex align-items-center bg-light rounded-4 p-4 border-0">
+                                        <div class="d-flex align-items-end bg-light rounded-4 p-4 border-0 flex-column">
                                             <button
                                                 class="accordion-button collapsed bg-transparent border-0 p-0 flex-grow-1 shadow-none"
                                                 type="button" data-bs-toggle="collapse"
@@ -210,13 +210,20 @@
                                                             <i class="bi bi-box-seam text-white"></i>
                                                         </div>
                                                         <div>
-                                                            <h6 class="mb-1 fw-bold text-dark">
-                                                                #{{ $order->order_code }}
-                                                            </h6>
-                                                            <small class="text-muted">
-                                                                <i class="bi bi-calendar3 me-1"></i>
-                                                                {{ $order->created_at->format('d/m/Y - H:i') }}
-                                                            </small>
+                                                            <div class="mb-3 d-flex flex-column">
+                                                                <h6 class="fw-bold text-dark mb-1">
+                                                                    #{{ $order->order_code }} -
+                                                                    {{ $order->getPaymentMethod($order->payment_method)['label'] }} - 
+                                                                    <span class="fw-semibold"
+                                                                        style="color: {{ $order->getPaymentStatus($order->payment_status)['color'] }}">
+                                                                        {{ $order->getPaymentStatus($order->payment_status)['label'] }}
+                                                                    </span>
+                                                                </h6>
+                                                                <small class="text-muted d-block mb-1">
+                                                                    <i class="bi bi-calendar3 me-1"></i>
+                                                                    {{ $order->created_at->format('d/m/Y - H:i') }}
+                                                                </small>
+                                                            </div>
 
                                                             {{-- hiển thị trnagj thái yêu cầu huỷ (nếu có) --}}
                                                             @php
@@ -382,6 +389,23 @@
                                                     </div>
                                                 </div>
                                             </button>
+
+                                            {{-- thanh toán lại nếu chwua thanh toán --}}
+                                            @if (in_array($order->payment_method, ['online', 'bank_transfer']) && $order->payment_status === 'pending')
+                                                <form id="auto-momo-form" action="{{ route('momo_payment') }}"
+                                                    method="POST" style="display: none;">
+                                                    @csrf
+                                                    <input type="hidden" name="order_id" value="{{ $order->id }}">
+                                                    <input type="hidden" name="total_momo"
+                                                        value="{{ $order->total_price }}">
+                                                </form>
+                                                <a href="javascript:void(0)"
+                                                    onclick="document.getElementById('auto-momo-form').submit();"
+                                                    class="btn btn-outline-primary">
+                                                    Thanh toán lại
+                                                </a>
+                                            @else
+                                            @endif
                                         </div>
                                     </h2>
                                     <div id="collapse{{ $order->id }}" class="accordion-collapse collapse"
@@ -950,5 +974,16 @@
                 }
             });
         }
+    </script>
+
+    {{-- xử lý gọi thanh toán lại --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn-pay-again').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation(); // ✅ Ngăn không cho accordion toggle
+                });
+            });
+        });
     </script>
 @endsection
