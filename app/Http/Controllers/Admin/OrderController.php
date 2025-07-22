@@ -316,7 +316,8 @@ if ($order->cancel_confirmed) {
         if ($newStatus === 'approved') {
             $returnRequest->admin_note =  'Yêu cầu trả hàng đã được phê duyệt';
             // Nếu đơn dùng phương thức thanh toán online hoặc chuyển khoản
-            if (in_array($order->payment_method, ['online', 'bank_transfer'])) {
+            if (in_array($order->payment_method, ['online', 'bank_transfer'])
+               && $order->payment_status === 'completed') {
                 $order->payment_status = 'refund_in_processing';
             }
             // Với COD thì giữ nguyên
@@ -326,7 +327,8 @@ if ($order->cancel_confirmed) {
         if ($newStatus === 'refunded') {
             $returnRequest->admin_note = 'Yêu cầu trả hàng đã hoàn tất và tiền đã được hoàn lại';
             // Chỉ cho phép cập nhật 'refunded' nếu phương thức có hoàn tiền
-            if (in_array($order->payment_method, ['online', 'bank_transfer'])) {
+            if (in_array($order->payment_method, ['online', 'bank_transfer'])
+               && $order->payment_status === 'refund_in_processing') {
                 $order->payment_status = 'refunded';
                 $order->save();
             }
