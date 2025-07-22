@@ -224,6 +224,11 @@ class OrderController extends Controller
         $action = $request->input('action'); // 'approve' or 'reject'
         $note = $request->input('admin_cancel_note');
 
+        // Đầu mỗi nhánh xử lý (approve/reject), kiểm tra nếu đã xử lý thì không cho tiếp tục
+if ($order->cancel_confirmed) {
+    return response()->json(['error' => 'Yêu cầu hủy đã được xử lý trước đó.'], 400);
+}
+
         if (!in_array($action, ['approve', 'reject'])) {
             return response()->json(['error' => 'Hành động không hợp lệ.'], 400);
         }
