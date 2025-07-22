@@ -65,7 +65,39 @@
             </div>
         </div>
 
+        <div class="row mb-3">
+            <div class="col-lg-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        {{-- Tiêu đề --}}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="fw-bold mb-0">
+                                <i class="bi bi-x-circle text-danger me-2"></i>
+                                Yêu cầu huỷ đơn mới từ khách
+                            </h4>
+                        </div>
 
+                        {{-- Bảng yêu cầu huỷ đơn --}}
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            <table class="table table-hover table-bordered align-middle mb-0">
+                                <thead class="table-light" id="cancelRequestTableHead">
+                                    {{-- Render bằng JavaScript --}}
+                                </thead>
+                                <tbody id="cancelRequestTableBody">
+                                    {{-- Render bằng JavaScript --}}
+                                </tbody>
+                            </table>
+
+                            {{-- Thông báo khi không có dữ liệu --}}
+                            <div class="text-center py-3 text-muted fst-italic" id="cancelRequestNoData"
+                                style="display: none;">
+                                Hiện chưa ghi nhận yêu cầu huỷ đơn mới.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         {{-- Bộ lọc & biểu đồ --}}
         <div class="row mb-3">
@@ -134,7 +166,6 @@
             {{-- đơn hàng --}}
             <div class="col-lg-6">
                 <div class="card mb-4">
-
                     <div class="card-header border-0">
                         <div
                             class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
@@ -144,7 +175,8 @@
 
                             <!-- Bộ lọc ngày -->
                             <div class="d-flex align-items-center gap-2">
-                                <input type="date" id="orderStartDate" class="form-control" style="max-width: 160px;">
+                                <input type="date" id="orderStartDate" class="form-control"
+                                    style="max-width: 160px;">
                                 <input type="date" id="orderEndDate" class="form-control" style="max-width: 160px;">
                                 <button class="btn btn-primary" onclick="filterOrderChart()">Lọc</button>
                             </div>
@@ -998,8 +1030,8 @@
         }
     </script>
 
+    {{-- Tải danh sách yêu cầu trả hàng mới nhất --}}
     <script>
-        // Tải danh sách yêu cầu trả hàng mới nhất
         function loadLatestReturnRequests() {
             fetch('/admin/statistics/latest-return-requests')
                 .then(res => res.json())
@@ -1086,26 +1118,23 @@
 
         // Hàm xử lý duyệt hoặc từ chối yêu cầu trả hàng
         function handleReturnAction(id, status) {
-            // Xác nhận lại với người dùng
-            let actionText = '';
-
-            switch (status) {
-                case 'approved':
-                    actionText = 'duyệt';
-                    break;
-                case 'rejected':
-                    actionText = 'từ chối';
-                    break;
-                case 'refunded':
-                    actionText = 'đánh dấu đã hoàn tất';
-                    break;
-                default:
-                    actionText = 'cập nhật';
-            }
+            const isRejecting = status === 'rejected';
+            const title = isRejecting ? 'Từ chối yêu cầu trả hàng' : 'Xác nhận cập nhật trạng thái';
+            const inputLabel = isRejecting ? 'Lý do từ chối (bắt buộc)' : 'Ghi chú nội bộ (tuỳ chọn)';
 
             Swal.fire({
-                title: `Bạn chắc chắn muốn ${actionText} yêu cầu này?`,
-                icon: 'warning',
+                title: title,
+                input: 'textarea',
+                inputLabel: inputLabel,
+                inputPlaceholder: 'Nhập nội dung...',
+                inputAttributes: {
+                    rows: 4
+                },
+                inputValidator: (value) => {
+                    if (isRejecting && !value.trim()) {
+                        return 'Bạn phải cung cấp lý do từ chối!';
+                    }
+                },
                 showCancelButton: true,
                 confirmButtonText: 'Xác nhận',
                 cancelButtonText: 'Hủy'
@@ -1119,12 +1148,13 @@
                                     .getAttribute('content')
                             },
                             body: JSON.stringify({
-                                status: status
+                                status: status,
+                                admin_note: result.value || ''
                             })
                         })
                         .then(res => {
                             if (res.redirected) {
-                                window.location.href = res.url; // Nếu Laravel redirect, tự chuyển trang
+                                window.location.href = res.url;
                                 return;
                             }
 
@@ -1140,7 +1170,7 @@
                                 timer: 2000,
                                 showConfirmButton: false
                             });
-                            loadLatestReturnRequests(); // Gọi lại để refresh
+                            loadLatestReturnRequests();
                         })
                         .catch(err => {
                             Swal.fire('Lỗi', err.message || 'Cập nhật thất bại!', 'error');
@@ -1219,6 +1249,7 @@
         }
     </script>
 
+    {{-- thông báo mới nhất --}}
     <script>
         let currentPage = 1;
 
@@ -1290,5 +1321,185 @@
 
         // Gọi khi trang load
         window.addEventListener('DOMContentLoaded', () => loadUserNotifications());
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const head = document.getElementById('cancelRequestTableHead');
+            const body = document.getElementById('cancelRequestTableBody');
+            const noData = document.getElementById('cancelRequestNoData');
+
+            let lastDataJSON = ''; // Để kiểm tra thay đổi dữ liệu
+
+            function fetchCancelRequests() {
+                fetch('/admin/orders/cancel-requests/today')
+                    .then(response => response.json())
+                    .then(data => {
+                        const currentDataJSON = JSON.stringify(data);
+
+                        // Nếu dữ liệu không thay đổi thì không render lại
+                        if (currentDataJSON === lastDataJSON) return;
+                        lastDataJSON = currentDataJSON;
+
+                        // Reset bảng
+                        head.innerHTML = '';
+                        body.innerHTML = '';
+                        noData.style.display = 'none';
+
+                        // Không có dữ liệu
+                        if (!Array.isArray(data) || data.length === 0) {
+                            noData.style.display = 'block';
+                            return;
+                        }
+
+                        // Render phần đầu bảng
+                        head.innerHTML = `
+                    <tr>
+                        <th>Khách hàng</th>
+                        <th>SĐT</th>
+                        <th>Thời gian</th>
+                        <th>Lý do huỷ</th>
+                        <th>Hành động</th>
+                    </tr>
+                `;
+
+                        // Render dữ liệu từng dòng
+                        data.forEach((order) => {
+                            body.innerHTML += `
+                        <tr>
+                            <td>${order.user?.name ?? '<i>Ẩn danh</i>'}</td>
+                            <td>${order.shipping_address?.phone_number ?? '<i>Ẩn danh</i>'}</td>
+                            <td>${new Date(order.created_at).toLocaleString('vi-VN')}</td>
+                            <td>
+                                ${order.cancel_reason
+                                    ? `<em>${order.cancel_reason}</em>`
+                                    : '<span class="text-muted fst-italic">Không có</span>'}
+                            </td>
+                            <td>
+                                <!-- Duyệt -->
+                                <button class="btn btn-success btn-sm me-1"
+                                    onclick="handleCancelAction(${order.id}, 'approve',
+                                     '${escapeJs(order.cancel_reason)}', '${escapeJs(order.user?.name)}')">
+                                    <i class="bi bi-check-circle"></i> Duyệt
+                                </button>
+
+                                <!-- Từ chối -->
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="handleCancelAction(${order.id}, 'reject',
+                                     '${escapeJs(order.cancel_reason)}', '${escapeJs(order.user?.name)}')">
+                                    <i class="bi bi-x-circle"></i> Từ chối
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi tải yêu cầu huỷ đơn:', error);
+                        head.innerHTML = '';
+                        body.innerHTML = '';
+                        noData.style.display = 'block';
+                        noData.textContent = 'Không thể tải dữ liệu yêu cầu huỷ đơn.';
+                    });
+            }
+
+            // Gọi lần đầu khi trang load
+            fetchCancelRequests();
+
+            // Thiết lập cập nhật mỗi 10 giây
+            setInterval(fetchCancelRequests, 10000); // 10000ms = 10s
+        });
+
+        function escapeJs(str) {
+            if (!str) return '';
+            return str.replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '');
+        }
+
+
+        function handleCancelAction(orderId, action, customerReason = '', customerName = '') {
+            const actionLabel = action === 'approve' ? 'Xác nhận yêu cầu huỷ đơn' : 'Từ chối yêu cầu huỷ';
+            const actionColor = action === 'approve' ? '#198754' : '#dc3545'; // xanh hoặc đỏ
+
+            const htmlContent = `
+                <div class="text-start">
+                    <label class="form-label fw-bold text-dark mb-1">
+                        <i class="bi bi-person-fill text-primary me-1"></i> Lý do khách yêu cầu huỷ:
+                    </label>
+                    <div class="bg-light border rounded p-2 mb-3">
+                        ${customerReason
+                            ? `<em>${customerReason}</em>`
+                            : '<span class="text-muted fst-italic">Không có lý do được cung cấp.</span>'}
+                    </div>
+
+                    <div class="d-flex flex-column">
+                        <label for="adminReason" class="form-label fw-bold text-dark mb-1">
+                        <i class="bi bi-shield-lock-fill text-danger me-1"></i> Lý do của bạn:
+                    </label>
+                    <textarea id="adminReason" class="swal2-textarea" placeholder="Nhập lý do của bạn..." rows="3"></textarea>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                title: `${actionLabel} từ khách hàng ${customerName || 'Ẩn danh'}`,
+                html: htmlContent,
+                showCancelButton: true,
+                confirmButtonText: 'Xác nhận',
+                confirmButtonColor: actionColor,
+                cancelButtonText: 'Hủy',
+                focusConfirm: false,
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'btn btn-secondary'
+                },
+                preConfirm: () => {
+                    const reason = document.getElementById('adminReason')?.value.trim();
+                    if (!reason || reason.length < 10) {
+                        Swal.showValidationMessage('Lý do phải có ít nhất 10 ký tự.');
+                        return false;
+                    }
+                    return reason;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const adminNote = result.value;
+
+                    fetch(`/admin/orders/cancel-request/${orderId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                    'content')
+                            },
+                            body: JSON.stringify({
+                                action: action,
+                                admin_cancel_note: adminNote
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công',
+                                    text: data.success,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => location.reload());
+                            } else {
+                                Swal.fire('Lỗi', data.error || 'Đã xảy ra lỗi khi xử lý yêu cầu.', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Lỗi', 'Không thể gửi yêu cầu. Vui lòng thử lại sau.', 'error');
+                        });
+                }
+            });
+        }
     </script>
 @endsection

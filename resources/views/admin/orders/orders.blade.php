@@ -91,52 +91,73 @@
                                             {{ $status['label'] }}
                                         </span>
                                     </td>
+
+                                    {{-- Xử lý yêu cầu trả hàng --}}
                                     <td>
                                         @if ($order->returnRequest)
                                             @php
                                                 $returnStatus = $order->returnRequest->return_status;
-                                                $canUpdateReturn = in_array($order->returnRequest->status, [
-                                                    'requested',
-                                                    'approved',
-                                                ]);
+                                                $status = $order->returnRequest->status;
+                                                $paymentMethod = $order->payment_method;
+                                                $paymentStatus = $order->payment_status;
+
+                                                // Xác định hành động có thể thực hiện
+                                                $canApprove = $status === 'requested';
+                                                $canReject = $status === 'requested';
+                                                $canRefund =
+                                                    $status === 'approved' &&
+                                                    in_array($paymentMethod, ['online', 'bank_transfer']) &&
+                                                    $paymentStatus !== 'refunded' &&
+                                                    $paymentStatus === 'refund_in_processing';
+                                                // Với COD, cho phép đánh dấu hoàn tất (không hoàn tiền)
+                                                $canMarkDone = $status === 'approved' && $paymentMethod === 'cod';
                                             @endphp
 
                                             <div class="d-flex flex-column gap-1">
-                                                {{-- Badge trạng thái --}}
+                                                {{-- Hiển thị trạng thái --}}
                                                 <span class="badge bg-{{ $returnStatus['color'] }}">
                                                     <i class="bi {{ $returnStatus['icon'] }}"></i>
                                                     {{ $returnStatus['title'] }}
                                                 </span>
 
-                                                {{-- Form xử lý trạng thái tiếp theo --}}
-                                                @if ($canUpdateReturn)
-                                                    <form method="POST"
-                                                        action="{{ route('admin.return-requests.update', $order->returnRequest->id) }}">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <div class="input-group input-group-sm mt-1">
-                                                            <select class="form-select form-select-sm" name="status"
-                                                                required>
-                                                                <option value="">-- Cập nhật trạng thái --</option>
+                                                {{-- Nút hành động --}}
+                                                @if ($canApprove)
+                                                    <button class="btn btn-success btn-sm"
+                                                        onclick="handleReturnAction('{{ route('admin.return-requests.update', $order->returnRequest->id) }}', 'approved')">
+                                                        ✅ Duyệt
+                                                    </button>
+                                                @endif
 
-                                                                @if ($order->returnRequest->status === 'requested')
-                                                                    <option value="approved">✅ Chấp nhận trả hàng</option>
-                                                                    <option value="rejected">❌ Từ chối yêu cầu</option>
-                                                                @elseif($order->returnRequest->status === 'approved')
-                                                                    <option value="refunded">💸 Đánh dấu hoàn tiền</option>
-                                                                @endif
-                                                            </select>
-                                                            <button class="btn btn-outline-primary" type="submit">
-                                                                <i class="bi bi-send"></i>
-                                                            </button>
-                                                        </div>
-                                                    </form>
+                                                @if ($canReject)
+                                                    <button class="btn btn-danger btn-sm"
+                                                        onclick="handleReturnAction('{{ route('admin.return-requests.update', $order->returnRequest->id) }}', 'rejected')">
+                                                        ❌ Từ chối
+                                                    </button>
+                                                @endif
+
+                                                {{-- xử lý với cod --}}
+                                                @if ($canMarkDone)
+                                                    <button class="btn btn-outline-success btn-sm"
+                                                        onclick="handleReturnAction('{{ route('admin.return-requests.update', $order->returnRequest->id) }}', 'refunded')">
+                                                        ✅ Đánh dấu đã hoàn tất
+                                                    </button>
                                                 @endif
                                             </div>
+
+                                            {{-- Form ẩn --}}
+                                            <form method="POST" id="return-request-form-{{ $order->returnRequest->id }}"
+                                                style="display: none;">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="status">
+                                                <input type="hidden" name="admin_note">
+                                            </form>
                                         @else
                                             <span class="text-muted">—</span>
                                         @endif
                                     </td>
+
+                                    {{-- các nút và modal --}}
                                     <td>
                                         <div class="d-flex gap-2">
                                             {{-- Nút Chi tiết đơn hàng --}}
@@ -189,11 +210,163 @@
                                                 @endif
 
                                                 {{-- Nút Hủy đơn --}}
-                                                <button class="btn btn-sm btn-danger"
-                                                    onclick="showCancelModal('{{ route('admin.orders.cancel', $order->id) }}', '{{ $cancelMessage }}')">
+                                                <button type="button" class="btn btn-danger btn-sm open-cancel-modal"
+                                                    data-order-id="{{ $order->id }}">
                                                     <i class="bi bi-x-circle"></i> Huỷ đơn
                                                 </button>
+
+                                                {{-- Nút từ chối yêu cầu huỷ đơn --}}
+                                                @if ($order->cancellation_requested && !$order->cancel_confirmed)
+                                                    <button type="button" class="btn btn-warning btn-sm"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#rejectCancelRequestModal{{ $order->id }}">
+                                                        <i class="bi bi-x-circle"></i> Từ chối yêu cầu huỷ
+                                                    </button>
+                                                @endif
                                             @endif
+
+                                            {{-- Nút Đánh dấu đã hoàn tiền --}}
+                                            @if ($order->status === 'cancelled' && $order->payment_status === 'refund_in_processing')
+                                                <form method="POST"
+                                                    action="{{ route('admin.orders.refunded', $order->id) }}"
+                                                    class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-success btn-sm"
+                                                        onclick="return confirm('Bạn có chắc chắn đánh dấu đơn hàng này là đã hoàn tiền?');">
+                                                        <i class="bi bi-cash-coin"></i> Đã hoàn tiền
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+
+                                        @php
+                                            $hideCustomerReason =
+                                                !empty($order->cancel_reason) &&
+                                                !empty($order->admin_cancel_note) &&
+                                                $order->cancel_confirmed &&
+                                                $order->status !== 'canceled';
+                                        @endphp
+
+
+                                        <!-- Modal xác nhận huỷ đơn hàng -->
+                                        <div class="modal fade" id="cancelOrderModal{{ $order->id }}" tabindex="-1"
+                                            aria-labelledby="cancelOrderModalLabel{{ $order->id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <form method="POST" class="cancel-order-form"
+                                                    action="{{ route('admin.orders.cancel', $order->id) }}"
+                                                    data-cancellation-requested="{{ $order->cancellation_requested ? 'true' : 'false' }}">
+                                                    @csrf
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-danger text-white">
+                                                            <h5 class="modal-title"
+                                                                id="cancelOrderModalLabel{{ $order->id }}">
+                                                                {{ $hideCustomerReason
+                                                                    ? 'Bạn muốn huỷ đơn hàng này?'
+                                                                    : 'Xác nhận huỷ đơn hàng của khách hàng ' . $order->user->name }}
+                                                            </h5>
+                                                            <button type="button" class="btn-close btn-close-white"
+                                                                data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                                        </div>
+
+                                                        <div class="modal-body">
+                                                            {{-- ✅ Hiển thị lý do khách hàng yêu cầu huỷ --}}
+                                                            @if ($order->cancel_reason && !$hideCustomerReason)
+                                                                <div class="mb-3">
+                                                                    <p class="mb-1"><strong>Lý do khách hàng yêu cầu huỷ
+                                                                            đơn:</strong></p>
+                                                                    <div class="border rounded p-2 bg-light text-dark">
+                                                                        {{ $order->cancel_reason }}
+                                                                    </div>
+                                                                </div>
+                                                            @endif
+
+                                                            {{-- ✅ Ghi chú từ admin --}}
+                                                            <div class="mb-3">
+                                                                <label for="admin_cancel_note_{{ $order->id }}"
+                                                                    class="form-label">Lý do huỷ đơn (Admin):</label>
+                                                                <textarea name="admin_cancel_note" id="admin_cancel_note_{{ $order->id }}" class="form-control" rows="3"></textarea>
+                                                                <div class="invalid-feedback">
+                                                                    Vui lòng nhập lý do huỷ đơn (tối thiểu 10 ký tự).
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="alert alert-warning">
+                                                                Bạn chắc chắn muốn huỷ đơn hàng này? Hành động này không thể
+                                                                hoàn tác.
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary"
+                                                                data-bs-dismiss="modal">Đóng</button>
+                                                            <button type="submit" class="btn btn-danger">Xác nhận huỷ
+                                                                đơn</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <!-- Modal từ chối yêu cầu huỷ đơn hàng -->
+                                        <div class="modal fade" id="rejectCancelRequestModal{{ $order->id }}"
+                                            tabindex="-1"
+                                            aria-labelledby="rejectCancelRequestModalLabel{{ $order->id }}"
+                                            aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <form method="POST" class="reject-cancel-request-form"
+                                                    action="{{ route('admin.orders.cancel.reject', $order->id) }}">
+                                                    @csrf
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-warning text-dark">
+                                                            <h5 class="modal-title"
+                                                                id="rejectCancelRequestModalLabel{{ $order->id }}">
+                                                                Từ chối yêu cầu huỷ đơn hàng của khách hàng
+                                                                {{ $order->user->name }}
+                                                            </h5>
+                                                            <button type="button" class="btn-close"
+                                                                data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                                        </div>
+
+                                                        <div class="modal-body">
+                                                            {{-- ✅ Hiển thị lý do khách hàng yêu cầu huỷ --}}
+                                                            @if ($order->cancel_reason)
+                                                                <div class="mb-3">
+                                                                    <p class="mb-1"><strong>Lý do khách yêu cầu huỷ
+                                                                            đơn:</strong></p>
+                                                                    <div class="border rounded p-2 bg-light text-dark">
+                                                                        {{ $order->cancel_reason }}
+                                                                    </div>
+                                                                </div>
+                                                            @endif
+
+                                                            {{-- ✅ Ghi chú lý do từ chối của admin --}}
+                                                            <div class="mb-3">
+                                                                <label for="admin_cancel_note_reject_{{ $order->id }}"
+                                                                    class="form-label">
+                                                                    Lý do từ chối (Admin):
+                                                                </label>
+                                                                <textarea name="admin_cancel_note" id="admin_cancel_note_reject_{{ $order->id }}" class="form-control"
+                                                                    rows="3"></textarea>
+                                                                <div class="invalid-feedback">
+                                                                    Vui lòng nhập lý do từ chối (tối thiểu 10 ký tự).
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="alert alert-warning">
+                                                                Bạn chắc chắn muốn <strong>từ chối yêu cầu huỷ</strong> này?
+                                                                Khách hàng sẽ nhận được thông báo phản hồi từ hệ thống.
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary"
+                                                                data-bs-dismiss="modal">Đóng</button>
+                                                            <button type="submit" class="btn btn-warning">Xác nhận từ
+                                                                chối</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </div>
 
                                     </td>
@@ -217,32 +390,72 @@
         @method('PATCH') {{-- hoặc PATCH nếu bạn muốn --}}
         <input type="hidden" name="status" id="statusInput">
     </form>
-
-    <!-- Modal xác nhận huỷ đơn hàng -->
-    <div class="modal fade" id="cancelConfirmModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form id="cancelForm" method="POST">
-                    @csrf
-                    @method('POST') {{-- hoặc DELETE tùy route bạn dùng --}}
-                    <div class="modal-header">
-                        <h5 class="modal-title">Xác nhận huỷ đơn hàng</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p id="cancelConfirmMessage">Bạn có chắc muốn huỷ đơn hàng này không?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-danger">Xác nhận huỷ</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 @endsection
 
 @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {{-- Xử lý yêu cầu trả hàng --}}
+    <script>
+        function handleReturnAction(actionUrl, newStatus) {
+            Swal.fire({
+                title: 'Ghi chú xử lý',
+                input: 'textarea',
+                inputLabel: 'Lý do (hiển thị cho khách hàng)',
+                inputPlaceholder: 'Nhập lý do xử lý...',
+                inputAttributes: {
+                    'aria-label': 'Nhập ghi chú xử lý'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Xác nhận',
+                cancelButtonText: 'Huỷ',
+                inputValidator: (value) => {
+                    // ✅ Chỉ bắt buộc nếu là rejected
+                    if (newStatus === 'rejected' && !value.trim()) {
+                        return 'Bạn phải cung cấp lý do từ chối yêu cầu này!';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = actionUrl;
+
+                    const methodInput = document.createElement('input');
+                    methodInput.type = 'hidden';
+                    methodInput.name = '_method';
+                    methodInput.value = 'PATCH';
+                    form.appendChild(methodInput);
+
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '_token';
+                    tokenInput.value = '{{ csrf_token() }}';
+                    form.appendChild(tokenInput);
+
+                    const statusInput = document.createElement('input');
+                    statusInput.type = 'hidden';
+                    statusInput.name = 'status';
+                    statusInput.value = newStatus;
+                    form.appendChild(statusInput);
+
+                    const noteInput = document.createElement('input');
+                    noteInput.type = 'hidden';
+                    noteInput.name = 'admin_note';
+                    noteInput.value = result.value;
+                    form.appendChild(noteInput);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+    </script>
+
+    {{-- hiển thị thông báo --}}
     <script>
         // submit status update form
         function submitStatusUpdate(url, nextStatus, actionLabel) {
@@ -253,12 +466,57 @@
                 form.submit();
             }
         }
+    </script>
 
-        // show cancel confirmation modal
-        function showCancelModal(url, message) {
-            document.getElementById('cancelForm').action = url;
-            document.getElementById('cancelConfirmMessage').innerText = message;
-            new bootstrap.Modal(document.getElementById('cancelConfirmModal')).show();
-        }
+    {{-- hiển thị modal huỷ đơn, từ chối huỷ --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gán click mở modal
+            document.querySelectorAll('.open-cancel-modal').forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.dataset.orderId;
+                    const modalId = `cancelOrderModal${orderId}`;
+                    const modalElement = document.getElementById(modalId);
+
+                    if (modalElement) {
+                        const bsModal = bootstrap.Modal.getOrCreateInstance(modalElement);
+                        bsModal.show();
+                    } else {
+                        console.error('Không tìm thấy modal với ID:', modalId);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.reject-cancel-request-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const textarea = form.querySelector('textarea[name="admin_cancel_note"]');
+                    if (!textarea.value.trim() || textarea.value.trim().length < 10) {
+                        textarea.classList.add('is-invalid');
+                        e.preventDefault();
+                    } else {
+                        textarea.classList.remove('is-invalid');
+                    }
+                });
+            });
+
+            // ✅ Chỉ gán validate cho mỗi form một lần duy nhất sau khi DOM tải xong
+            document.querySelectorAll('.cancel-order-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const textarea = this.querySelector('textarea[name="admin_cancel_note"]');
+                    const reason = textarea.value.trim();
+
+                    // ✅ Nếu có yêu cầu huỷ từ khách => cho phép bỏ qua nhập lý do
+                    const isRequestFromCustomer = this.dataset.cancellationRequested === 'true';
+
+                    if (!isRequestFromCustomer && reason.length < 10) {
+                        e.preventDefault(); // chặn gửi form
+                        textarea.classList.add('is-invalid');
+                        textarea.focus();
+                    } else {
+                        textarea.classList.remove('is-invalid');
+                    }
+                });
+            });
+        });
     </script>
 @endsection

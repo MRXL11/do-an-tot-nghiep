@@ -62,7 +62,7 @@ class OrderController extends Controller
             ->findOrFail($id);
 
         $discount = 0;
-        $total = $order->total_price;
+        $total = $order->orderDetails()->sum('subtotal');
 
         // Tính toán giảm giá nếu có coupon
         if ($order->coupon) {
@@ -108,68 +108,249 @@ class OrderController extends Controller
         return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
     }
 
-    public function cancel(Order $order)
+    public function cancel(Request $request, Order $order)
     {
+        // Không thể huỷ nếu đơn đã hoàn tất hoặc đã huỷ
         if (in_array($order->status, ['delivered', 'completed', 'cancelled'])) {
             return redirect()->back()->with('error', 'Không thể huỷ đơn hàng đã hoàn tất hoặc đã huỷ.');
         }
 
+        // Ghi nhận lý do huỷ nếu có
+        $adminNote = $request->admin_cancel_note;
+
+        // Kiểm tra nếu là huỷ theo yêu cầu từ khách hàng
+        if ($order->cancellation_requested && !$order->cancel_confirmed) {
+            $order->cancel_confirmed = true;
+            $order->admin_cancel_note = $adminNote ?? 'Admin xác nhận yêu cầu huỷ từ khách.';
+        } else {
+            // Admin chủ động huỷ
+            $order->cancel_reason = null; // Xoá lý do từ khách nếu có
+            $order->cancel_confirmed = true;
+            $order->admin_cancel_note = $adminNote;
+            $order->cancellation_requested = false;
+        }
+
+        if (empty($order->admin_cancel_note)) {
+            return redirect()->back()->with('error', 'Vui lòng cung cấp lý do huỷ đơn hàng.');
+        }
+
+        // Đánh dấu trạng thái đơn hàng là huỷ
         $order->status = 'cancelled';
-        $order->payment_status = 'failed';
+
+        // Xử lý trạng thái thanh toán dựa vào phương thức và trạng thái thanh toán
+        if ($order->payment_status === 'completed') {
+            switch ($order->payment_method) {
+                case 'cod':
+                    // COD đã thanh toán? Trường hợp hiếm
+                    $order->payment_status = 'failed'; // thường không hoàn tiền COD
+                    break;
+
+                case 'bank_transfer':
+                case 'online':
+                    // Đơn đã thanh toán thành công → bắt đầu xử lý hoàn tiền
+                    $order->payment_status = 'refund_in_processing';
+                    break;
+            }
+        } else {
+            // Chưa thanh toán hoặc thất bại → không cần hoàn tiền
+            $order->payment_status = 'failed';
+        }
+
         $order->save();
 
-        // Tạo thông báo cho người dùng
-        $message = "Đơn hàng #{$order->order_code} đã được huỷ.";
+        // Tạo thông báo cho khách
+        if ($order->cancellation_requested) {
+            $message = "Đơn hàng #{$order->order_code} đã được huỷ theo yêu cầu của bạn. ";
+            $successMessage = "Đã xác nhận yêu cầu huỷ đơn hàng #{$order->order_code} từ khách hàng {$order->user->name}.";
+        } else {
+            $message = "Đơn hàng #{$order->order_code} đã được huỷ bởi quản trị viên. Lý do: {$order->admin_cancel_note}";
+            $successMessage = "Đã huỷ đơn hàng #{$order->order_code} theo yêu cầu của quản trị viên. Lý do: {$order->admin_cancel_note}";
+        }
+
         $this->createOrderNotificationToClient($order, $message, 'Đơn hàng đã được huỷ');
 
-        return redirect()->back()->with('success', 'Đã huỷ đơn hàng thành công.');
+        // hiển thị thông báo thành công theo yêu cầu
+        return redirect()->back()->with('success', $successMessage);
+    }
+
+    public function rejectCancel(Request $request, Order $order)
+    {
+        // Chỉ cho từ chối nếu có yêu cầu từ khách, chưa bị xử lý và chưa huỷ
+        if (!$order->cancellation_requested || $order->cancel_confirmed || $order->status === 'cancelled') {
+            return response()->json([
+                'error' => 'Không thể từ chối yêu cầu huỷ đã xử lý hoặc đơn đã bị huỷ.'
+            ], 400);
+        }
+
+        // Lý do từ chối
+        $note = trim($request->input('admin_cancel_note'));
+
+        if (empty($note)) {
+            return response()->json([
+                'error' => 'Vui lòng cung cấp lý do từ chối yêu cầu huỷ đơn hàng.'
+            ], 422);
+        }
+
+        // Cập nhật đơn hàng
+        $order->cancel_confirmed = true; // đánh dấu là đã xử lý
+        $order->cancellation_requested = true; // Giữ nguyên yêu cầu huỷ vì chỉ cho gửi huỷ 1 lần thôi
+        $order->admin_cancel_note = $note;
+        $order->save();
+
+        // Gửi thông báo cho khách hàng
+        $this->createOrderNotificationToClient(
+            $order,
+            "Yêu cầu huỷ đơn hàng #{$order->order_code} của bạn đã bị từ chối. Lý do: {$order->admin_cancel_note}",
+            'Yêu cầu huỷ đơn bị từ chối'
+        );
+
+        return redirect()->back()->with('success', 'Đã từ chối yêu cầu huỷ đơn hàng.');
+    }
+
+    public function markRefunded(Order $order)
+    {
+        if ($order->payment_status === 'refund_in_processing' && $order->status === 'cancelled') {
+            $order->payment_status = 'refunded';
+            $order->save();
+
+            return back()->with('success', 'Đã hoàn tiền xong cho đơn hàng.');
+        }
+
+        return back()->with('error', 'Chỉ hoàn tất hoàn tiền cho đơn đang xử lý.');
+    }
+
+    public function handleCancelRequest(Request $request, Order $order)
+    {
+        $action = $request->input('action'); // 'approve' or 'reject'
+        $note = $request->input('admin_cancel_note');
+
+        // Đầu mỗi nhánh xử lý (approve/reject), kiểm tra nếu đã xử lý thì không cho tiếp tục
+if ($order->cancel_confirmed) {
+    return response()->json(['error' => 'Yêu cầu hủy đã được xử lý trước đó.'], 400);
+}
+
+        if (!in_array($action, ['approve', 'reject'])) {
+            return response()->json(['error' => 'Hành động không hợp lệ.'], 400);
+        }
+
+        if ($action === 'approve') {
+            // Xác nhận huỷ đơn
+            $order->cancel_confirmed = true;
+            $order->admin_cancel_note = $note ?: 'Admin xác nhận yêu cầu huỷ từ khách.';
+            $order->status = 'cancelled';
+
+            // Xử lý trạng thái thanh toán
+            if ($order->payment_status === 'completed') {
+                $order->payment_status = in_array($order->payment_method, ['online', 'bank_transfer'])
+                    ? 'refund_in_processing'
+                    : 'failed';
+            } else {
+                $order->payment_status = 'failed';
+            }
+
+            $order->save();
+
+            // Gửi thông báo
+            $this->createOrderNotificationToClient($order, "Đơn hàng #{$order->order_code} đã được huỷ theo yêu cầu của bạn.", 'Đơn hàng đã được huỷ');
+
+            return response()->json(['success' => 'Đã xác nhận yêu cầu huỷ đơn hàng.']);
+        }
+
+        if ($action === 'reject') {
+            // Từ chối yêu cầu huỷ
+            $order->cancellation_requested = true; // Giữ nguyên yêu cầu huỷ vì chỉ cho gửi huỷ 1 lần thôi
+            $order->cancel_confirmed = true; // Đánh dấu là đã xử lý
+            $order->admin_cancel_note = $note ?: 'Admin từ chối yêu cầu huỷ đơn từ khách.';
+            $order->save();
+
+            // Gửi thông báo
+            $this->createOrderNotificationToClient(
+                $order,
+                "Yêu cầu huỷ đơn hàng #{$order->order_code} của bạn đã bị từ chối. Lý do: {$order->admin_cancel_note}",
+                'Yêu cầu huỷ đơn bị từ chối'
+            );
+
+            return response()->json(['success' => 'Đã từ chối yêu cầu huỷ đơn hàng.']);
+        }
     }
 
     public function updateReturnStatus(Request $request, $id)
     {
-        // Lấy return request cần cập nhật
+        // Lấy yêu cầu trả hàng kèm đơn hàng và người dùng
         $returnRequest = ReturnRequest::with('order.user')->findOrFail($id);
 
-        // Lưu trạng thái cũ
+        $order = $returnRequest->order;
+        $user = $order->user;
+
+        // Trạng thái hiện tại của yêu cầu trả hàng
         $oldStatus = $returnRequest->status;
         $oldLabel = $returnRequest->return_status['label'];
 
-        // Lấy trạng thái mới từ request
+        // Trạng thái mới từ request
         $newStatus = $request->input('status');
+        $returnRequest->admin_note = trim($request->input('admin_note') ?? 'Yêu cầu trả hàng đã được cập nhật');
+
+        // Nếu là rejected thì bắt buộc phải có lý do
+        if ($newStatus === 'rejected' && !$request->filled('admin_note')) {
+            return redirect()->back()->with('error', 'Bạn phải nhập lý do từ chối yêu cầu trả hàng.');
+        }
+
+        // Lấy nhãn trạng thái mới
         $newLabel = ReturnRequest::getStatusLabelStatic($newStatus)['label'] ?? 'Không xác định';
 
-        // Xác định các trạng thái chuyển đổi hợp lệ (giả sử flow logic)
+        // Định nghĩa các bước chuyển trạng thái hợp lệ
         $validTransitions = [
             'requested' => ['approved', 'rejected'],
-            'approved' => ['refunded'],
+            'approved' => ['refunded'], // Chỉ cho phép từ approved → refunded
         ];
 
-        // Kiểm tra trạng thái chuyển đổi hợp lệ
+        // Kiểm tra nếu bước chuyển không hợp lệ
         if (!isset($validTransitions[$oldStatus]) || !in_array($newStatus, $validTransitions[$oldStatus])) {
             return redirect()->back()->with('error', 'Chuyển trạng thái không hợp lệ.');
         }
 
-        // Cập nhật trạng thái mới
+        // Cập nhật trạng thái mới cho yêu cầu trả hàng
         $returnRequest->status = $newStatus;
-        // Cập nhật trạng thái thanh toán của hoá đơn
-        if ($newStatus === 'refunded') {
-            $returnRequest->order->payment_status = 'failed';
-            $returnRequest->order->save();
+
+        // Xử lý cập nhật trạng thái thanh toán tương ứng
+        if ($newStatus === 'approved') {
+            $returnRequest->admin_note =  'Yêu cầu trả hàng đã được phê duyệt';
+            // Nếu đơn dùng phương thức thanh toán online hoặc chuyển khoản
+            if (in_array($order->payment_method, ['online', 'bank_transfer'])
+               && $order->payment_status === 'completed') {
+                $order->payment_status = 'refund_in_processing';
+            }
+            // Với COD thì giữ nguyên
+            $order->save();
         }
-        // Cập nhật trạng thái trả hàng
+
+        if ($newStatus === 'refunded') {
+            $returnRequest->admin_note = 'Yêu cầu trả hàng đã hoàn tất và tiền đã được hoàn lại';
+            // Chỉ cho phép cập nhật 'refunded' nếu phương thức có hoàn tiền
+            if (in_array($order->payment_method, ['online', 'bank_transfer'])
+               && $order->payment_status === 'refund_in_processing') {
+                $order->payment_status = 'refunded';
+                $order->save();
+            }
+            // Với COD: không cập nhật vì không qua hệ thống
+            // Với COD
+            if ($order->payment_method === 'cod') {
+                $returnRequest->admin_note = 'Yêu cầu trả hàng đã hoàn tất.';
+            }
+        }
+
+        // Lưu thay đổi yêu cầu trả hàng
         $returnRequest->save();
 
         // Gửi thông báo đến người dùng
         try {
-            $user = $returnRequest->order->user;
-
             Notification::create([
                 'user_id'   => $user->id,
                 'title'     => 'Cập nhật yêu cầu trả hàng',
-                'message'   => "Yêu cầu trả hàng của đơn #{$returnRequest->order->order_code} đã được cập nhật từ '{$oldLabel}' thành '{$newLabel}'.",
+                'message'   => "Yêu cầu trả hàng của đơn #{$order->order_code} đã được cập nhật từ '{$oldLabel}' thành '{$newLabel}'.",
                 'type'      => 'order',
                 'is_read'   => false,
-                'order_id'  => $returnRequest->order->id,
+                'order_id'  => $order->id,
                 'created_at' => now(),
             ]);
         } catch (\Exception $e) {

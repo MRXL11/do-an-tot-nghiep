@@ -12,16 +12,22 @@ use App\Http\Controllers\Controller;
 
 class ReturnRequestController extends Controller
 {
-    public function requestReturn($orderId)
+    public function requestReturn($orderId, Request $request)
     {
         $order = Order::findOrFail($orderId);
 
         if ($order->status !== 'delivered') {
-            return back()->with('error', 'Chỉ có thể yêu cầu trả hàng với đơn đã được giao.');
+            return back()->with('return-error', 'Chỉ có thể yêu cầu trả hàng với đơn đã được giao.');
         }
 
         if ($order->returnRequest) {
-            return back()->with('error', 'Bạn đã gửi yêu cầu trả hàng.');
+            return back()->with('return-error', 'Bạn đã gửi yêu cầu trả hàng.');
+        }
+
+        $reason = trim($request->input('reason'));
+
+        if (empty($reason)) {
+            return back()->with('return-error', 'Vui lòng cung cấp lý do trả hàng.');
         }
 
         // Ghi nhận yêu cầu
@@ -29,12 +35,18 @@ class ReturnRequestController extends Controller
             'order_id' => $order->id,
             'user_id' => Auth::id(),
             'status' => 'requested',
+            'reason' => trim($reason), // ✅ Lưu lý do từ client
+        ]);
+
+        \Log::info('Return request received', [
+            'order_id' => $orderId,
+            'reason' => $request->input('reason'),
         ]);
 
         // Gửi thông báo đến admin
         $this->notifyAdminsAboutReturnRequest($order);
 
-        return back()->with('success', 'Yêu cầu trả hàng đã được ghi nhận. Vui lòng chờ admin liên hệ.');
+        return back()->with('return-success', 'Yêu cầu trả hàng đã được ghi nhận. Vui lòng chờ admin liên hệ.');
     }
 
     /**
