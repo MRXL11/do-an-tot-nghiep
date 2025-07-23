@@ -35,7 +35,7 @@ use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\Client\WishlistController;
 use App\Http\Controllers\Client\ReturnRequestController;
 use App\Http\Controllers\Client\ContactController;
-
+use App\Http\Controllers\Client\VNPayController; // VNPay payment controller
 // Route cho Admin
 Route::middleware(['auth', 'restrict.admin'])->group(function () {
     // Dashboard admin - nhóm route để thống kê
@@ -190,7 +190,13 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/pay', [ClientOrderController::class, 'pay'])->name('pay');
 Route::post('/momo_payment', [ClientOrderController::class, 'momo_payment'])->name('momo_payment');
 Route::post('/momo_callback', [ClientOrderController::class, 'momoCallback'])->name('momo_callback');
+// Thanh toán VNPay
+Route::get('/vnpay/return', [VNPayController::class, 'paymentReturn'])->name('vnpay.return');
+Route::post('/vnpay/ipn', [VNPayController::class, 'ipn'])->name('vnpay.ipn');
+Route::get('/vnpay/test', [VNPayController::class, 'testPayment'])->name('vnpay.test');
 
+Route::get('/order/success/{order}', [ClientOrderController::class, 'success'])->name('order.success');
+Route::get('/order/failed', [ClientOrderController::class, 'failed'])->name('order.failed');
 // Các trang tĩnh
 Route::get('/about', function () {
     return view('client.pages.about');

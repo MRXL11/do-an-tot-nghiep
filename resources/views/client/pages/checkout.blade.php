@@ -1,7 +1,7 @@
 @extends('client.pages.page-layout')
 
 @section('content')
-    <form method="POST" action="{{ route('checkout.submit') }}">
+    <form method="POST" action="{{ route('checkout.submit') }}" id="checkout-form">
         @csrf
         <input type="hidden" name="cart_item_ids" value="{{ implode(',', $cartItems->pluck('id')->toArray()) }}">
         <input type="hidden" name="shipping_address_id" id="shipping-address-id">
@@ -80,8 +80,8 @@
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="paymentMethod"
                                                 value="card" id="card">
-                                            <label class="form-check-label" for="card"><i
-                                                    class="bi bi-credit-card me-1"></i>Thẻ</label>
+                                            <label class="form-check-label" for="card">
+                                                <i class="bi bi-credit-card-2-front me-1"></i>VNpay</label>
                                         </div>
                                     </div>
                                 </div>
@@ -92,28 +92,12 @@
                                         <i class="bi bi-truck me-2"></i> Thanh toán khi nhận hàng (COD)
                                     </div>
                                 </div>
-                                <div id="card-details" class="payment-method-details" style="display: none;">
+                                <div id="card-details" class="payment-method-details" style="DISPLAY: none;">
                                     <div class="alert alert-info py-2 mb-3">
-                                        <i class="bi bi-credit-card-2-front me-2"></i> Thanh toán bằng thẻ tín dụng/ghi nợ
+                                        <i class="bi bi-credit-card-2-front me-2"></i> Thanh toán bằng VNpay
                                     </div>
-                                    <div class="mb-2">
-                                        <label class="form-label">Tên chủ thẻ</label>
-                                        <input type="text" class="form-control" placeholder="Nguyễn Văn A">
-                                    </div>
-                                    <div class="mb-2">
-                                        <label class="form-label">Số thẻ</label>
-                                        <input type="text" class="form-control" placeholder="1234 5678 9012 3456">
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Ngày hết hạn</label>
-                                            <input type="text" class="form-control" placeholder="MM/YY">
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Mã CVV</label>
-                                            <input type="password" class="form-control" placeholder="***">
-                                        </div>
-                                    </div>
+                                    <p>Quý khách sẽ được chuyển hướng đến trang thanh toán của VNPay để hoàn tất giao dịch.</p>
+                                    <p>Vui lòng chuẩn bị thẻ ngân hàng hoặc ví điện tử để thanh toán.</p>
                                 </div>
 
                                 <!-- Mã giảm giá -->
@@ -274,6 +258,170 @@
             const applyCouponBtn = document.getElementById('apply-coupon');
             const couponInput = document.getElementById('coupon-code');
             const cartItemIds = "{{ implode(',', $cartItems->pluck('id')->toArray()) }}";
+            const form = document.getElementById('checkout-form');
+
+            function updatePaymentButton() {
+                const selected = document.querySelector('input[name="paymentMethod"]:checked').value;
+                const total = totalElement.textContent.trim();
+                if (selected === 'cod') {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Đặt hàng`;
+                    submitBtn.classList.remove('btn-primary', 'btn-warning');
+                    submitBtn.classList.add('btn-success');
+                } else if (selected === 'card') {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán bằng thẻ (${total})`;
+                    submitBtn.classList.remove('btn-success', 'btn-warning');
+                    submitBtn.classList.add('btn-primary');
+                } else {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${total})`;
+                    submitBtn.classList.remove('btn-primary', 'btn-success');
+                    submitBtn.classList.add('btn-warning');
+                }
+                Object.keys(details).forEach(key => {
+                    if (details[key]) {
+                        details[key].style.display = (key === selected) ? "block" : "none";
+                    }
+                });
+            }
+
+            radios.forEach(radio => radio.addEventListener("change", updatePaymentButton));
+            updatePaymentButton();
+
+            const select = document.getElementById('address-select');
+            const detailBox = document.getElementById('address-details');
+            const manualAddressInput = document.getElementById('manual-address-input');
+            const shippingAddressIdInput = document.getElementById('shipping-address-id');
+            const nameSpan = document.getElementById('detail-name');
+            const phoneSpan = document.getElementById('detail-phone');
+            const addressSpan = document.getElementById('detail-address');
+            const nameInput = document.querySelector('input[name="name"]');
+            const phoneInput = document.querySelector('input[name="phone_number"]');
+            const addressInput = document.querySelector('input[name="address"]');
+            const wardInput = document.querySelector('input[name="ward"]');
+            const districtInput = document.querySelector('input[name="district"]');
+            const cityInput = document.querySelector('input[name="city"]');
+
+            select.addEventListener('change', function() {
+                const selected = select.options[select.selectedIndex];
+                if (selected.value) {
+                    nameSpan.textContent = selected.dataset.name || '';
+                    phoneSpan.textContent = selected.dataset.phone || '';
+                    addressSpan.textContent = selected.dataset.fullAddress || '';
+                    detailBox.classList.remove('d-none');
+                    nameInput.value = selected.dataset.name || '';
+                    phoneInput.value = selected.dataset.phone || '';
+                    addressInput.value = selected.dataset.address || '';
+                    wardInput.value = selected.dataset.ward || '';
+                    districtInput.value = selected.dataset.district || '';
+                    cityInput.value = selected.dataset.city || '';
+                    shippingAddressIdInput.value = selected.value;
+                    manualAddressInput.classList.add('d-none');
+                } else {
+                    detailBox.classList.add('d-none');
+                    manualAddressInput.classList.remove('d-none');
+                    nameInput.value = '';
+                    phoneInput.value = '';
+                    addressInput.value = '';
+                    wardInput.value = '';
+                    districtInput.value = '';
+                    cityInput.value = '';
+                    shippingAddressIdInput.value = '';
+                }
+            });
+
+            applyCouponBtn.addEventListener('click', function() {
+                const couponCode = couponInput.value.trim();
+                if (!couponCode) {
+                    couponFeedback.textContent = 'Vui lòng nhập mã giảm giá.';
+                    couponFeedback.className = 'form-text text-danger mt-1';
+                    couponFeedback.style.display = 'block';
+                    return;
+                }
+
+                fetch('{{ route('checkout.applyCoupon') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        coupon_code: couponCode,
+                        cart_item_ids: cartItemIds
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    couponFeedback.style.display = 'block';
+                    if (data.success) {
+                        couponFeedback.textContent = data.message;
+                        couponFeedback.className = 'form-text text-success mt-1';
+                        discountElement.textContent = `-${data.formatted_discount}`;
+                        totalElement.textContent = data.formatted_total;
+                        submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${data.formatted_total})`;
+                    } else {
+                        couponFeedback.textContent = data.message;
+                        couponFeedback.className = 'form-text text-danger mt-1';
+                    }
+                })
+                .catch(error => {
+                    couponFeedback.textContent = 'Có lỗi xảy ra khi áp dụng mã giảm giá.';
+                    couponFeedback.className = 'form-text text-danger mt-1';
+                    couponFeedback.style.display = 'block';
+                });
+            });
+
+            form.addEventListener('submit', function(e) {
+                if (!document.getElementById('agree').checked) {
+                    e.preventDefault();
+                    alert('Bạn cần đồng ý với chính sách mua hàng để tiếp tục.');
+                    return;
+                }
+
+                const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+                if (paymentMethod === 'card') {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    fetch('{{ route('checkout.submit') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.vnpay_url) {
+                            window.location.href = data.vnpay_url;
+                        } else {
+                            alert(data.message || 'Có lỗi xảy ra khi tạo URL thanh toán VNPay.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi xử lý thanh toán VNPay.');
+                    });
+                }
+                // Các phương thức khác (COD, Momo) sẽ submit form bình thường
+            });
+        });
+    </script>
+@endsection
+
+{{-- @section('scripts')
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const radios = document.querySelectorAll('input[name="paymentMethod"]');
+            const submitBtn = document.getElementById('submit-btn');
+            const details = {
+                cod: document.getElementById("cod-details"),
+                momo: document.getElementById("momo-details"),
+                card: document.getElementById("card-details")
+            };
+            const totalElement = document.getElementById('total-amount');
+            const discountElement = document.getElementById('discount-amount');
+            const couponFeedback = document.getElementById('coupon-feedback');
+            const applyCouponBtn = document.getElementById('apply-coupon');
+            const couponInput = document.getElementById('coupon-code');
+            const cartItemIds = "{{ implode(',', $cartItems->pluck('id')->toArray()) }}";
 
             function updatePaymentButton() {
                 const selected = document.querySelector('input[name="paymentMethod"]:checked').value;
@@ -392,4 +540,4 @@
             });
         });
     </script>
-@endsection
+@endsection --}}
