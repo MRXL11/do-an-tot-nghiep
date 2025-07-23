@@ -315,4 +315,20 @@ class OrderController extends Controller
             "Cảm ơn quý khách! Đơn hàng #{$order->order_code} đã được xác nhận là đã nhận vào lúc " . now()->format('H:i d/m/Y')
         );
     }
+   /**
+     * Trang thành công
+     */
+    public function success(Order $order)
+    {
+        return view('client.pages.order-success', ['order' => $order]);
+    }
+
+    /**
+     * Trang thất bại
+     */
+    public function failed()
+    {
+        $error = session('payment_error', 'Thanh toán không thành công. Vui lòng thử lại.');
+        return view('client.pages.order-failed', ['error' => $error]);
+    }
 }

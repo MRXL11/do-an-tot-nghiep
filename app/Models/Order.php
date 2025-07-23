@@ -43,9 +43,9 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     //
-    protected $fillable = [
+ protected $fillable = [
         'user_id',
-        'order_code', // Thêm order_code
+        'order_code',
         'total_price',
         'status',
         'payment_method',
@@ -53,8 +53,15 @@ class Order extends Model
         'note',
         'shipping_address_id',
         'coupon_id',
+        'vnp_txn_ref',
+        'vnp_transaction_no',
+        'vnp_response_code',
+        'vnp_bank_code',
+        'vnp_bank_tran_no',
+        'vnp_card_type',
+        'vnp_pay_date',
+        'vnp_secure_hash',
     ];
-
     public function user()
     {
         return $this->belongsTo(User::class);
