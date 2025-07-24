@@ -184,12 +184,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
     Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.applyCoupon');
+    Route::post('/checkout/retry/{order}', [CheckoutController::class, 'retryPayment'])->name('checkout.retry');
 });
 
 // Thanh toán Momo
 Route::get('/pay', [ClientOrderController::class, 'pay'])->name('pay');
 Route::post('/momo_payment', [ClientOrderController::class, 'momo_payment'])->name('momo_payment');
-Route::post('/momo_callback', [ClientOrderController::class, 'momoCallback'])->name('momo_callback');
+Route::get('/momo-return', [ClientOrderController::class, 'momoReturn'])->name('momo_return');
 // Thanh toán VNPay
 Route::get('/vnpay/return', [VNPayController::class, 'paymentReturn'])->name('vnpay.return');
 Route::post('/vnpay/ipn', [VNPayController::class, 'ipn'])->name('vnpay.ipn');
