@@ -438,8 +438,9 @@ class CheckoutController extends Controller
                 'coupon_id' => $couponId,
             ]);
 
-            // Tạo chi tiết đơn hàng
+            // Tạo chi tiết đơn hàng và giảm tồn kho sản phẩm
             foreach ($cartItems as $item) {
+                // Tạo chi tiết đơn hàng
                 OrderDetail::create([
                     'order_id' => $order->id,
                     'product_variant_id' => $item->product_variant_id,
@@ -449,6 +450,10 @@ class CheckoutController extends Controller
                     'discount' => 0, // Có thể áp dụng giảm giá chi tiết nếu cần
                     'subtotal' => $item->productVariant->price * $item->quantity,
                 ]);
+
+                // Giảm tồn kho sản phẩm sau khi đặt hàng thành công
+                // (Trừ số lượng đã đặt khỏi stock_quantity của ProductVariant)
+                $item->productVariant->decrement('stock_quantity', $item->quantity);
             }
 
             // Cập nhật used_count của mã giảm giá
