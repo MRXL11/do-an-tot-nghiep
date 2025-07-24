@@ -96,7 +96,8 @@
                                     <div class="alert alert-info py-2 mb-3">
                                         <i class="bi bi-credit-card-2-front me-2"></i> Thanh toán bằng VNpay
                                     </div>
-                                    <p>Quý khách sẽ được chuyển hướng đến trang thanh toán của VNPay để hoàn tất giao dịch.</p>
+                                    <p>Quý khách sẽ được chuyển hướng đến trang thanh toán của VNPay để hoàn tất giao dịch.
+                                    </p>
                                     <p>Vui lòng chuẩn bị thẻ ngân hàng hoặc ví điện tử để thanh toán.</p>
                                 </div>
 
@@ -113,8 +114,7 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                    <small id="coupon-feedback" class="form-text mt-1"
-                                        style="display: none;"></small>
+                                    <small id="coupon-feedback" class="form-text mt-1" style="display: none;"></small>
                                 </div>
 
                                 <!-- Chọn địa chỉ có sẵn -->
@@ -338,69 +338,109 @@
                 }
 
                 fetch('{{ route('checkout.applyCoupon') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        coupon_code: couponCode,
-                        cart_item_ids: cartItemIds
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            coupon_code: couponCode,
+                            cart_item_ids: cartItemIds
+                        })
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    couponFeedback.style.display = 'block';
-                    if (data.success) {
-                        couponFeedback.textContent = data.message;
-                        couponFeedback.className = 'form-text text-success mt-1';
-                        discountElement.textContent = `-${data.formatted_discount}`;
-                        totalElement.textContent = data.formatted_total;
-                        submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${data.formatted_total})`;
-                    } else {
-                        couponFeedback.textContent = data.message;
+                    .then(response => response.json())
+                    .then(data => {
+                        couponFeedback.style.display = 'block';
+                        if (data.success) {
+                            couponFeedback.textContent = data.message;
+                            couponFeedback.className = 'form-text text-success mt-1';
+                            discountElement.textContent = `-${data.formatted_discount}`;
+                            totalElement.textContent = data.formatted_total;
+                            submitBtn.innerHTML =
+                                `<i class="bi bi-cart-check me-2"></i>Thanh toán (${data.formatted_total})`;
+                        } else {
+                            couponFeedback.textContent = data.message;
+                            couponFeedback.className = 'form-text text-danger mt-1';
+                        }
+                    })
+                    .catch(error => {
+                        couponFeedback.textContent = 'Có lỗi xảy ra khi áp dụng mã giảm giá.';
                         couponFeedback.className = 'form-text text-danger mt-1';
-                    }
-                })
-                .catch(error => {
-                    couponFeedback.textContent = 'Có lỗi xảy ra khi áp dụng mã giảm giá.';
-                    couponFeedback.className = 'form-text text-danger mt-1';
-                    couponFeedback.style.display = 'block';
-                });
+                        couponFeedback.style.display = 'block';
+                    });
             });
 
             form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+                const paymentMethod = formData.get('paymentMethod');
+                const shippingAddressId = formData.get('shipping_address_id');
+                const name = formData.get('name');
+                const phoneNumber = formData.get('phone_number');
+                const address = formData.get('address');
+
+                // Kiểm tra dữ liệu trước khi gửi
+                if (!paymentMethod) {
+                    alert('Vui lòng chọn phương thức thanh toán.');
+                    return;
+                }
+                if (!shippingAddressId && (!name || !phoneNumber || !address)) {
+                    alert('Vui lòng nhập đầy đủ thông tin giao hàng hoặc chọn địa chỉ có sẵn.');
+                    return;
+                }
                 if (!document.getElementById('agree').checked) {
-                    e.preventDefault();
                     alert('Bạn cần đồng ý với chính sách mua hàng để tiếp tục.');
                     return;
                 }
 
-                const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-                if (paymentMethod === 'card') {
-                    e.preventDefault();
-                    const formData = new FormData(form);
-                    fetch('{{ route('checkout.submit') }}', {
+                // Debug FormData
+                for (let [key, value] of formData.entries()) {
+                    console.log(key, value);
+                }
+
+                // Kiểm tra sessionStorage
+                if (sessionStorage.getItem('paymentInProgress') === '1') {
+                    alert("Bạn đã chuyển hướng đến cổng thanh toán. Vui lòng không đặt hàng lại.");
+                    return;
+                }
+
+                // Gửi yêu cầu
+                fetch('{{ route('checkout.submit') }}', {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
                         body: formData
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok: ' + response.statusText);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data.success && data.vnpay_url) {
-                            window.location.href = data.vnpay_url;
+                        console.log('Response data:', data);
+                        if (data.success) {
+                            // Đánh dấu đã gửi yêu cầu thanh toán
+                            // sessionStorage.setItem('paymentInProgress', '1');
+
+                            if (paymentMethod === 'card' && data.vnpay_url) {
+                                window.location.href = data.vnpay_url;
+                            } else if (data.redirect) {
+                                window.location.href = data.redirect;
+                            } else {
+                                alert(data.message || 'Đặt hàng thành công!');
+                            }
                         } else {
-                            alert(data.message || 'Có lỗi xảy ra khi tạo URL thanh toán VNPay.');
+                            alert(data.message || 'Có lỗi xảy ra.');
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                        alert('Có lỗi xảy ra khi xử lý thanh toán VNPay.');
+                        console.error('Fetch error:', error);
+                        alert('Đã có lỗi xảy ra khi xử lý đơn hàng: ' + error.message);
                     });
-                }
-                // Các phương thức khác (COD, Momo) sẽ submit form bình thường
             });
         });
     </script>

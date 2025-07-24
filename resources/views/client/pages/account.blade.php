@@ -394,8 +394,20 @@
                                                 </div>
                                             </button>
 
-                                            {{-- thanh toán lại nếu chwua thanh toán --}}
-                                            @if (in_array($order->payment_method, ['online', 'bank_transfer']) && $order->payment_status === 'pending')
+                                            @php
+                                                $momoRetry =
+                                                    in_array($order->payment_method, ['online', 'bank_transfer']) &&
+                                                    $order->payment_status === 'pending' &&
+                                                    empty($order->vnp_txn_ref); // dùng empty() thay vì phủ định
+
+                                                $vpnRetry =
+                                                    in_array($order->payment_method, ['online', 'bank_transfer']) &&
+                                                    in_array($order->payment_status, ['pending', 'failed']) &&
+                                                    in_array($order->status, ['pending', 'cancelled']) &&
+                                                    !empty($order->vnp_txn_ref); // rõ ràng
+                                            @endphp
+
+                                            @if ($momoRetry)
                                                 <form id="auto-momo-form" action="{{ route('momo_payment') }}"
                                                     method="POST" style="display: none;">
                                                     @csrf
@@ -407,6 +419,17 @@
                                                     onclick="document.getElementById('auto-momo-form').submit();"
                                                     class="btn btn-outline-primary">
                                                     Thanh toán lại
+                                                </a>
+                                            @elseif ($vpnRetry)
+                                                <form id="retry-payment-form"
+                                                    action="{{ route('checkout.retry', $order->id) }}" method="POST"
+                                                    style="display: none;">
+                                                    @csrf
+                                                </form>
+                                                <a href="javascript:void(0)"
+                                                    onclick="document.getElementById('retry-payment-form').submit();"
+                                                    class="btn btn-outline-primary">
+                                                    🔁 Thanh toán lại
                                                 </a>
                                             @else
                                             @endif
@@ -446,7 +469,6 @@
 
                                                         {{-- Nếu đã gửi yêu cầu trả hàng --}}
                                                     @else
-
                                                         {{-- Trạng thái: Bị từ chối → cho khách xác nhận lại là đã nhận hàng --}}
                                                         @if ($return->status === 'rejected' && !$order->is_received)
                                                             <form action="{{ route('order.received', $order->id) }}"
@@ -983,5 +1005,10 @@
                 });
             });
         });
+    </script>
+
+    <script>
+        // Khi người dùng đã quay lại trang từ VNPay hoặc hoàn tất thanh toán
+        sessionStorage.removeItem('paymentInProgress');
     </script>
 @endsection
