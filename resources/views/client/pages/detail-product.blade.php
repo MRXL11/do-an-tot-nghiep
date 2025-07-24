@@ -352,7 +352,7 @@
 
                     fetch(
                             `/detail-product/{{ $product->id }}/variants?color=${encodeURIComponent(color)}`
-                            )
+                        )
                         .then(response => response.json())
                         .then(data => {
                             sizeSelect.innerHTML = '';
@@ -506,7 +506,7 @@
                                 if (!data.status || data.status !== 'active') {
                                     alert(
                                         "❌ Sản phẩm này hiện không còn kinh doanh và không thể thêm vào wishlist."
-                                        );
+                                    );
                                     window.location.href = "{{ route('home') }}";
                                     return;
                                 }

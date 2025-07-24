@@ -34,16 +34,34 @@ $(document).on("click", ".btn-add-cart", function (e) {
                 // Đồng bộ cart count giữa các tab
                 localStorage.setItem("cart_count", res.cart_count);
             } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Thông báo",
-                    text: res.message,
-                    scrollbarPadding: false,
-                }).then(() => {
-                    if (res.message.includes("Vui lòng đăng nhập")) {
-                        window.location.href = "/login";
-                    }
-                });
+                // Nếu có order_id → hiển thị nút "Thanh toán lại"
+                if (res.order_id) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Đơn hàng chưa thanh toán",
+                        html: `
+                            <p>Sản phẩm này đã nằm trong đơn hàng chưa thanh toán.</p>
+                            <form id="retry-payment-form" action="/checkout/retry/${res.order_id}" method="POST">
+                                <input type="hidden" name="_token" value="${$('meta[name="csrf-token"]').attr("content")}">
+                                <button type="submit" class="btn btn-primary mt-2">🔁 Thanh toán lại đơn</button>
+                            </form>
+                        `,
+                        showConfirmButton: false,
+                        scrollbarPadding: false,
+                    });
+                } else {
+                    // Các lỗi thông thường khác
+                    Swal.fire({
+                        icon: "error",
+                        title: "Thông báo",
+                        text: res.message,
+                        scrollbarPadding: false,
+                    }).then(() => {
+                        if (res.message.includes("Vui lòng đăng nhập")) {
+                            window.location.href = "/login";
+                        }
+                    });
+                }
             }
         },
         error: function () {

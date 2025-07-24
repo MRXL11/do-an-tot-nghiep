@@ -24,7 +24,6 @@
                             </p>
                         </div>
                     @else
-                        <!-- Hiển thị danh sách sản phẩm trong giỏ -->
                         <table class="table align-middle mb-0">
                             <thead class="bg-light">
                                 <tr>
@@ -41,11 +40,12 @@
                             <tbody>
                                 @foreach ($cartItems as $item)
                                     <tr id="row-{{ $item->id }}"
-                                        class="{{ $item->productVariant->status != 'active' ? 'inactive-item' : '' }}">
+                                        class="{{ $item->productVariant->status != 'active' || $item->is_locked ? 'inactive-item' : '' }}">
                                         <td>
                                             <input type="checkbox" class="item-checkbox" data-id="{{ $item->id }}"
                                                 data-price="{{ $item->productVariant->price }}"
-                                                data-quantity="{{ $item->quantity }}">
+                                                data-quantity="{{ $item->quantity }}"
+                                                @if ($item->productVariant->status != 'active' || $item->is_locked) disabled @endif>
                                         </td>
                                         <td>
                                             <img src="{{ asset($item->productVariant->image ?? 'path/to/default.jpg') }}"
@@ -64,27 +64,29 @@
                                             <div class="d-flex align-items-center">
                                                 <button class="btn btn-outline-secondary btn-sm btn-minus"
                                                     data-cartid="{{ $item->id }}"
-                                                    @if ($item->productVariant->status != 'active') disabled @endif>
+                                                    @if ($item->productVariant->status != 'active' || $item->is_locked) disabled @endif>
                                                     <i class="bi bi-dash"></i>
                                                 </button>
                                                 <input type="text" id="quantity-{{ $item->id }}"
                                                     value="{{ $item->quantity }}" readonly
                                                     class="form-control text-center mx-1 quantity-input"
-                                                    style="@if ($item->productVariant->status != 'active') cursor: not-allowed; @endif">
+                                                    style="@if ($item->productVariant->status != 'active' || $item->is_locked) cursor: not-allowed; @endif">
                                                 <button class="btn btn-outline-secondary btn-sm btn-plus"
                                                     data-cartid="{{ $item->id }}"
                                                     data-stock="{{ $item->productVariant->stock_quantity }}"
-                                                    @if ($item->productVariant->status != 'active') disabled @endif>
+                                                    @if ($item->productVariant->status != 'active' || $item->is_locked) disabled @endif>
                                                     <i class="bi bi-plus"></i>
                                                 </button>
                                             </div>
                                         </td>
                                         <td class="fw-bold item-total" id="item-total-{{ $item->id }}">
-                                            {{ number_format($item->productVariant->price * $item->quantity, 0, ',', '.') }} đ
+                                            {{ number_format($item->productVariant->price * $item->quantity, 0, ',', '.') }}
+                                            đ
                                         </td>
                                         <td>
                                             <button class="btn btn-outline-danger btn-remove"
-                                                data-cartid="{{ $item->id }}">
+                                                data-cartid="{{ $item->id }}"
+                                                @if ($item->is_locked) disabled @endif>
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -136,11 +138,11 @@
         body.swal2-shown {
             padding-right: 0 !important;
         }
-        
+
         .swal2-container {
             padding-right: 0 !important;
         }
-        
+
         /* Đảm bảo scrollbar không bị thay đổi */
         html {
             scrollbar-gutter: stable;
@@ -333,10 +335,20 @@
                 });
             });
 
-            // Chọn/Bỏ chọn tất cả
             $(document).on('change', '#check-all', function() {
-                $('.item-checkbox').prop('checked', $(this).prop('checked'));
-                updateSummary();
+                const cartItems = @json($cartItemsForJs); // Lấy dữ liệu từ Blade
+                const isChecked = $(this).prop('checked');
+
+                $('.item-checkbox').each(function() {
+                    const itemId = $(this).data('id');
+                    const item = cartItems.find(i => i.id === itemId);
+                    // Chỉ chọn/bỏ chọn các checkbox của item có status active và không bị khóa
+                    if (item.status === 'active' && !item.is_locked) {
+                        $(this).prop('checked', isChecked);
+                    }
+                });
+
+                updateSummary(); // Gọi hàm cập nhật tổng giá trị
             });
 
             // Chọn/Bỏ chọn từng sản phẩm
@@ -401,10 +413,10 @@
                         _token: '{{ csrf_token() }}',
                         cart_id: id,
                         quantity: qty
-                                    }, res => {
-                    $('#item-total-' + id).text(res.itemTotal.toLocaleString('vi-VN') + ' đ');
-                    updateSummary();
-                });
+                    }, res => {
+                        $('#item-total-' + id).text(res.itemTotal.toLocaleString('vi-VN') + ' đ');
+                        updateSummary();
+                    });
                 }, 800);
             }
 
