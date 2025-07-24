@@ -153,6 +153,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/remove-selected', [CartController::class, 'removeSelected'])->name('cart.removeSelected');
     Route::post('/cart/add-ajax', [CartController::class, 'addAjax'])->name('cart.addAjax');
+    // Route kiểm tra tồn kho giỏ hàng
+    Route::post('/cart/check-stock', [CartController::class, 'checkStock'])->name('cart.checkStock');
 
     // Route hiển thị và xử lý thanh toán
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');

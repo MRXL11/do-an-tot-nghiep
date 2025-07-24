@@ -309,6 +309,17 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('warning', 'Không tìm thấy sản phẩm để thanh toán.');
         }
 
+        // Kiểm tra tồn kho từng sản phẩm trước khi tạo đơn hàng
+        foreach ($cartItems as $item) {
+            if (
+                !$item->productVariant ||
+                $item->productVariant->status !== 'active' ||
+                $item->productVariant->stock_quantity < $item->quantity
+            ) {
+                return redirect()->route('cart.index')->with('warning', 'Một số sản phẩm đã hết hàng hoặc ngừng bán. Vui lòng kiểm tra lại giỏ hàng.');
+            }
+        }
+
         DB::beginTransaction();
         try {
             // Xử lý địa chỉ giao hàng

@@ -153,8 +153,34 @@
     <script>
         const cartItems = @json($cartItemsForJs);
 
+        // Hàm kiểm tra tồn kho realtime (chỉ enable/disable nút, không hiển thị cảnh báo đỏ)
+        function checkStockRealtime() {
+            const cartIds = [];
+            const quantities = [];
+            $('.item-checkbox').each(function() {
+                const id = $(this).data('id');
+                cartIds.push(id);
+                quantities.push(parseInt($('#quantity-' + id).val()));
+            });
+
+            $.post("{{ route('cart.checkStock') }}", {
+                _token: "{{ csrf_token() }}",
+                cart_ids: cartIds,
+                quantities: quantities
+            }, function(res) {
+                if (res.ok) {
+                    $('.btn-checkout').prop('disabled', false);
+                } else {
+                    $('.btn-checkout').prop('disabled', true);
+                }
+            });
+        }
+
         $(document).ready(function() {
             let quantityUpdateTimeout;
+
+            // Gọi kiểm tra tồn kho khi trang load
+            checkStockRealtime();
 
             // Cho phép nhập số lượng khi double click
             $(document).on('dblclick', '.quantity-input', function() {
@@ -181,6 +207,7 @@
                 }
                 $(this).val(qty).prop('readonly', true);
                 updateQuantityDebounced(id, qty);
+                checkStockRealtime();
             });
             $(document).on('keydown', '.quantity-input', function(e) {
                 if (e.key === 'Enter') {
@@ -207,6 +234,7 @@
                 if (qty >= 1) {
                     input.val(qty);
                     updateQuantityDebounced(id, qty);
+                    checkStockRealtime();
                 } else {
                     Swal.fire({
                         icon: 'info',
@@ -236,6 +264,7 @@
                 if (qty <= stock) {
                     input.val(qty);
                     updateQuantityDebounced(id, qty);
+                    checkStockRealtime();
                 } else {
                     Swal.fire({
                         icon: 'info',
@@ -351,16 +380,14 @@
                 e.preventDefault();
 
                 let selectedIds = [];
+                let selectedQuantities = [];
 
                 $('.item-checkbox:checked').each(function() {
                     const id = $(this).data('id');
-                    const product = cartItems.find(p => p.id === id);
-                    if (product && product.status === 'active') {
-                        selectedIds.push(id);
-                    }
+                    selectedIds.push(id);
+                    selectedQuantities.push(parseInt($('#quantity-' + id).val()));
                 });
 
-                // pop up hiển thị thông báo nếu không có sản phẩm nào được chọn mà đã ấn thanh toán
                 if (selectedIds.length === 0) {
                     Swal.fire({
                         icon: 'warning',
@@ -372,10 +399,32 @@
                     return;
                 }
 
-                // Chuyển hướng sang checkout kèm cart_item_ids
-                const url = new URL(window.location.origin + '/checkout');
-                url.searchParams.set('cart_item_ids', selectedIds.join(','));
-                window.location.href = url.toString();
+                // Gọi API kiểm tra tồn kho lần cuối chỉ cho các sản phẩm được chọn
+                $.post("{{ route('cart.checkStock') }}", {
+                    _token: "{{ csrf_token() }}",
+                    cart_ids: selectedIds,
+                    quantities: selectedQuantities
+                }, function(res) {
+                    if (res.ok) {
+                        // Chuyển hướng sang checkout nếu đủ hàng
+                        const url = new URL(window.location.origin + '/checkout');
+                        url.searchParams.set('cart_item_ids', selectedIds.join(','));
+                        window.location.href = url.toString();
+                    } else {
+                        // Hiển thị cảnh báo chỉ khi nhấn thanh toán
+                        let msg = '<ul>';
+                        res.out_of_stock.forEach(function(item) {
+                            msg += '<li>' + item.reason + '</li>';
+                        });
+                        msg += '</ul>';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Không thể thanh toán',
+                            html: msg,
+                            scrollbarPadding: false
+                        });
+                    }
+                });
             });
 
             // Hàm render cảnh báo sản phẩm ngưng bán
