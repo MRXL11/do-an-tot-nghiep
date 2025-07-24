@@ -71,12 +71,12 @@
                                             <label class="form-check-label" for="cod"><i
                                                     class="bi bi-cash-stack me-1"></i>COD</label>
                                         </div>
-                                        <div class="form-check">
+                                        {{-- <div class="form-check">
                                             <input class="form-check-input" type="radio" name="paymentMethod"
                                                 value="momo" id="momo">
                                             <label class="form-check-label" for="momo"><i
                                                     class="bi bi-phone me-1"></i>Momo</label>
-                                        </div>
+                                        </div> --}}
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="paymentMethod"
                                                 value="card" id="card">
@@ -259,33 +259,6 @@
             const couponInput = document.getElementById('coupon-code');
             const cartItemIds = "{{ implode(',', $cartItems->pluck('id')->toArray()) }}";
             const form = document.getElementById('checkout-form');
-
-            function updatePaymentButton() {
-                const selected = document.querySelector('input[name="paymentMethod"]:checked').value;
-                const total = totalElement.textContent.trim();
-                if (selected === 'cod') {
-                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Đặt hàng`;
-                    submitBtn.classList.remove('btn-primary', 'btn-warning');
-                    submitBtn.classList.add('btn-success');
-                } else if (selected === 'card') {
-                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán bằng thẻ (${total})`;
-                    submitBtn.classList.remove('btn-success', 'btn-warning');
-                    submitBtn.classList.add('btn-primary');
-                } else {
-                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${total})`;
-                    submitBtn.classList.remove('btn-primary', 'btn-success');
-                    submitBtn.classList.add('btn-warning');
-                }
-                Object.keys(details).forEach(key => {
-                    if (details[key]) {
-                        details[key].style.display = (key === selected) ? "block" : "none";
-                    }
-                });
-            }
-
-            radios.forEach(radio => radio.addEventListener("change", updatePaymentButton));
-            updatePaymentButton();
-
             const select = document.getElementById('address-select');
             const detailBox = document.getElementById('address-details');
             const manualAddressInput = document.getElementById('manual-address-input');
@@ -299,7 +272,90 @@
             const wardInput = document.querySelector('input[name="ward"]');
             const districtInput = document.querySelector('input[name="district"]');
             const cityInput = document.querySelector('input[name="city"]');
+            let lastModified = localStorage.getItem('cartLastModified') || Date.now().toString();
 
+            // Kiểm tra trạng thái thanh toán và giỏ hàng
+            function checkPaymentAndCartStatus() {
+                if (localStorage.getItem('paymentInProgress') === '1') {
+                    Swal.fire({
+                        title: 'Đang xử lý thanh toán',
+                        text: 'Một tab khác đang thực hiện thanh toán. Vui lòng làm mới trang để tiếp tục.',
+                        icon: 'warning',
+                        confirmButtonText: 'Làm mới ngay',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.reload();
+                        }
+                    });
+                    return false;
+                }
+                return true;
+            }
+
+            // Lắng nghe sự kiện storage để phát hiện thay đổi
+            window.addEventListener('storage', function(event) {
+
+                if (event.key === 'paymentInProgress' && event.newValue === '1') {
+                    Swal.fire({
+                        title: 'Đang xử lý thanh toán',
+                        text: 'Một tab khác đang thực hiện thanh toán. Vui lòng làm mới trang để tiếp tục.',
+                        icon: 'warning',
+                        confirmButtonText: 'Làm mới ngay',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.reload();
+                        }
+                    });
+                }
+
+                if (event.key === 'cartLastModified' && event.newValue !== lastModified) {
+                    Swal.fire({
+                        title: 'Giỏ hàng đã thay đổi',
+                        text: 'Giỏ hàng của bạn đã được cập nhật ở tab khác. Vui lòng làm mới trang để tiếp tục.',
+                        icon: 'warning',
+                        confirmButtonText: 'Làm mới ngay',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.reload();
+                        }
+                    });
+                }
+            });
+
+            // Cập nhật nút thanh toán dựa trên phương thức
+            function updatePaymentButton() {
+                const selected = document.querySelector('input[name="paymentMethod"]:checked').value;
+                const total = totalElement.textContent.trim();
+                if (selected === 'cod') {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Đặt hàng`;
+                    submitBtn.classList.remove('btn-primary', 'btn-warning');
+                    submitBtn.classList.add('btn-success');
+                } else if (selected === 'card') {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${total})`;
+                    submitBtn.classList.remove('btn-success', 'btn-warning');
+                    submitBtn.classList.add('btn-primary');
+                } else {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán momo (${total})`;
+                    submitBtn.classList.remove('btn-primary', 'btn-success');
+                    submitBtn.classList.add('btn-warning');
+                }
+                Object.keys(details).forEach(key => {
+                    if (details[key]) {
+                        details[key].style.display = (key === selected) ? "block" : "none";
+                    }
+                });
+            }
+
+            radios.forEach(radio => radio.addEventListener("change", updatePaymentButton));
+            updatePaymentButton();
+
+            // Xử lý chọn địa chỉ
             select.addEventListener('change', function() {
                 const selected = select.options[select.selectedIndex];
                 if (selected.value) {
@@ -328,6 +384,7 @@
                 }
             });
 
+            // Xử lý áp dụng mã giảm giá
             applyCouponBtn.addEventListener('click', function() {
                 const couponCode = couponInput.value.trim();
                 if (!couponCode) {
@@ -356,8 +413,7 @@
                             couponFeedback.className = 'form-text text-success mt-1';
                             discountElement.textContent = `-${data.formatted_discount}`;
                             totalElement.textContent = data.formatted_total;
-                            submitBtn.innerHTML =
-                                `<i class="bi bi-cart-check me-2"></i>Thanh toán (${data.formatted_total})`;
+                            updatePaymentButton();
                         } else {
                             couponFeedback.textContent = data.message;
                             couponFeedback.className = 'form-text text-danger mt-1';
@@ -370,6 +426,7 @@
                     });
             });
 
+            // Xử lý gửi form thanh toán
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
 
@@ -382,28 +439,40 @@
 
                 // Kiểm tra dữ liệu trước khi gửi
                 if (!paymentMethod) {
-                    alert('Vui lòng chọn phương thức thanh toán.');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Lỗi',
+                        text: 'Vui lòng chọn phương thức thanh toán.',
+                        timer: 1500
+                    });
                     return;
                 }
                 if (!shippingAddressId && (!name || !phoneNumber || !address)) {
-                    alert('Vui lòng nhập đầy đủ thông tin giao hàng hoặc chọn địa chỉ có sẵn.');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Lỗi',
+                        text: 'Vui lòng nhập đầy đủ thông tin giao hàng hoặc chọn địa chỉ có sẵn.',
+                        timer: 1500
+                    });
                     return;
                 }
                 if (!document.getElementById('agree').checked) {
-                    alert('Bạn cần đồng ý với chính sách mua hàng để tiếp tục.');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Lỗi',
+                        text: 'Bạn cần đồng ý với chính sách mua hàng để tiếp tục.',
+                        timer: 1500
+                    });
                     return;
                 }
 
-                // Debug FormData
-                for (let [key, value] of formData.entries()) {
-                    console.log(key, value);
-                }
-
-                // Kiểm tra sessionStorage
-                if (sessionStorage.getItem('paymentInProgress') === '1') {
-                    alert("Bạn đã chuyển hướng đến cổng thanh toán. Vui lòng không đặt hàng lại.");
+                // Kiểm tra trạng thái thanh toán
+                if (!checkPaymentAndCartStatus()) {
                     return;
                 }
+
+                // Đánh dấu bắt đầu thanh toán
+                localStorage.setItem('paymentInProgress', '1');
 
                 // Gửi yêu cầu
                 fetch('{{ route('checkout.submit') }}', {
@@ -416,168 +485,51 @@
                     .then(response => {
                         console.log('Response status:', response.status);
                         if (!response.ok) {
-                            throw new Error('Network response was not ok: ' + response.statusText);
+                            throw new Error('Sản phẩm này đã được đặt rồi. Vui lòng quay lại trang giỏ hàng! ' + response.statusText);
                         }
                         return response.json();
                     })
                     .then(data => {
                         console.log('Response data:', data);
                         if (data.success) {
-                            // Đánh dấu đã gửi yêu cầu thanh toán
-                            // sessionStorage.setItem('paymentInProgress', '1');
-
+                            // Cập nhật cartLastModified và lastModified cục bộ
+                            lastModified = Date.now().toString();
+                            localStorage.setItem('cartLastModified', lastModified);
                             if (paymentMethod === 'card' && data.vnpay_url) {
                                 window.location.href = data.vnpay_url;
                             } else if (data.redirect) {
                                 window.location.href = data.redirect;
                             } else {
-                                alert(data.message || 'Đặt hàng thành công!');
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công',
+                                    text: data.message || 'Đặt hàng thành công!',
+                                    timer: 1500
+                                });
                             }
                         } else {
-                            alert(data.message || 'Có lỗi xảy ra.');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi',
+                                text: data.message || 'Có lỗi xảy ra.',
+                                timer: 1500
+                            });
                         }
                     })
                     .catch(error => {
                         console.error('Fetch error:', error);
-                        alert('Đã có lỗi xảy ra khi xử lý đơn hàng: ' + error.message);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: 'Đã có lỗi xảy ra khi xử lý đơn hàng: ' + error.message,
+                            timer: 1500
+                        });
+                    })
+                    .finally(() => {
+                        // Xóa paymentInProgress sau khi hoàn tất
+                        localStorage.removeItem('paymentInProgress');
                     });
             });
         });
     </script>
 @endsection
-
-{{-- @section('scripts')
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const radios = document.querySelectorAll('input[name="paymentMethod"]');
-            const submitBtn = document.getElementById('submit-btn');
-            const details = {
-                cod: document.getElementById("cod-details"),
-                momo: document.getElementById("momo-details"),
-                card: document.getElementById("card-details")
-            };
-            const totalElement = document.getElementById('total-amount');
-            const discountElement = document.getElementById('discount-amount');
-            const couponFeedback = document.getElementById('coupon-feedback');
-            const applyCouponBtn = document.getElementById('apply-coupon');
-            const couponInput = document.getElementById('coupon-code');
-            const cartItemIds = "{{ implode(',', $cartItems->pluck('id')->toArray()) }}";
-
-            function updatePaymentButton() {
-                const selected = document.querySelector('input[name="paymentMethod"]:checked').value;
-                const total = totalElement.textContent.trim();
-                if (selected === 'cod') {
-                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Đặt hàng`;
-                    submitBtn.classList.remove('btn-primary', 'btn-warning');
-                    submitBtn.classList.add('btn-success');
-                } else if (selected === 'card') {
-                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán bằng thẻ (${total})`;
-                    submitBtn.classList.remove('btn-success', 'btn-warning');
-                    submitBtn.classList.add('btn-primary');
-                } else {
-                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${total})`;
-                    submitBtn.classList.remove('btn-primary', 'btn-success');
-                    submitBtn.classList.add('btn-warning');
-                }
-                Object.keys(details).forEach(key => {
-                    if (details[key]) {
-                        details[key].style.display = (key === selected) ? "block" : "none";
-                    }
-                });
-            }
-
-            radios.forEach(radio => radio.addEventListener("change", updatePaymentButton));
-            updatePaymentButton();
-
-            const select = document.getElementById('address-select');
-            const detailBox = document.getElementById('address-details');
-            const manualAddressInput = document.getElementById('manual-address-input');
-            const shippingAddressIdInput = document.getElementById('shipping-address-id');
-            const nameSpan = document.getElementById('detail-name');
-            const phoneSpan = document.getElementById('detail-phone');
-            const addressSpan = document.getElementById('detail-address');
-            const nameInput = document.querySelector('input[name="name"]');
-            const phoneInput = document.querySelector('input[name="phone_number"]');
-            const addressInput = document.querySelector('input[name="address"]');
-            const wardInput = document.querySelector('input[name="ward"]');
-            const districtInput = document.querySelector('input[name="district"]');
-            const cityInput = document.querySelector('input[name="city"]');
-
-            select.addEventListener('change', function() {
-                const selected = select.options[select.selectedIndex];
-                if (selected.value) {
-                    nameSpan.textContent = selected.dataset.name || '';
-                    phoneSpan.textContent = selected.dataset.phone || '';
-                    addressSpan.textContent = selected.dataset.fullAddress || '';
-                    detailBox.classList.remove('d-none');
-                    nameInput.value = selected.dataset.name || '';
-                    phoneInput.value = selected.dataset.phone || '';
-                    addressInput.value = selected.dataset.address || '';
-                    wardInput.value = selected.dataset.ward || '';
-                    districtInput.value = selected.dataset.district || '';
-                    cityInput.value = selected.dataset.city || '';
-                    shippingAddressIdInput.value = selected.value;
-                    manualAddressInput.classList.add('d-none');
-                } else {
-                    detailBox.classList.add('d-none');
-                    manualAddressInput.classList.remove('d-none');
-                    nameInput.value = '';
-                    phoneInput.value = '';
-                    addressInput.value = '';
-                    wardInput.value = '';
-                    districtInput.value = '';
-                    cityInput.value = '';
-                    shippingAddressIdInput.value = '';
-                }
-            });
-
-            applyCouponBtn.addEventListener('click', function() {
-                const couponCode = couponInput.value.trim();
-                if (!couponCode) {
-                    couponFeedback.textContent = 'Vui lòng nhập mã giảm giá.';
-                    couponFeedback.className = 'form-text text-danger mt-1';
-                    couponFeedback.style.display = 'block';
-                    return;
-                }
-
-                fetch('{{ route('checkout.applyCoupon') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        coupon_code: couponCode,
-                        cart_item_ids: cartItemIds
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    couponFeedback.style.display = 'block';
-                    if (data.success) {
-                        couponFeedback.textContent = data.message;
-                        couponFeedback.className = 'form-text text-success mt-1';
-                        discountElement.textContent = `-${data.formatted_discount}`;
-                        totalElement.textContent = data.formatted_total;
-                        submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${data.formatted_total})`;
-                    } else {
-                        couponFeedback.textContent = data.message;
-                        couponFeedback.className = 'form-text text-danger mt-1';
-                    }
-                })
-                .catch(error => {
-                    couponFeedback.textContent = 'Có lỗi xảy ra khi áp dụng mã giảm giá.';
-                    couponFeedback.className = 'form-text text-danger mt-1';
-                    couponFeedback.style.display = 'block';
-                });
-            });
-
-            document.querySelector('form').addEventListener('submit', function(e) {
-                if (!document.getElementById('agree').checked) {
-                    e.preventDefault();
-                    alert('Bạn cần đồng ý với chính sách mua hàng để tiếp tục.');
-                }
-            });
-        });
-    </script>
-@endsection --}}
