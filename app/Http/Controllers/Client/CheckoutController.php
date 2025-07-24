@@ -305,6 +305,37 @@ class CheckoutController extends Controller
             ], 422);
         }
 
+        // Kiểm tra sản phẩm bị khóa
+        foreach ($cartItems as $item) {
+            $isLocked = OrderDetail::where('product_variant_id', $item->product_variant_id)
+                ->whereHas('order', function ($query) {
+                    $query->where('user_id', Auth::id())
+                        ->whereIn('payment_method', ['online', 'momo'])
+                        ->whereIn('payment_status', ['pending', 'failed']);
+                })->exists();
+
+            if ($isLocked) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Một số sản phẩm trong giỏ hàng đang bị khóa do đơn hàng chưa thanh toán.'
+                ], 403);
+            }
+
+            if ($item->productVariant->status !== 'active') {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Sản phẩm {$item->productVariant->product->name} đã ngừng bán."
+                ], 400);
+            }
+
+            if ($item->productVariant->stock_quantity < $item->quantity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Sản phẩm {$item->productVariant->product->name} không đủ hàng trong kho."
+                ], 400);
+            }
+        }
+
         DB::beginTransaction();
         try {
             // Xử lý địa chỉ giao hàng
@@ -410,14 +441,6 @@ class CheckoutController extends Controller
             // Tạo mã đơn hàng
             $orderCode = 'ORD-' . strtoupper(Str::random(8));
 
-            // Kiểm tra tồn kho
-            foreach ($cartItems as $item) {
-                $productVariant = $item->productVariant;
-                if ($productVariant->stock_quantity < $item->quantity) {
-                    throw new \Exception("Sản phẩm {$productVariant->product->name} không đủ hàng trong kho.");
-                }
-            }
-
             // Tạo đơn hàng
             $order = Order::create([
                 'user_id' => Auth::id(),
@@ -434,7 +457,6 @@ class CheckoutController extends Controller
 
             // Tạo chi tiết đơn hàng
             foreach ($cartItems as $item) {
-
                 OrderDetail::create([
                     'order_id' => $order->id,
                     'product_variant_id' => $item->product_variant_id,
@@ -444,11 +466,6 @@ class CheckoutController extends Controller
                     'discount' => 0,
                     'subtotal' => $item->productVariant->price * $item->quantity,
                 ]);
-
-                if ($request->paymentMethod === 'cod') {
-                    // Trừ số lượng sản phẩm tồng kho
-                    $item->productVariant->decrement('stock_quantity', $item->quantity);
-                }
             }
 
             // Cập nhật used_count của mã giảm giá
@@ -458,14 +475,21 @@ class CheckoutController extends Controller
 
             // Xử lý giỏ hàng
             if ($request->paymentMethod === 'cod') {
+                // Trừ số lượng sản phẩm trong kho và xóa giỏ hàng
+                foreach ($cartItems as $item) {
+                    $item->productVariant->decrement('stock_quantity', $item->quantity);
+                }
                 Cart::where('user_id', Auth::id())
                     ->whereIn('id', $cartItemIds)
                     ->delete();
             } else {
+                // Lưu thông tin vào session để xử lý sau khi thanh toán online
                 session(['pending_cart_item_ids' => $cartItemIds]);
                 session(['pending_order_id' => $order->id]);
+            }
 
-                // Tạo URL thanh toán VNPay
+            // Tạo URL thanh toán VNPay
+            if ($request->paymentMethod === 'card') {
                 $vnp_TmnCode = env('VNPAY_TMN_CODE', 'WOQ9FKH5');
                 $vnp_HashSecret = env('VNPAY_HASH_SECRET', '8LFGJRBPXUPDP2M2EP394Y12EO1OD4TM');
                 $vnp_Url = env('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html');

@@ -147,21 +147,32 @@ class CartController extends Controller
         $cart = Cart::findOrFail($request->cart_id);
 
         if ($cart->user_id !== Auth::id()) {
-            return response()->json(['error' => 'Không có quyền sửa giỏ hàng này!'], 403);
+            return response()->json(['success' => false, 'message' => 'Không có quyền sửa giỏ hàng này!'], 403);
         }
 
         $variant = $cart->productVariant;
         if (!$variant) {
-            return response()->json(['error' => 'Sản phẩm này không còn tồn tại!'], 404);
+            return response()->json(['success' => false, 'message' => 'Sản phẩm này không còn tồn tại!'], 404);
         }
 
-        // Kiểm tra trạng thái active
+        // Kiểm tra trạng thái active và is_locked
+        $isLocked = OrderDetail::where('product_variant_id', $variant->id)
+            ->whereHas('order', function ($query) {
+                $query->where('user_id', Auth::id())
+                    ->whereIn('payment_method', ['online', 'bank_transfer'])
+                    ->whereIn('payment_status', ['pending', 'failed']);
+            })->exists();
+
+        if ($isLocked) {
+            return response()->json(['success' => false, 'message' => 'Sản phẩm này bị khóa do nằm trong đơn hàng chưa thanh toán!'], 403);
+        }
+
         if ($variant->status !== 'active') {
-            return response()->json(['error' => 'Sản phẩm này đã ngừng bán!'], 400);
+            return response()->json(['success' => false, 'message' => 'Sản phẩm này đã ngừng bán!'], 400);
         }
 
         if ($variant->stock_quantity < $request->quantity) {
-            return response()->json(['error' => 'Không đủ hàng trong kho! Chỉ còn ' . $variant->stock_quantity . ' sản phẩm.'], 400);
+            return response()->json(['success' => false, 'message' => 'Không đủ hàng trong kho! Chỉ còn ' . $variant->stock_quantity . ' sản phẩm.'], 400);
         }
 
         $cart->quantity = $request->quantity;
@@ -174,12 +185,16 @@ class CartController extends Controller
             ->get();
 
         $subtotal = $cartItems->sum(function ($item) {
-            return $item->productVariant->price * $item->quantity;
+            if ($item->productVariant->status === 'active' && !$item->is_locked) {
+                return $item->productVariant->price * $item->quantity;
+            }
+            return 0;
         });
 
         $total = $subtotal;
 
         return response()->json([
+            'success' => true,
             'message' => 'Cập nhật giỏ hàng thành công!',
             'itemTotal' => round($itemTotal, 2),
             'subtotal' => round($subtotal, 2),
@@ -200,8 +215,18 @@ class CartController extends Controller
         $cart = Cart::find($request->cart_id);
 
         if ($cart && $cart->user_id == Auth::id()) {
-            $cart->delete();
+            $isLocked = OrderDetail::where('product_variant_id', $cart->product_variant_id)
+                ->whereHas('order', function ($query) {
+                    $query->where('user_id', Auth::id())
+                        ->whereIn('payment_method', ['online', 'bank_transfer'])
+                        ->whereIn('payment_status', ['pending', 'failed']);
+                })->exists();
 
+            if ($isLocked) {
+                return response()->json(['success' => false, 'message' => 'Sản phẩm này bị khóa do nằm trong đơn hàng chưa thanh toán!'], 403);
+            }
+
+            $cart->delete();
             $newCount = Cart::where('user_id', Auth::id())->count();
 
             return response()->json([
@@ -210,7 +235,7 @@ class CartController extends Controller
             ]);
         }
 
-        return response()->json(['error' => 'Không thể xóa sản phẩm này!'], 403);
+        return response()->json(['success' => false, 'message' => 'Không thể xóa sản phẩm này!'], 403);
     }
 
     /**
@@ -222,12 +247,22 @@ class CartController extends Controller
             'cart_ids' => 'required|array'
         ]);
 
-        // Chỉ xóa sản phẩm thuộc user hiện tại
-        Cart::whereIn('id', $request->cart_ids)
-            ->where('user_id', Auth::id())
-            ->delete();
+        $cartItems = Cart::whereIn('id', $request->cart_ids)->where('user_id', Auth::id())->get();
 
-        // Đếm lại số sản phẩm còn lại trong giỏ
+        foreach ($cartItems as $cartItem) {
+            $isLocked = OrderDetail::where('product_variant_id', $cartItem->product_variant_id)
+                ->whereHas('order', function ($query) {
+                    $query->where('user_id', Auth::id())
+                        ->whereIn('payment_method', ['online', 'bank_transfer'])
+                        ->whereIn('payment_status', ['pending', 'failed']);
+                })->exists();
+
+            if ($isLocked) {
+                return response()->json(['success' => false, 'message' => 'Một số sản phẩm bị khóa do nằm trong đơn hàng chưa thanh toán!'], 403);
+            }
+        }
+
+        Cart::whereIn('id', $request->cart_ids)->where('user_id', Auth::id())->delete();
         $newCount = Cart::where('user_id', Auth::id())->count();
 
         return response()->json([
