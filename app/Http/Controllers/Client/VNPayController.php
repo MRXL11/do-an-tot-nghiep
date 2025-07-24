@@ -38,7 +38,7 @@ class VNPayController extends Controller
 
         ksort($params);
         $hashData      = implode('&', array_map(fn($k, $v) => "$k=$v", array_keys($params), $params));
-        $calculatedHash= hash_hmac('sha512', $hashData, $vnpHashSecret);
+        $calculatedHash = hash_hmac('sha512', $hashData, $vnpHashSecret);
         $receivedHash  = $request->get('vnp_SecureHash');
 
         Log::info('VNPAY IPN RawQuery: ' . $queryRaw);
@@ -67,6 +67,7 @@ class VNPayController extends Controller
             'status'         => 'cancelled',
             'payment_status' => 'failed',
         ]);
+        
         return response()->json(['RspCode' => '01', 'Message' => 'Confirm Fail']);
     }
 
@@ -120,10 +121,17 @@ class VNPayController extends Controller
                 'vnp_pay_date'       => date('Y-m-d H:i:s', strtotime($params['vnp_PayDate'])),
             ]);
 
-            // Xóa giỏ hàng tạm
-            $cartIds = session('pending_cart_item_ids', []);
+            // ✅ Trừ hàng tồn kho
+            foreach ($order->orderDetails as $item) {
+                $product = $item->productVariant;
+                if ($product && $product->stock_quantity >= $item->quantity) {
+                    $product->decrement('stock_quantity', $item->quantity);
+                }
+            }
+
+            // Xóa giỏ hàng
             Cart::where('user_id', $order->user_id)
-                ->whereIn('id', $cartIds)
+                ->whereIn('product_variant_id', $order->orderDetails->pluck('product_variant_id'))
                 ->delete();
             session()->forget(['pending_cart_item_ids', 'pending_order_id']);
 
