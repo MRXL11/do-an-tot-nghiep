@@ -190,7 +190,7 @@ Route::middleware(['auth'])->group(function () {
 // Thanh toán Momo
 Route::get('/pay', [ClientOrderController::class, 'pay'])->name('pay');
 Route::post('/momo_payment', [ClientOrderController::class, 'momo_payment'])->name('momo_payment');
-Route::get('/momo-return', [ClientOrderController::class, 'momoReturn'])->name('momo_return');
+Route::get('/momo_callback', [ClientOrderController::class, 'momoCallback'])->name('momo_return');
 // Thanh toán VNPay
 Route::get('/vnpay/return', [VNPayController::class, 'paymentReturn'])->name('vnpay.return');
 Route::post('/vnpay/ipn', [VNPayController::class, 'ipn'])->name('vnpay.ipn');
