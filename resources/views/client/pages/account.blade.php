@@ -404,7 +404,8 @@
                                                     in_array($order->payment_method, ['online', 'bank_transfer']) &&
                                                     in_array($order->payment_status, ['pending', 'failed']) &&
                                                     in_array($order->status, ['pending', 'cancelled']) &&
-                                                    !empty($order->vnp_txn_ref); // rõ ràng
+                                                    !empty($order->vnp_txn_ref) &&
+                                                    !($isRequested || $isCancelled || $adminReason);
                                             @endphp
 
                                             @if ($momoRetry)
