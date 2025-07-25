@@ -481,7 +481,7 @@ class CheckoutController extends Controller
 
                 // Giảm tồn kho sản phẩm sau khi đặt hàng thành công
                 // (Trừ số lượng đã đặt khỏi stock_quantity của ProductVariant)
-                $item->productVariant->decrement('stock_quantity', $item->quantity);
+                // $item->productVariant->decrement('stock_quantity', $item->quantity);
             }
 
             // Cập nhật used_count của mã giảm giá
