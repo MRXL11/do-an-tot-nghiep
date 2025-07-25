@@ -22,9 +22,15 @@ class CouponController extends Controller
             $query->where('status', $request->status);
         }
 
-        $coupons = $query->orderBy('created_at', 'desc')->paginate(10);
+        if ($request->filled('discount_type')) {
+            $query->where('discount_type', $request->discount_type);
+        }
 
-        return view('admin.coupons.index', compact('coupons'));
+        $coupons = $query->orderBy('created_at', 'desc')->paginate(10);
+        
+        $trashedCount = Coupon::onlyTrashed()->count();
+
+        return view('admin.coupons.index', compact('coupons', 'trashedCount'));
     }
 
     public function create()
@@ -34,16 +40,17 @@ class CouponController extends Controller
 
     public function store(StoreCouponRequest $request)
     {
-        Coupon::create($request->validated());
+        // Nếu là free_shipping, đặt giá trị là 0 để đảm bảo tính nhất quán
+        $data = $request->validated();
+        if ($data['discount_type'] === 'free_shipping') {
+            $data['discount_value'] = 0;
+        }
 
-        return redirect()->route('admin.coupons.index')->with('success', 'Thêm coupon thành công!');
+        Coupon::create($data);
+
+        return redirect()->route('admin.coupons.index')->with('success', 'Thêm voucher thành công!');
     }
-
-    public function show(Coupon $coupon)
-    {
-        return view('admin.coupons.show', compact('coupon'));
-    }
-
+    
     public function edit(Coupon $coupon)
     {
         return view('admin.coupons.edit', compact('coupon'));
@@ -51,15 +58,20 @@ class CouponController extends Controller
 
     public function update(UpdateCouponRequest $request, Coupon $coupon)
     {
-        $coupon->update($request->validated());
+        $data = $request->validated();
+        if ($data['discount_type'] === 'free_shipping') {
+            $data['discount_value'] = 0;
+        }
+        
+        $coupon->update($data);
 
-        return redirect()->route('admin.coupons.index')->with('success', 'Cập nhật coupon thành công!');
+        return redirect()->route('admin.coupons.index')->with('success', 'Cập nhật voucher thành công!');
     }
 
     public function destroy(Coupon $coupon)
     {
         $coupon->delete();
-        return redirect()->route('admin.coupons.index')->with('success', 'Xóa coupon thành công!');
+        return redirect()->route('admin.coupons.index')->with('success', 'Voucher đã được chuyển vào thùng rác!');
     }
 
     public function trashed(Request $request)
@@ -80,15 +92,6 @@ class CouponController extends Controller
         $coupon = Coupon::onlyTrashed()->findOrFail($id);
         $coupon->restore();
 
-        return redirect()->route('admin.admin.coupons.trashed')->with('success', 'Khôi phục coupon thành công!');
+        return redirect()->route('admin.coupons.trashed')->with('success', 'Khôi phục voucher thành công!');
     }
-
-    // public function forceDelete($id)
-    // {
-    //     $coupon = Coupon::onlyTrashed()->findOrFail($id);
-    //     $coupon->forceDelete();
-
-    //     return redirect()->route('admin.admin.coupons.trashed')->with('success', 'Xóa vĩnh viễn coupon thành công!');
-    // }
-    // xóa vĩnh viễn coupon không cần thiết
 }
