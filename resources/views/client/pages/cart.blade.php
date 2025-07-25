@@ -563,9 +563,10 @@
             });
 
             // Kiểm tra trước khi thanh toán
-            $(document).on('click', '.btn-checkout', function(e) {
+            $(document).on('click', '.btn-checkout', function (e) {
                 e.preventDefault();
-                // Kiểm tra trạng thái thanh toán
+            
+                // Kiểm tra trạng thái thanh toán đang xử lý ở tab khác
                 if (localStorage.getItem('paymentInProgress') === '1') {
                     Swal.fire({
                         title: 'Đang xử lý thanh toán',
@@ -583,52 +584,43 @@
                     });
                     return;
                 }
-
+            
                 let selectedIds = [];
-
                 let selectedQuantities = [];
-
-                $('.item-checkbox:checked').each(function() {
-                    const id = $(this).data('id');
-                    selectedIds.push(id);
-                    selectedQuantities.push(parseInt($('#quantity-' + id).val()));
-
-                $('.item-checkbox:checked').each(function() {
+            
+                $('.item-checkbox:checked').each(function () {
                     const id = $(this).data('id');
                     const product = cartItems.find(p => p.id === id);
                     if (product && product.status === 'active' && !product.is_locked) {
                         selectedIds.push(id);
+                        selectedQuantities.push(parseInt($('#quantity-' + id).val()));
                     }
-
                 });
-
+            
                 if (selectedIds.length === 0) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Không thể thanh toán',
-                        text: 'Vui lòng chọn ít nhất 1 sản phẩm để thanh toán.',
+                        text: 'Vui lòng chọn ít nhất 1 sản phẩm hợp lệ để thanh toán.',
                         timer: 2000,
                         scrollbarPadding: false
                     });
                     return;
                 }
-
-
-                // Gọi API kiểm tra tồn kho lần cuối chỉ cho các sản phẩm được chọn
+            
+                // Gọi API kiểm tra tồn kho trước khi chuyển sang checkout
                 $.post("{{ route('cart.checkStock') }}", {
                     _token: "{{ csrf_token() }}",
                     cart_ids: selectedIds,
                     quantities: selectedQuantities
-                }, function(res) {
+                }, function (res) {
                     if (res.ok) {
-                        // Chuyển hướng sang checkout nếu đủ hàng
                         const url = new URL(window.location.origin + '/checkout');
                         url.searchParams.set('cart_item_ids', selectedIds.join(','));
                         window.location.href = url.toString();
                     } else {
-                        // Hiển thị cảnh báo chỉ khi nhấn thanh toán
                         let msg = '<ul>';
-                        res.out_of_stock.forEach(function(item) {
+                        res.out_of_stock.forEach(function (item) {
                             msg += '<li>' + item.reason + '</li>';
                         });
                         msg += '</ul>';
@@ -639,15 +631,12 @@
                             scrollbarPadding: false
                         });
                     }
-
-                // Chuyển hướng sang checkout kèm cart_item_ids
-                const url = new URL(window.location.origin + '/checkout');
-                url.searchParams.set('cart_item_ids', selectedIds.join(','));
-                window.location.href = url.toString();
+                });
+            
+                // (Tùy chọn) Ghi log
                 console.log('Checkout initiated:', {
                     selectedIds,
-                    lastModified
-
+                    lastModified: localStorage.getItem('cartLastModified')
                 });
             });
 
