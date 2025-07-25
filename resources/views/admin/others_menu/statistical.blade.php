@@ -1393,19 +1393,15 @@
                                     <i class="bi bi-check-circle"></i> Duyệt
                                 </button>
 
-                                
                                 ${
                                     order.cancellation_requested &&
                                     !order.cancel_confirmed &&
-                                    !order.vnp_txn_ref
-                                        ? `
-                                        <!-- Từ chối -->
-                                        <button class="btn btn-danger btn-sm"
-                                            onclick="handleCancelAction(${order.id}, 'reject',
-                                            '${escapeJs(order.cancel_reason)}', '${escapeJs(order.user?.name)}')">
-                                            <i class="bi bi-x-circle"></i> Từ chối
-                                        </button>
-                                        `
+                                    order.payment_status !== 'failed'
+                                        ? `<button class="btn btn-danger btn-sm"
+                                                onclick="handleCancelAction(${order.id}, 'reject',
+                                                '${escapeJs(order.cancel_reason)}', '${escapeJs(order.user?.name || '')}')">
+                                                <i class="bi bi-x-circle"></i> Từ chối
+                                            </button>`
                                         : ''
                                 }
                             </td>
