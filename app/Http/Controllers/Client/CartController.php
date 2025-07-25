@@ -342,4 +342,45 @@ class CartController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Đã thêm vào giỏ hàng!', 'cart_count' => $cartCount]);
     }
+
+    /**
+     * API kiểm tra tồn kho cho các sản phẩm trong giỏ hàng
+     */
+    public function checkStock(Request $request)
+    {
+        $cartIds = $request->input('cart_ids', []);
+        $quantities = $request->input('quantities', []);
+
+        $outOfStock = [];
+
+        foreach ($cartIds as $i => $cartId) {
+            $cart = Cart::with('productVariant')->where('user_id', Auth::id())->find($cartId);
+            if (!$cart || !$cart->productVariant) {
+                $outOfStock[] = [
+                    'cart_id' => $cartId,
+                    'reason' => 'Sản phẩm không tồn tại'
+                ];
+                continue;
+            }
+            if ($cart->productVariant->status !== 'active') {
+                $outOfStock[] = [
+                    'cart_id' => $cartId,
+                    'reason' => 'Sản phẩm đã ngừng bán'
+                ];
+                continue;
+            }
+            $qty = isset($quantities[$i]) ? (int)$quantities[$i] : $cart->quantity;
+            if ($cart->productVariant->stock_quantity < $qty) {
+                $outOfStock[] = [
+                    'cart_id' => $cartId,
+                    'reason' => 'Chỉ còn ' . $cart->productVariant->stock_quantity . ' sản phẩm trong kho'
+                ];
+            }
+        }
+
+        return response()->json([
+            'ok' => count($outOfStock) === 0,
+            'out_of_stock' => $outOfStock
+        ]);
+    }
 }

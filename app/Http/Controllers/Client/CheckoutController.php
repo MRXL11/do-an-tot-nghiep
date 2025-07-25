@@ -336,6 +336,17 @@ class CheckoutController extends Controller
             }
         }
 
+        // Kiểm tra tồn kho từng sản phẩm trước khi tạo đơn hàng
+        foreach ($cartItems as $item) {
+            if (
+                !$item->productVariant ||
+                $item->productVariant->status !== 'active' ||
+                $item->productVariant->stock_quantity < $item->quantity
+            ) {
+                return redirect()->route('cart.index')->with('warning', 'Một số sản phẩm đã hết hàng hoặc ngừng bán. Vui lòng kiểm tra lại giỏ hàng.');
+            }
+        }
+
         DB::beginTransaction();
         try {
             // Xử lý địa chỉ giao hàng
@@ -455,8 +466,9 @@ class CheckoutController extends Controller
                 'vnp_txn_ref' => $request->paymentMethod === 'card' ? time() . Str::random(4) : null,
             ]);
 
-            // Tạo chi tiết đơn hàng
+            // Tạo chi tiết đơn hàng và giảm tồn kho sản phẩm
             foreach ($cartItems as $item) {
+                // Tạo chi tiết đơn hàng
                 OrderDetail::create([
                     'order_id' => $order->id,
                     'product_variant_id' => $item->product_variant_id,
@@ -466,6 +478,10 @@ class CheckoutController extends Controller
                     'discount' => 0,
                     'subtotal' => $item->productVariant->price * $item->quantity,
                 ]);
+
+                // Giảm tồn kho sản phẩm sau khi đặt hàng thành công
+                // (Trừ số lượng đã đặt khỏi stock_quantity của ProductVariant)
+                // $item->productVariant->decrement('stock_quantity', $item->quantity);
             }
 
             // Cập nhật used_count của mã giảm giá

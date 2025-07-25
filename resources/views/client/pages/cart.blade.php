@@ -155,6 +155,29 @@
     <script>
         const cartItems = @json($cartItemsForJs);
 
+        // Hàm kiểm tra tồn kho realtime (chỉ enable/disable nút, không hiển thị cảnh báo đỏ)
+        function checkStockRealtime() {
+            const cartIds = [];
+            const quantities = [];
+            $('.item-checkbox').each(function() {
+                const id = $(this).data('id');
+                cartIds.push(id);
+                quantities.push(parseInt($('#quantity-' + id).val()));
+            });
+
+            $.post("{{ route('cart.checkStock') }}", {
+                _token: "{{ csrf_token() }}",
+                cart_ids: cartIds,
+                quantities: quantities
+            }, function(res) {
+                if (res.ok) {
+                    $('.btn-checkout').prop('disabled', false);
+                } else {
+                    $('.btn-checkout').prop('disabled', true);
+                }
+            });
+        }
+
         $(document).ready(function() {
             let quantityUpdateTimeout;
             // Khởi tạo giá trị cartLastModified khi tải trang
@@ -236,6 +259,9 @@
                 }
             });
 
+            // Gọi kiểm tra tồn kho khi trang load
+            checkStockRealtime();
+
             // Cho phép nhập số lượng khi double click
             $(document).on('dblclick', '.quantity-input', function() {
                 if ($(this).prop('readonly')) {
@@ -274,6 +300,9 @@
                 }
                 $(this).val(qty).prop('readonly', true);
                 updateQuantityDebounced(id, qty);
+
+                checkStockRealtime();
+
                 // Cập nhật cartLastModified và lastModified cục bộ
                 lastModified = Date.now().toString();
                 localStorage.setItem('cartLastModified', lastModified);
@@ -282,6 +311,7 @@
                     qty,
                     lastModified
                 });
+
             });
 
             $(document).on('keydown', '.quantity-input', function(e) {
@@ -309,6 +339,9 @@
                 if (qty >= 1) {
                     input.val(qty);
                     updateQuantityDebounced(id, qty);
+
+                    checkStockRealtime();
+
                     // Cập nhật cartLastModified và lastModified cục bộ
                     lastModified = Date.now().toString();
                     localStorage.setItem('cartLastModified', lastModified);
@@ -317,6 +350,7 @@
                         qty,
                         lastModified
                     });
+
                 } else {
                     Swal.fire({
                         icon: 'info',
@@ -346,6 +380,9 @@
                 if (qty <= stock) {
                     input.val(qty);
                     updateQuantityDebounced(id, qty);
+
+                    checkStockRealtime();
+
                     // Cập nhật cartLastModified và lastModified cục bộ
                     lastModified = Date.now().toString();
                     localStorage.setItem('cartLastModified', lastModified);
@@ -354,6 +391,7 @@
                         qty,
                         lastModified
                     });
+
                 } else {
                     Swal.fire({
                         icon: 'info',
@@ -525,9 +563,10 @@
             });
 
             // Kiểm tra trước khi thanh toán
-            $(document).on('click', '.btn-checkout', function(e) {
+            $(document).on('click', '.btn-checkout', function (e) {
                 e.preventDefault();
-                // Kiểm tra trạng thái thanh toán
+            
+                // Kiểm tra trạng thái thanh toán đang xử lý ở tab khác
                 if (localStorage.getItem('paymentInProgress') === '1') {
                     Swal.fire({
                         title: 'Đang xử lý thanh toán',
@@ -545,34 +584,59 @@
                     });
                     return;
                 }
-
+            
                 let selectedIds = [];
-                $('.item-checkbox:checked').each(function() {
+                let selectedQuantities = [];
+            
+                $('.item-checkbox:checked').each(function () {
                     const id = $(this).data('id');
                     const product = cartItems.find(p => p.id === id);
                     if (product && product.status === 'active' && !product.is_locked) {
                         selectedIds.push(id);
+                        selectedQuantities.push(parseInt($('#quantity-' + id).val()));
                     }
                 });
-
+            
                 if (selectedIds.length === 0) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Không thể thanh toán',
-                        text: 'Vui lòng chọn ít nhất 1 sản phẩm để thanh toán.',
+                        text: 'Vui lòng chọn ít nhất 1 sản phẩm hợp lệ để thanh toán.',
                         timer: 2000,
                         scrollbarPadding: false
                     });
                     return;
                 }
-
-                // Chuyển hướng sang checkout kèm cart_item_ids
-                const url = new URL(window.location.origin + '/checkout');
-                url.searchParams.set('cart_item_ids', selectedIds.join(','));
-                window.location.href = url.toString();
+            
+                // Gọi API kiểm tra tồn kho trước khi chuyển sang checkout
+                $.post("{{ route('cart.checkStock') }}", {
+                    _token: "{{ csrf_token() }}",
+                    cart_ids: selectedIds,
+                    quantities: selectedQuantities
+                }, function (res) {
+                    if (res.ok) {
+                        const url = new URL(window.location.origin + '/checkout');
+                        url.searchParams.set('cart_item_ids', selectedIds.join(','));
+                        window.location.href = url.toString();
+                    } else {
+                        let msg = '<ul>';
+                        res.out_of_stock.forEach(function (item) {
+                            msg += '<li>' + item.reason + '</li>';
+                        });
+                        msg += '</ul>';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Không thể thanh toán',
+                            html: msg,
+                            scrollbarPadding: false
+                        });
+                    }
+                });
+            
+                // (Tùy chọn) Ghi log
                 console.log('Checkout initiated:', {
                     selectedIds,
-                    lastModified
+                    lastModified: localStorage.getItem('cartLastModified')
                 });
             });
 
