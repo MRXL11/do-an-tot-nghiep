@@ -314,7 +314,7 @@
                                     </button>
 
                                     {{-- Chỉ hiện nút từ chối nếu không phải đơn online chưa thanh toán --}}
-                                    @if ($order->cancellation_requested && !$order->cancel_confirmed && empty($order->vnp_txn_ref))
+                                    @if ($order->cancellation_requested && !$order->cancel_confirmed && $order->payment_status !== 'failed')
                                         {{-- Nút Từ chối --}}
                                         <button type="button" class="btn btn-danger btn-sm"
                                             onclick="handleCancelAction({{ $order->id }}, 'reject',
@@ -443,13 +443,13 @@
             const htmlContent = `
                 <div class="text-start">
                     ${customerReason ? `
-                                                                            <label class="form-label fw-bold text-dark mb-1">
-                                                                                <i class="bi bi-person-fill text-primary me-1"></i> Lý do khách yêu cầu huỷ:
-                                                                            </label>
-                                                                            <div class="bg-light border rounded p-2 mb-3">
-                                                                                <em>${customerReason}</em>
-                                                                            </div>
-                                                                        ` : ''
+                                                                                <label class="form-label fw-bold text-dark mb-1">
+                                                                                    <i class="bi bi-person-fill text-primary me-1"></i> Lý do khách yêu cầu huỷ:
+                                                                                </label>
+                                                                                <div class="bg-light border rounded p-2 mb-3">
+                                                                                    <em>${customerReason}</em>
+                                                                                </div>
+                                                                            ` : ''
                     }
 
                     <div class="d-flex flex-column">
