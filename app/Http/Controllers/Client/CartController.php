@@ -38,7 +38,7 @@ class CartController extends Controller
             $lockedVariantIds = OrderDetail::whereHas('order', function ($query) {
                 $query->where('user_id', Auth::id())
                     ->whereIn('payment_method', ['online', 'bank_transfer'])
-                    ->whereIn('payment_status', ['pending', 'failed']);
+                    ->where('payment_status', 'pending'); // dùng where vì chỉ cần đúng 'pending'
             })
                 ->pluck('product_variant_id')
                 ->toArray();
@@ -160,7 +160,7 @@ class CartController extends Controller
             ->whereHas('order', function ($query) {
                 $query->where('user_id', Auth::id())
                     ->whereIn('payment_method', ['online', 'bank_transfer'])
-                    ->whereIn('payment_status', ['pending', 'failed']);
+                    ->where('payment_status', 'pending'); // dùng where vì chỉ cần đúng 'pending'
             })->exists();
 
         if ($isLocked) {
@@ -219,7 +219,7 @@ class CartController extends Controller
                 ->whereHas('order', function ($query) {
                     $query->where('user_id', Auth::id())
                         ->whereIn('payment_method', ['online', 'bank_transfer'])
-                        ->whereIn('payment_status', ['pending', 'failed']);
+                        ->where('payment_status', 'pending'); // dùng where vì chỉ cần đúng 'pending'
                 })->exists();
 
             if ($isLocked) {
@@ -254,7 +254,7 @@ class CartController extends Controller
                 ->whereHas('order', function ($query) {
                     $query->where('user_id', Auth::id())
                         ->whereIn('payment_method', ['online', 'bank_transfer'])
-                        ->whereIn('payment_status', ['pending', 'failed']);
+                        ->where('payment_status', 'pending'); // dùng where vì chỉ cần đúng 'pending'
                 })->exists();
 
             if ($isLocked) {
@@ -296,7 +296,7 @@ class CartController extends Controller
             ->whereHas('order', function ($query) {
                 $query->where('user_id', Auth::id())
                     ->whereIn('payment_method', ['online', 'bank_transfer'])
-                    ->whereIn('payment_status', ['pending', 'failed']);
+                    ->where('payment_status', 'pending'); // dùng where vì chỉ cần đúng 'pending'
             })->exists();
 
         // Lấy đơn hàng có variant này (mới nhất) và failed

@@ -311,7 +311,7 @@ class CheckoutController extends Controller
                 ->whereHas('order', function ($query) {
                     $query->where('user_id', Auth::id())
                         ->whereIn('payment_method', ['online', 'momo'])
-                        ->whereIn('payment_status', ['pending', 'failed']);
+                        ->where('payment_status', 'pending'); // dùng where vì chỉ cần đúng 'pending'
                 })->exists();
 
             if ($isLocked) {

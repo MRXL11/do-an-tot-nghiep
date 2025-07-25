@@ -65,6 +65,16 @@ class OrderController extends Controller
             $order->cancel_reason = $reason;
             $order->cancellation_requested = true;
             $order->cancel_confirmed = false; // chưa được duyệt
+            if (
+                !empty($order->vnp_txn_ref) &&
+                $order->payment_method === 'online' &&
+                $order->payment_status === 'pending' &&
+                $order->status === 'pending'
+            ) {
+                // Người dùng hủy khi chưa thanh toán => coi như không mua nữa
+                $order->payment_status = 'failed';
+            }
+
             $order->save();
 
             // Gửi thông báo đến admin
@@ -325,7 +335,7 @@ class OrderController extends Controller
             "Cảm ơn quý khách! Đơn hàng #{$order->order_code} đã được xác nhận là đã nhận vào lúc " . now()->format('H:i d/m/Y')
         );
     }
-   /**
+    /**
      * Trang thành công
      */
     public function success(Order $order)

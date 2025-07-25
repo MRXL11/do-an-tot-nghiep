@@ -288,6 +288,12 @@
                                                                                 cầu huỷ:</span>
                                                                             <em>{{ $adminReason }}</em>
 
+                                                                            {{-- trường hợp: khách huỷ thanh toán đơn --}}
+                                                                        @elseif(!empty($order->vnp_txn_ref) && $order->payment_status === 'failed')
+                                                                            <i
+                                                                                class="bi bi-person-fill text-primary me-1"></i>
+                                                                            <span class="text-dark">Bạn đã huỷ thanh toán
+                                                                                nên đơn hàng bị huỷ</span>
                                                                             {{-- ❓ Không rõ lý do --}}
                                                                         @else
                                                                             <span class="text-muted fst-italic">Không có lý
@@ -402,9 +408,9 @@
 
                                                 $vpnRetry =
                                                     in_array($order->payment_method, ['online', 'bank_transfer']) &&
-                                                    in_array($order->payment_status, ['pending', 'failed']) &&
-                                                    in_array($order->status, ['pending', 'cancelled']) &&
-                                                    !empty($order->vnp_txn_ref); // rõ ràng
+                                                    $order->payment_status === 'pending' &&
+                                                    !empty($order->vnp_txn_ref) &&
+                                                    !($isRequested || $isCancelled || $adminReason);
                                             @endphp
 
                                             @if ($momoRetry)

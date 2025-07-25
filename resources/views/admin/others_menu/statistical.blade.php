@@ -1358,6 +1358,7 @@
                         <th>Khách hàng</th>
                         <th>SĐT</th>
                         <th>Thời gian</th>
+                        <th>Phương thức thanh toán - Trạng thái</th>
                         <th>Lý do huỷ</th>
                         <th>Hành động</th>
                     </tr>
@@ -1371,6 +1372,15 @@
                             <td>${order.shipping_address?.phone_number ?? '<i>Ẩn danh</i>'}</td>
                             <td>${new Date(order.created_at).toLocaleString('vi-VN')}</td>
                             <td>
+                                <span style="color: ${getPaymentMethod(order.payment_method).color}">
+                                    ${getPaymentMethod(order.payment_method).label}
+                                </span> 
+                                - 
+                                <span style="color: ${getPaymentStatus(order.payment_status).color}">
+                                    ${getPaymentStatus(order.payment_status).label}
+                                </span> 
+                            </td>
+                            <td>
                                 ${order.cancel_reason
                                     ? `<em>${order.cancel_reason}</em>`
                                     : '<span class="text-muted fst-italic">Không có</span>'}
@@ -1383,12 +1393,21 @@
                                     <i class="bi bi-check-circle"></i> Duyệt
                                 </button>
 
-                                <!-- Từ chối -->
-                                <button class="btn btn-danger btn-sm"
-                                    onclick="handleCancelAction(${order.id}, 'reject',
-                                     '${escapeJs(order.cancel_reason)}', '${escapeJs(order.user?.name)}')">
-                                    <i class="bi bi-x-circle"></i> Từ chối
-                                </button>
+                                
+                                ${
+                                    order.cancellation_requested &&
+                                    !order.cancel_confirmed &&
+                                    !order.vnp_txn_ref
+                                        ? `
+                                        <!-- Từ chối -->
+                                        <button class="btn btn-danger btn-sm"
+                                            onclick="handleCancelAction(${order.id}, 'reject',
+                                            '${escapeJs(order.cancel_reason)}', '${escapeJs(order.user?.name)}')">
+                                            <i class="bi bi-x-circle"></i> Từ chối
+                                        </button>
+                                        `
+                                        : ''
+                                }
                             </td>
                         </tr>
                     `;
@@ -1458,7 +1477,7 @@
                 },
                 preConfirm: () => {
                     const reason = document.getElementById('adminReason')?.value.trim();
-                    if (!reason || reason.length < 10) {
+                    if ((!reason || reason.length < 10) && !customerReason) {
                         Swal.showValidationMessage('Lý do phải có ít nhất 10 ký tự.');
                         return false;
                     }
