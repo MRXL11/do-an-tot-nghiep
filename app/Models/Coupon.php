@@ -6,68 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * @property int $id
- * @property string $code
- * @property string $discount_type
- * @property string $discount_value
- * @property string|null $min_order_value
- * @property string|null $max_discount
- * @property \Illuminate\Support\Carbon $start_date
- * @property \Illuminate\Support\Carbon $end_date
- * @property int|null $usage_limit
- * @property int|null $user_usage_limit
- * @property int $used_count
- * @property array<array-key, mixed>|null $applicable_categories
- * @property array<array-key, mixed>|null $applicable_products
- * @property string $status
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read mixed $status_badge
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereApplicableCategories($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereApplicableProducts($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereCode($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereDiscountType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereDiscountValue($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereEndDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereMaxDiscount($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereMinOrderValue($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereStartDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereUsageLimit($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereUsedCount($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon whereUserUsageLimit($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Coupon withoutTrashed()
- * @mixin \Eloquent
- */
 class Coupon extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'code',
-        'discount_type',
-        'discount_value',
-        'min_order_value',
-        'max_discount',
-        'start_date',
-        'end_date',
-        'usage_limit',
-        'user_usage_limit',
-        'used_count',
-        'applicable_categories',
-        'applicable_products',
-        'status',
+        'code', 'discount_type', 'discount_value', 'min_order_value', 'max_discount',
+        'start_date', 'end_date', 'usage_limit', 'user_usage_limit',
+        'used_count', 'applicable_categories', 'applicable_products', 'status',
     ];
 
     protected $casts = [
@@ -77,15 +23,41 @@ class Coupon extends Model
         'applicable_products' => 'array',
     ];
 
-    public function getStatusBadgeAttribute()
+    /**
+     * [CẬP NHẬT] - Bỏ phần thập phân cho tất cả định dạng tiền tệ.
+     */
+    public function getFormattedValueAttribute(): string
     {
-        $today = now();
-        if ($this->end_date < $today) {
-            return '<span class="badge bg-danger">Hết hạn</span>';
-        } elseif ($this->end_date->diffInDays($today) <= 7) {
-            return '<span class="badge bg-warning">Sắp hết hạn</span>';
-        } else {
-            return '<span class="badge bg-success">Active</span>';
+        switch ($this->discount_type) {
+            case 'percent':
+                return (int)$this->discount_value . '%';
+            case 'fixed':
+                return number_format($this->discount_value, 0, ',', '.') . ' ₫';
+            case 'free_shipping':
+                return 'Miễn phí vận chuyển';
+            case 'fixed_shipping':
+                return 'Giảm ' . number_format($this->discount_value, 0, ',', '.') . ' ₫ ship';
+            default:
+                return (string)(int)$this->discount_value;
         }
+    }
+
+    /**
+     * [MỚI] - Thêm accessor để định dạng cho đơn hàng tối thiểu.
+     */
+    public function getFormattedMinOrderValueAttribute(): string
+    {
+        return $this->min_order_value ? number_format($this->min_order_value, 0, ',', '.') . ' ₫' : 'Không có';
+    }
+
+    public function getFriendlyDiscountTypeAttribute(): string
+    {
+        return match ($this->discount_type) {
+            'percent' => 'Phần trăm',
+            'fixed' => 'Cố định (₫)',
+            'free_shipping' => 'Miễn phí vận chuyển',
+            'fixed_shipping' => 'Giảm giá vận chuyển',
+            default => 'Không xác định',
+        };
     }
 }
