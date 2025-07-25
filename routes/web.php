@@ -35,7 +35,7 @@ use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\Client\WishlistController;
 use App\Http\Controllers\Client\ReturnRequestController;
 use App\Http\Controllers\Client\ContactController;
-
+use App\Http\Controllers\Client\VNPayController; // VNPay payment controller
 // Route cho Admin
 Route::middleware(['auth', 'restrict.admin'])->group(function () {
     // Dashboard admin - nhóm route để thống kê
@@ -48,7 +48,7 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
     Route::get('/admin/statistics/pending-reviews', [StatisticsController::class, 'getPendingReviews']);
     Route::get('/admin/statistics/latest-return-requests', [StatisticsController::class, 'getLatestReturnRequests']);
     Route::get('/admin/statistics/latest-notifications', [StatisticsController::class, 'getLatestNotifications']);
-
+    Route::get('/admin/orders/cancel-requests/today', [StatisticsController::class, 'getPendingCancelRequests'])->name('admin.cancel-requests.today');
 
     // Nhóm route admin với prefix và name
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -65,7 +65,11 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
             ->name('return-requests.update');
         // Hủy đơn hàng
         Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
-
+        Route::post('/orders/{order}/cancel/reject', [OrderController::class, 'rejectCancel'])->name('orders.cancel.reject');
+        Route::post('/admin/orders/{order}/refunded', [OrderController::class, 'markRefunded'])->name('orders.refunded');
+        // Xác nhận hoặc từ chối yêu cầu huỷ đơn
+        Route::post('orders/cancel-request/{order}', [OrderController::class, 'handleCancelRequest'])
+            ->name('admin.orders.handleCancelRequest');
 
         // Danh mục (Categories)
         Route::get('/categories/trashed', [CategoryController::class, 'trashed'])->name('categories.trashed');
@@ -78,6 +82,28 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
         Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggleStatus');
         Route::get('/brands/trashed', [BrandController::class, 'trashed'])->name('brands.trashed');
         Route::post('/brands/{id}/restore', [BrandController::class, 'restore'])->name('brands.restore');
+        // News Routes
+        Route::get('/news', [NewsController::class, 'index'])->name('news.index');
+        Route::get('/news/create', [NewsController::class, 'create'])->name('news.create');
+        Route::post('/news', [NewsController::class, 'store'])->name('news.store');
+        Route::get('/news/{news}/edit', [NewsController::class, 'edit'])->name('news.edit');
+        Route::put('/news/{news}', [NewsController::class, 'update'])->name('news.update');
+        Route::delete('/news/{news}', [NewsController::class, 'destroy'])->name('news.destroy');
+        Route::patch('/news/{news}/toggle-status', [NewsController::class, 'toggleStatus'])->name('news.toggleStatus');
+        Route::get('/news/trashed', [NewsController::class, 'trashed'])->name('news.trashed');
+        Route::post('/news/{id}/restore', [NewsController::class, 'restore'])->name('news.restore');
+
+        // Slide Routes
+        Route::get('/slides', [SlideController::class, 'index'])->name('slides.index');
+        Route::get('/slides/create', [SlideController::class, 'create'])->name('slides.create');
+        Route::post('/slides', [SlideController::class, 'store'])->name('slides.store');
+        Route::get('/slides/{slide}/edit', [SlideController::class, 'edit'])->name('slides.edit');
+        Route::put('/slides/{slide}', [SlideController::class, 'update'])->name('slides.update');
+        Route::delete('/slides/{slide}', [SlideController::class, 'destroy'])->name('slides.destroy');
+        Route::patch('/slides/{slide}/toggle-status', [SlideController::class, 'toggleStatus'])->name('slides.toggleStatus');
+        Route::get('/slides/trashed', [SlideController::class, 'trashed'])->name('slides.trashed');
+        Route::post('/slides/{id}/restore', [SlideController::class, 'restore'])->name('slides.restore');
+
         // News Routes
         Route::get('/news', [NewsController::class, 'index'])->name('news.index');
         Route::get('/news/create', [NewsController::class, 'create'])->name('news.create');
@@ -160,13 +186,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
     Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.applyCoupon');
+    Route::post('/checkout/retry/{order}', [CheckoutController::class, 'retryPayment'])->name('checkout.retry');
 });
 
 // Thanh toán Momo
 Route::get('/pay', [ClientOrderController::class, 'pay'])->name('pay');
 Route::post('/momo_payment', [ClientOrderController::class, 'momo_payment'])->name('momo_payment');
 Route::post('/momo_callback', [ClientOrderController::class, 'momoCallback'])->name('momo_callback');
+// Thanh toán VNPay
+Route::get('/vnpay/return', [VNPayController::class, 'paymentReturn'])->name('vnpay.return');
+Route::post('/vnpay/ipn', [VNPayController::class, 'ipn'])->name('vnpay.ipn');
+Route::get('/vnpay/test', [VNPayController::class, 'testPayment'])->name('vnpay.test');
 
+Route::get('/order/success/{order}', [ClientOrderController::class, 'success'])->name('order.success');
+Route::get('/order/failed', [ClientOrderController::class, 'failed'])->name('order.failed');
 // Các trang tĩnh
 Route::get('/about', function () {
     return view('client.pages.about');
@@ -200,12 +233,18 @@ Route::get('/fashion-newsletters', [\App\Http\Controllers\Client\ClientNewsContr
 // Route cho chi tiết bài viết
 Route::get('/news/{id}', [\App\Http\Controllers\Client\ClientNewsController::class, 'show'])->name('news.show');
 
+// Route cho Fashion Newsletters
+Route::get('/fashion-newsletters', [\App\Http\Controllers\Client\ClientNewsController::class, 'fashionNewsletters'])->name('fashion-newsletters');
+
+// Route cho chi tiết bài viết
+Route::get('/news/{id}', [\App\Http\Controllers\Client\ClientNewsController::class, 'show'])->name('news.show');
+
 // Thông báo khách hàng
 Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
 Route::post('/client/notifications/mark-all-read', [ClientNotificationController::class, 'markAllRead'])->name('client.notifications.markAllRead');
 
 // Hủy đơn hàng và yêu cầu trả hàng
-Route::post('/order/cancel/{order}/request', [ClientOrderController::class, 'createOrderCancelNotificationToAdmin'])->name('order.cancel.request');
+Route::post('/order/{orderId}/cancel-request', [ClientOrderController::class, 'createOrderCancelNotificationToAdmin'])->name('order.cancel.request');
 Route::post('/order/{id}/received', [ClientOrderController::class, 'received'])->name('order.received');
 Route::post('/orders/{id}/return-request', [ReturnRequestController::class, 'requestReturn'])->name('orders.requestReturn');
 

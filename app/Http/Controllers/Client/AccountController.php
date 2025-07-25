@@ -23,31 +23,39 @@ class AccountController extends Controller
         $orders = Order::with('orderDetails.productVariant.product', 'coupon', 'returnRequest')
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(6);
 
         // Duyệt qua từng đơn hàng để tính discount (nếu có coupon)
         foreach ($orders as $order) {
             $discount = 0;
 
+            // Tính subtotal (chưa bao gồm phí ship)
+            $subtotal = $order->orderDetails->sum('subtotal');
+
             if ($order->coupon) {
                 if ($order->coupon->discount_type === 'fixed') {
                     $discount = $order->coupon->discount_value;
                 } elseif ($order->coupon->discount_type === 'percent') {
-                    $discount = round($order->total_price * $order->coupon->discount_value / 100);
+                    $discount = round($subtotal * $order->coupon->discount_value / 100);
                 }
             }
 
             // Gán giảm giá tạm thời vào order (không cần lưu DB)
             $order->calculated_discount = $discount;
 
-            // Nếu bạn muốn hiển thị tổng tiền sau giảm giá:
-            $order->final_price = max(0, $order->total_price - $discount);
+            // Gán subtotal để hiển thị
+            $order->total = $subtotal;
 
-            $order->total = $order->orderDetails->sum('subtotal');
+            // Tính tổng tiền cuối cùng sau khi giảm giá
+            $order->final_price = $order->total_price;
+            // Nếu total đã bao gồm ship
         }
 
-        return view('client.pages.account', compact('user', 'orders'));
+        $totalOrderCount = Order::where('user_id', auth()->id())->count();
+
+        return view('client.pages.account', compact('user', 'orders', 'totalOrderCount'));
     }
+
 
 
     public function update(UpdateAccountClientRequest $request)

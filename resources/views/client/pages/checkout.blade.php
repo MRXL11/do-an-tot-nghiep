@@ -1,7 +1,7 @@
 @extends('client.pages.page-layout')
 
 @section('content')
-    <form method="POST" action="{{ route('checkout.submit') }}">
+    <form method="POST" action="{{ route('checkout.submit') }}" id="checkout-form">
         @csrf
         <input type="hidden" name="cart_item_ids" value="{{ implode(',', $cartItems->pluck('id')->toArray()) }}">
         <input type="hidden" name="shipping_address_id" id="shipping-address-id">
@@ -71,17 +71,17 @@
                                             <label class="form-check-label" for="cod"><i
                                                     class="bi bi-cash-stack me-1"></i>COD</label>
                                         </div>
-                                        <div class="form-check">
+                                        {{-- <div class="form-check">
                                             <input class="form-check-input" type="radio" name="paymentMethod"
                                                 value="momo" id="momo">
                                             <label class="form-check-label" for="momo"><i
                                                     class="bi bi-phone me-1"></i>Momo</label>
-                                        </div>
+                                        </div> --}}
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="paymentMethod"
                                                 value="card" id="card">
-                                            <label class="form-check-label" for="card"><i
-                                                    class="bi bi-credit-card me-1"></i>Thẻ</label>
+                                            <label class="form-check-label" for="card">
+                                                <i class="bi bi-credit-card-2-front me-1"></i>VNpay</label>
                                         </div>
                                     </div>
                                 </div>
@@ -92,28 +92,13 @@
                                         <i class="bi bi-truck me-2"></i> Thanh toán khi nhận hàng (COD)
                                     </div>
                                 </div>
-                                <div id="card-details" class="payment-method-details" style="display: none;">
+                                <div id="card-details" class="payment-method-details" style="DISPLAY: none;">
                                     <div class="alert alert-info py-2 mb-3">
-                                        <i class="bi bi-credit-card-2-front me-2"></i> Thanh toán bằng thẻ tín dụng/ghi nợ
+                                        <i class="bi bi-credit-card-2-front me-2"></i> Thanh toán bằng VNpay
                                     </div>
-                                    <div class="mb-2">
-                                        <label class="form-label">Tên chủ thẻ</label>
-                                        <input type="text" class="form-control" placeholder="Nguyễn Văn A">
-                                    </div>
-                                    <div class="mb-2">
-                                        <label class="form-label">Số thẻ</label>
-                                        <input type="text" class="form-control" placeholder="1234 5678 9012 3456">
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Ngày hết hạn</label>
-                                            <input type="text" class="form-control" placeholder="MM/YY">
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Mã CVV</label>
-                                            <input type="password" class="form-control" placeholder="***">
-                                        </div>
-                                    </div>
+                                    <p>Quý khách sẽ được chuyển hướng đến trang thanh toán của VNPay để hoàn tất giao dịch.
+                                    </p>
+                                    <p>Vui lòng chuẩn bị thẻ ngân hàng hoặc ví điện tử để thanh toán.</p>
                                 </div>
 
                                 <!-- Mã giảm giá -->
@@ -129,8 +114,7 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                    <small id="coupon-feedback" class="form-text mt-1"
-                                        style="display: none;"></small>
+                                    <small id="coupon-feedback" class="form-text mt-1" style="display: none;"></small>
                                 </div>
 
                                 <!-- Chọn địa chỉ có sẵn -->
@@ -274,33 +258,7 @@
             const applyCouponBtn = document.getElementById('apply-coupon');
             const couponInput = document.getElementById('coupon-code');
             const cartItemIds = "{{ implode(',', $cartItems->pluck('id')->toArray()) }}";
-
-            function updatePaymentButton() {
-                const selected = document.querySelector('input[name="paymentMethod"]:checked').value;
-                const total = totalElement.textContent.trim();
-                if (selected === 'cod') {
-                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Đặt hàng`;
-                    submitBtn.classList.remove('btn-primary', 'btn-warning');
-                    submitBtn.classList.add('btn-success');
-                } else if (selected === 'card') {
-                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán bằng thẻ (${total})`;
-                    submitBtn.classList.remove('btn-success', 'btn-warning');
-                    submitBtn.classList.add('btn-primary');
-                } else {
-                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${total})`;
-                    submitBtn.classList.remove('btn-primary', 'btn-success');
-                    submitBtn.classList.add('btn-warning');
-                }
-                Object.keys(details).forEach(key => {
-                    if (details[key]) {
-                        details[key].style.display = (key === selected) ? "block" : "none";
-                    }
-                });
-            }
-
-            radios.forEach(radio => radio.addEventListener("change", updatePaymentButton));
-            updatePaymentButton();
-
+            const form = document.getElementById('checkout-form');
             const select = document.getElementById('address-select');
             const detailBox = document.getElementById('address-details');
             const manualAddressInput = document.getElementById('manual-address-input');
@@ -314,7 +272,90 @@
             const wardInput = document.querySelector('input[name="ward"]');
             const districtInput = document.querySelector('input[name="district"]');
             const cityInput = document.querySelector('input[name="city"]');
+            let lastModified = localStorage.getItem('cartLastModified') || Date.now().toString();
 
+            // Kiểm tra trạng thái thanh toán và giỏ hàng
+            function checkPaymentAndCartStatus() {
+                if (localStorage.getItem('paymentInProgress') === '1') {
+                    Swal.fire({
+                        title: 'Đang xử lý thanh toán',
+                        text: 'Một tab khác đang thực hiện thanh toán. Vui lòng làm mới trang để tiếp tục.',
+                        icon: 'warning',
+                        confirmButtonText: 'Làm mới ngay',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.reload();
+                        }
+                    });
+                    return false;
+                }
+                return true;
+            }
+
+            // Lắng nghe sự kiện storage để phát hiện thay đổi
+            window.addEventListener('storage', function(event) {
+
+                if (event.key === 'paymentInProgress' && event.newValue === '1') {
+                    Swal.fire({
+                        title: 'Đang xử lý thanh toán',
+                        text: 'Một tab khác đang thực hiện thanh toán. Vui lòng làm mới trang để tiếp tục.',
+                        icon: 'warning',
+                        confirmButtonText: 'Làm mới ngay',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.reload();
+                        }
+                    });
+                }
+
+                if (event.key === 'cartLastModified' && event.newValue !== lastModified) {
+                    Swal.fire({
+                        title: 'Giỏ hàng đã thay đổi',
+                        text: 'Giỏ hàng của bạn đã được cập nhật ở tab khác. Vui lòng làm mới trang để tiếp tục.',
+                        icon: 'warning',
+                        confirmButtonText: 'Làm mới ngay',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.reload();
+                        }
+                    });
+                }
+            });
+
+            // Cập nhật nút thanh toán dựa trên phương thức
+            function updatePaymentButton() {
+                const selected = document.querySelector('input[name="paymentMethod"]:checked').value;
+                const total = totalElement.textContent.trim();
+                if (selected === 'cod') {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Đặt hàng`;
+                    submitBtn.classList.remove('btn-primary', 'btn-warning');
+                    submitBtn.classList.add('btn-success');
+                } else if (selected === 'card') {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${total})`;
+                    submitBtn.classList.remove('btn-success', 'btn-warning');
+                    submitBtn.classList.add('btn-primary');
+                } else {
+                    submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán momo (${total})`;
+                    submitBtn.classList.remove('btn-primary', 'btn-success');
+                    submitBtn.classList.add('btn-warning');
+                }
+                Object.keys(details).forEach(key => {
+                    if (details[key]) {
+                        details[key].style.display = (key === selected) ? "block" : "none";
+                    }
+                });
+            }
+
+            radios.forEach(radio => radio.addEventListener("change", updatePaymentButton));
+            updatePaymentButton();
+
+            // Xử lý chọn địa chỉ
             select.addEventListener('change', function() {
                 const selected = select.options[select.selectedIndex];
                 if (selected.value) {
@@ -343,6 +384,7 @@
                 }
             });
 
+            // Xử lý áp dụng mã giảm giá
             applyCouponBtn.addEventListener('click', function() {
                 const couponCode = couponInput.value.trim();
                 if (!couponCode) {
@@ -353,42 +395,140 @@
                 }
 
                 fetch('{{ route('checkout.applyCoupon') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        coupon_code: couponCode,
-                        cart_item_ids: cartItemIds
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            coupon_code: couponCode,
+                            cart_item_ids: cartItemIds
+                        })
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    couponFeedback.style.display = 'block';
-                    if (data.success) {
-                        couponFeedback.textContent = data.message;
-                        couponFeedback.className = 'form-text text-success mt-1';
-                        discountElement.textContent = `-${data.formatted_discount}`;
-                        totalElement.textContent = data.formatted_total;
-                        submitBtn.innerHTML = `<i class="bi bi-cart-check me-2"></i>Thanh toán (${data.formatted_total})`;
-                    } else {
-                        couponFeedback.textContent = data.message;
+                    .then(response => response.json())
+                    .then(data => {
+                        couponFeedback.style.display = 'block';
+                        if (data.success) {
+                            couponFeedback.textContent = data.message;
+                            couponFeedback.className = 'form-text text-success mt-1';
+                            discountElement.textContent = `-${data.formatted_discount}`;
+                            totalElement.textContent = data.formatted_total;
+                            updatePaymentButton();
+                        } else {
+                            couponFeedback.textContent = data.message;
+                            couponFeedback.className = 'form-text text-danger mt-1';
+                        }
+                    })
+                    .catch(error => {
+                        couponFeedback.textContent = 'Có lỗi xảy ra khi áp dụng mã giảm giá.';
                         couponFeedback.className = 'form-text text-danger mt-1';
-                    }
-                })
-                .catch(error => {
-                    couponFeedback.textContent = 'Có lỗi xảy ra khi áp dụng mã giảm giá.';
-                    couponFeedback.className = 'form-text text-danger mt-1';
-                    couponFeedback.style.display = 'block';
-                });
+                        couponFeedback.style.display = 'block';
+                    });
             });
 
-            document.querySelector('form').addEventListener('submit', function(e) {
-                if (!document.getElementById('agree').checked) {
-                    e.preventDefault();
-                    alert('Bạn cần đồng ý với chính sách mua hàng để tiếp tục.');
+            // Xử lý gửi form thanh toán
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+                const paymentMethod = formData.get('paymentMethod');
+                const shippingAddressId = formData.get('shipping_address_id');
+                const name = formData.get('name');
+                const phoneNumber = formData.get('phone_number');
+                const address = formData.get('address');
+
+                // Kiểm tra dữ liệu trước khi gửi
+                if (!paymentMethod) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Lỗi',
+                        text: 'Vui lòng chọn phương thức thanh toán.',
+                        timer: 1500
+                    });
+                    return;
                 }
+                if (!shippingAddressId && (!name || !phoneNumber || !address)) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Lỗi',
+                        text: 'Vui lòng nhập đầy đủ thông tin giao hàng hoặc chọn địa chỉ có sẵn.',
+                        timer: 1500
+                    });
+                    return;
+                }
+                if (!document.getElementById('agree').checked) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Lỗi',
+                        text: 'Bạn cần đồng ý với chính sách mua hàng để tiếp tục.',
+                        timer: 1500
+                    });
+                    return;
+                }
+
+                // Kiểm tra trạng thái thanh toán
+                if (!checkPaymentAndCartStatus()) {
+                    return;
+                }
+
+                // Đánh dấu bắt đầu thanh toán
+                localStorage.setItem('paymentInProgress', '1');
+
+                // Gửi yêu cầu
+                fetch('{{ route('checkout.submit') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: formData
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error('Sản phẩm này đã được đặt rồi. Vui lòng quay lại trang giỏ hàng! ' + response.statusText);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Response data:', data);
+                        if (data.success) {
+                            // Cập nhật cartLastModified và lastModified cục bộ
+                            lastModified = Date.now().toString();
+                            localStorage.setItem('cartLastModified', lastModified);
+                            if (paymentMethod === 'card' && data.vnpay_url) {
+                                window.location.href = data.vnpay_url;
+                            } else if (data.redirect) {
+                                window.location.href = data.redirect;
+                            } else {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công',
+                                    text: data.message || 'Đặt hàng thành công!',
+                                    timer: 1500
+                                });
+                            }
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi',
+                                text: data.message || 'Có lỗi xảy ra.',
+                                timer: 1500
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: 'Đã có lỗi xảy ra khi xử lý đơn hàng: ' + error.message,
+                            timer: 1500
+                        });
+                    })
+                    .finally(() => {
+                        // Xóa paymentInProgress sau khi hoàn tất
+                        localStorage.removeItem('paymentInProgress');
+                    });
             });
         });
     </script>

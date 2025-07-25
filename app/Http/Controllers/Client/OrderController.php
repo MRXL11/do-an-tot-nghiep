@@ -37,34 +37,53 @@ class OrderController extends Controller
         return $result;
     }
 
-    public function createOrderCancelNotificationToAdmin($id, string $title = 'Cập nhật đơn hàng')
+    public function createOrderCancelNotificationToAdmin(Request $request, $id, string $title = 'Cập nhật đơn hàng')
     {
         $order = Order::find($id);
         if (!$order) {
             return redirect()->back()->with('cancel-request-error', 'Đơn hàng không tồn tại.');
         }
 
+        // Chỉ cho phép huỷ nếu đơn chưa xử lý xong
         if (!in_array($order->status, ['pending', 'processing'])) {
             return redirect()->back()->with('cancel-request-error', 'Đơn hàng này không thể huỷ nữa.');
         }
 
-        $existingNotification = Notification::where('order_id', $order->id)
-            ->where('user_id', $order->user_id)
-            ->where('type', 'order')
-            ->where('is_read', false)
-            ->first();
-
-        if ($existingNotification) {
+        // Kiểm tra đã gửi yêu cầu chưa
+        if ($order->cancellation_requested) {
             return redirect()->back()->with('cancel-request-error', 'Bạn đã gửi yêu cầu huỷ đơn hàng này trước đó. Vui lòng chờ admin xử lý.');
         }
 
+        // Lấy lý do từ form
+        $reason = $request->cancel_reason;
+        if (empty($reason)) {
+            return redirect()->back()->with('cancel-request-error', 'Vui lòng nhập lý do huỷ đơn hàng.');
+        }
+
         try {
+            // Cập nhật đơn hàng: đánh dấu đã gửi yêu cầu + lưu lý do
+            $order->cancel_reason = $reason;
+            $order->cancellation_requested = true;
+            $order->cancel_confirmed = false; // chưa được duyệt
+            if (
+                !empty($order->vnp_txn_ref) &&
+                $order->payment_method === 'online' &&
+                $order->payment_status === 'pending' &&
+                $order->status === 'pending'
+            ) {
+                // Người dùng hủy khi chưa thanh toán => coi như không mua nữa
+                $order->payment_status = 'failed';
+            }
+
+            $order->save();
+
+            // Gửi thông báo đến admin
             $admins = User::where('role_id', 1)->get();
             if ($admins->isEmpty()) {
                 return redirect()->back()->with('cancel-request-error', 'Không có admin nào để gửi thông báo.');
             }
 
-            $message = "Người dùng #{$order->user_id} - {$order->user->name} yêu cầu huỷ đơn hàng #{$order->order_code}. Vui lòng kiểm tra và xử lý.";
+            $message = "Người dùng {$order->user->name} yêu cầu huỷ đơn hàng #{$order->order_code} với lý do: {$order->cancel_reason}. Vui lòng kiểm tra và xử lý.";
 
             foreach ($admins as $admin) {
                 Notification::create([
@@ -77,16 +96,17 @@ class OrderController extends Controller
                     'created_at' => now(),
                 ]);
             }
-        } catch (\Exception $e) {
-            Log::error('Lỗi tạo thông báo đơn hàng: ' . $e->getMessage());
-        }
 
-        return redirect()->back()->with('cancel-request-success', 'Đã gửi yêu cầu huỷ đơn hàng thành công. Chờ admin xử lý.');
+            return redirect()->back()->with('cancel-request-success', 'Đã gửi yêu cầu huỷ đơn hàng thành công. Vui lòng chờ admin xử lý.');
+        } catch (\Exception $e) {
+            Log::error('Lỗi tạo yêu cầu huỷ đơn hàng: ' . $e->getMessage());
+            return redirect()->back()->with('cancel-request-error', 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại.');
+        }
     }
 
     public function pay(Request $request)
     {
-        $orderId = session('pending_order_id');
+        $orderId = session('pending_order_id') ?? $request->input('order_id');
         if (!$orderId) {
             Log::warning('No pending_order_id found in session');
             return redirect()->route('cart.index')->with('error', 'Không tìm thấy đơn hàng để thanh toán.');
@@ -131,7 +151,7 @@ class OrderController extends Controller
 
     public function momo_payment(Request $request)
     {
-        $orderId = session('pending_order_id');
+        $orderId = session('pending_order_id') ?? $request->input('order_id');
         if (!$orderId) {
             \Log::warning('No pending_order_id found in session');
             return redirect()->route('cart.index')->with('error', 'Không tìm thấy đơn hàng để thanh toán.');
@@ -298,7 +318,7 @@ class OrderController extends Controller
         $order = Order::find($id);
 
         if (!$order || $order->user_id !== $user->id) {
-            return redirect()->back()->with('received-error', 'Bạn không có quyền xác nhận đơn hàng này.'); 
+            return redirect()->back()->with('received-error', 'Bạn không có quyền xác nhận đơn hàng này.');
         }
 
         if ($order->status === 'completed') {
@@ -314,5 +334,21 @@ class OrderController extends Controller
             'received-success',
             "Cảm ơn quý khách! Đơn hàng #{$order->order_code} đã được xác nhận là đã nhận vào lúc " . now()->format('H:i d/m/Y')
         );
+    }
+    /**
+     * Trang thành công
+     */
+    public function success(Order $order)
+    {
+        return view('client.pages.order-success', ['order' => $order]);
+    }
+
+    /**
+     * Trang thất bại
+     */
+    public function failed()
+    {
+        $error = session('payment_error', 'Thanh toán không thành công. Vui lòng thử lại.');
+        return view('client.pages.order-failed', ['error' => $error]);
     }
 }

@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
 class ReturnRequest extends Model
 {
     //
-    protected $fillable = ['order_id', 'user_id', 'status'];
+    protected $fillable = ['order_id', 'user_id', 'status', 'reason', 'admin_note'];
 
     public function order()
     {
@@ -63,11 +63,11 @@ class ReturnRequest extends Model
             ],
             'refunded'  => [
                 'label' => ($this->order->payment_status === 'pending' && $this->order->payment_method === 'cod')
-                    ? 'Đã hoàn trả hàng'
+                    ? 'Đã hoàn tất'
                     : 'Đã hoàn tiền',
                 'color' => 'success',
                 'title' => ($this->order->payment_status === 'pending' && $this->order->payment_method === 'cod')
-                    ? 'Đã hoàn trả hàng'
+                    ? 'Đã hoàn tất'
                     : 'Đã hoàn tiền',
                 'icon'  => ($this->order->payment_status === 'pending' && $this->order->payment_method === 'cod')
                     ? 'bi-box-arrow-in-left' // Icon nhận lại hàng
