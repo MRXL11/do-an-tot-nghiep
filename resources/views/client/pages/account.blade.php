@@ -212,8 +212,12 @@
                                                         <div>
                                                             <div class="mb-3 d-flex flex-column">
                                                                 <h6 class="fw-bold text-dark mb-1">
-                                                                    #{{ $order->order_code }} -
-                                                                    {{ $order->getPaymentMethod($order->payment_method)['label'] }} - 
+                                                                    #{{ $order->order_code }}
+
+                                                                </h6>
+                                                                <h6 class="mb-1">
+                                                                    {{ $order->getPaymentMethod($order->payment_method)['label'] }}
+                                                                    -
                                                                     <span class="fw-semibold"
                                                                         style="color: {{ $order->getPaymentStatus($order->payment_status)['color'] }}">
                                                                         {{ $order->getPaymentStatus($order->payment_status)['label'] }}
@@ -284,6 +288,12 @@
                                                                                 cầu huỷ:</span>
                                                                             <em>{{ $adminReason }}</em>
 
+                                                                            {{-- trường hợp: khách huỷ thanh toán đơn --}}
+                                                                        @elseif(!empty($order->vnp_txn_ref) && $order->payment_status === 'failed')
+                                                                            <i
+                                                                                class="bi bi-person-fill text-primary me-1"></i>
+                                                                            <span class="text-dark">Bạn đã huỷ thanh toán
+                                                                                nên đơn hàng bị huỷ</span>
                                                                             {{-- ❓ Không rõ lý do --}}
                                                                         @else
                                                                             <span class="text-muted fst-italic">Không có lý
@@ -390,8 +400,20 @@
                                                 </div>
                                             </button>
 
-                                            {{-- thanh toán lại nếu chwua thanh toán --}}
-                                            @if (in_array($order->payment_method, ['online', 'bank_transfer']) && $order->payment_status === 'pending')
+                                            @php
+                                                $momoRetry =
+                                                    in_array($order->payment_method, ['online', 'bank_transfer']) &&
+                                                    $order->payment_status === 'pending' &&
+                                                    empty($order->vnp_txn_ref); // dùng empty() thay vì phủ định
+
+                                                $vpnRetry =
+                                                    in_array($order->payment_method, ['online', 'bank_transfer']) &&
+                                                    $order->payment_status === 'pending' &&
+                                                    !empty($order->vnp_txn_ref) &&
+                                                    !($isRequested || $isCancelled || $adminReason);
+                                            @endphp
+
+                                            @if ($momoRetry)
                                                 <form id="auto-momo-form" action="{{ route('momo_payment') }}"
                                                     method="POST" style="display: none;">
                                                     @csrf
@@ -404,10 +426,73 @@
                                                     class="btn btn-outline-primary">
                                                     Thanh toán lại
                                                 </a>
+                                            @elseif ($vpnRetry)
+                                                <form id="retry-payment-form"
+                                                    action="{{ route('checkout.retry', $order->id) }}" method="POST"
+                                                    style="display: none;">
+                                                    @csrf
+                                                </form>
+                                                <a href="javascript:void(0)"
+                                                    onclick="document.getElementById('retry-payment-form').submit();"
+                                                    class="btn btn-outline-primary">
+                                                    🔁 Thanh toán lại
+                                                </a>
                                             @else
+                                            @endif
+
+                                            <!-- Action Buttons -->
+                                            @if (in_array($order->status, ['pending', 'processing']))
+                                                @if (!$isRequested && !$isCancelled)
+                                                    <div class="d-flex justify-content-end mt-1">
+                                                        <button type="button"
+                                                            class="btn btn-outline-danger open-client-cancel-modal"
+                                                            data-order-id="{{ $order->id }}">
+                                                            <i class="bi bi-x-circle me-2"></i>Huỷ đơn hàng
+                                                        </button>
+                                                    </div>
+                                                @endif
+                                            @elseif($order->status === 'delivered')
+                                                <div class="d-flex justify-content-end gap-3 mt-1 flex-wrap">
+                                                    @php
+                                                        $return = $order->returnRequest;
+                                                    @endphp
+
+                                                    {{-- Nếu chưa gửi yêu cầu trả hàng --}}
+                                                    @if (!$return)
+                                                        <form action="{{ route('order.received', $order->id) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-success"
+                                                                onclick="return confirm('Chỉ chọn nút này khi bạn đã nhận được hàng! Xác nhận?')">
+                                                                <i class="bi bi-check-circle me-2"></i>Đã nhận hàng
+                                                            </button>
+                                                        </form>
+
+                                                        <button type="button" class="btn btn-outline-primary"
+                                                            onclick="showReturnRequestPrompt({{ $order->id }})">
+                                                            <i class="bi bi-arrow-return-left me-2"></i>Trả hàng/Hoàn tiền
+                                                        </button>
+
+                                                        {{-- Nếu đã gửi yêu cầu trả hàng --}}
+                                                    @else
+                                                        {{-- Trạng thái: Bị từ chối → cho khách xác nhận lại là đã nhận hàng --}}
+                                                        @if ($return->status === 'rejected' && !$order->is_received)
+                                                            <form action="{{ route('order.received', $order->id) }}"
+                                                                method="POST">
+                                                                @csrf
+                                                                <button type="submit" class="btn btn-success"
+                                                                    onclick="return confirm('Yêu cầu hoàn hàng của bạn đã bị từ chối. Bạn xác nhận đã nhận hàng?')">
+                                                                    <i class="bi bi-check-circle me-2"></i>Xác nhận đã nhận
+                                                                    hàng
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    @endif
+                                                </div>
                                             @endif
                                         </div>
                                     </h2>
+
                                     <div id="collapse{{ $order->id }}" class="accordion-collapse collapse"
                                         data-bs-parent="#orderAccordion">
                                         <div class="accordion-body p-4 bg-white">
@@ -593,65 +678,6 @@
                                             @endif
 
 
-                                            <!-- Action Buttons -->
-                                            @if (in_array($order->status, ['pending', 'processing']))
-                                                @if (!$isRequested && !$isCancelled)
-                                                    <div class="d-flex justify-content-end mt-4">
-                                                        <button type="button"
-                                                            class="btn btn-outline-danger btn-lg rounded-pill px-4 open-client-cancel-modal"
-                                                            data-order-id="{{ $order->id }}">
-                                                            <i class="bi bi-x-circle me-2"></i>Huỷ đơn hàng
-                                                        </button>
-                                                    </div>
-                                                @endif
-                                            @elseif($order->status === 'delivered')
-                                                <div class="d-flex justify-content-end gap-3 mt-4 flex-wrap">
-                                                    @php
-                                                        $return = $order->returnRequest;
-                                                    @endphp
-
-                                                    {{-- Nếu chưa gửi yêu cầu trả hàng --}}
-                                                    @if (!$return)
-                                                        <form action="{{ route('order.received', $order->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            <button type="submit"
-                                                                class="btn btn-success btn-lg rounded-pill px-4"
-                                                                onclick="return confirm('Chỉ chọn nút này khi bạn đã nhận được hàng! Xác nhận?')">
-                                                                <i class="bi bi-check-circle me-2"></i>Đã nhận hàng
-                                                            </button>
-                                                        </form>
-
-                                                        <button type="button"
-                                                            class="btn btn-outline-primary btn-lg rounded-pill px-4"
-                                                            onclick="showReturnRequestPrompt({{ $order->id }})">
-                                                            <i class="bi bi-arrow-return-left me-2"></i>Trả hàng/Hoàn tiền
-                                                        </button>
-
-                                                        {{-- Nếu đã gửi yêu cầu trả hàng --}}
-                                                    @else
-                                                        <span
-                                                            class="badge bg-{{ $return->return_status['color'] }} px-4 py-3 rounded-pill fs-6">
-                                                            <i class="{{ $return->return_status['icon'] }} me-2"></i>
-                                                            {{ $return->return_status['label'] }}
-                                                        </span>
-
-                                                        {{-- Trạng thái: Bị từ chối → cho khách xác nhận lại là đã nhận hàng --}}
-                                                        @if ($return->status === 'rejected' && !$order->is_received)
-                                                            <form action="{{ route('order.received', $order->id) }}"
-                                                                method="POST">
-                                                                @csrf
-                                                                <button type="submit"
-                                                                    class="btn btn-success btn-lg rounded-pill px-4"
-                                                                    onclick="return confirm('Yêu cầu hoàn hàng của bạn đã bị từ chối. Bạn xác nhận đã nhận hàng?')">
-                                                                    <i class="bi bi-check-circle me-2"></i>Xác nhận đã nhận
-                                                                    hàng
-                                                                </button>
-                                                            </form>
-                                                        @endif
-                                                    @endif
-                                                </div>
-                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -985,5 +1011,10 @@
                 });
             });
         });
+    </script>
+
+    <script>
+        // Khi người dùng đã quay lại trang từ VNPay hoặc hoàn tất thanh toán
+        sessionStorage.removeItem('paymentInProgress');
     </script>
 @endsection

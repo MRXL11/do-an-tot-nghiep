@@ -216,7 +216,7 @@
                                                 </button>
 
                                                 {{-- Nút từ chối yêu cầu huỷ đơn --}}
-                                                @if ($order->cancellation_requested && !$order->cancel_confirmed)
+                                                @if ($order->cancellation_requested && !$order->cancel_confirmed && empty($order->vnp_txn_ref))
                                                     <button type="button" class="btn btn-warning btn-sm"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#rejectCancelRequestModal{{ $order->id }}">

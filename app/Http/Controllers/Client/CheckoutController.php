@@ -305,6 +305,37 @@ class CheckoutController extends Controller
             ], 422);
         }
 
+        // Kiểm tra sản phẩm bị khóa
+        foreach ($cartItems as $item) {
+            $isLocked = OrderDetail::where('product_variant_id', $item->product_variant_id)
+                ->whereHas('order', function ($query) {
+                    $query->where('user_id', Auth::id())
+                        ->whereIn('payment_method', ['online', 'momo'])
+                        ->where('payment_status', 'pending'); // dùng where vì chỉ cần đúng 'pending'
+                })->exists();
+
+            if ($isLocked) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Một số sản phẩm trong giỏ hàng đang bị khóa do đơn hàng chưa thanh toán.'
+                ], 403);
+            }
+
+            if ($item->productVariant->status !== 'active') {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Sản phẩm {$item->productVariant->product->name} đã ngừng bán."
+                ], 400);
+            }
+
+            if ($item->productVariant->stock_quantity < $item->quantity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Sản phẩm {$item->productVariant->product->name} không đủ hàng trong kho."
+                ], 400);
+            }
+        }
+
         DB::beginTransaction();
         try {
             // Xử lý địa chỉ giao hàng
@@ -443,15 +474,22 @@ class CheckoutController extends Controller
             }
 
             // Xử lý giỏ hàng
-            if ($request->paymentMethod !== 'card') {
+            if ($request->paymentMethod === 'cod') {
+                // Trừ số lượng sản phẩm trong kho và xóa giỏ hàng
+                foreach ($cartItems as $item) {
+                    $item->productVariant->decrement('stock_quantity', $item->quantity);
+                }
                 Cart::where('user_id', Auth::id())
                     ->whereIn('id', $cartItemIds)
                     ->delete();
             } else {
+                // Lưu thông tin vào session để xử lý sau khi thanh toán online
                 session(['pending_cart_item_ids' => $cartItemIds]);
                 session(['pending_order_id' => $order->id]);
+            }
 
-                // Tạo URL thanh toán VNPay
+            // Tạo URL thanh toán VNPay
+            if ($request->paymentMethod === 'card') {
                 $vnp_TmnCode = env('VNPAY_TMN_CODE', 'WOQ9FKH5');
                 $vnp_HashSecret = env('VNPAY_HASH_SECRET', '8LFGJRBPXUPDP2M2EP394Y12EO1OD4TM');
                 $vnp_Url = env('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html');
@@ -518,6 +556,7 @@ class CheckoutController extends Controller
                     'message' => 'Đơn hàng đã được tạo. Vui lòng thanh toán để hoàn tất.'
                 ]);
             } else {
+                session()->flash('order_success', 'Đơn hàng đã được tạo thành công!');
                 return response()->json([
                     'success' => true,
                     'redirect' => route('account.show'),
@@ -536,5 +575,70 @@ class CheckoutController extends Controller
                 'message' => 'Có lỗi xảy ra khi đặt hàng: ' . $e->getMessage()
             ], 422);
         }
+    }
+
+    public function retryPayment(Request $request, Order $order)
+    {
+        if (
+            in_array($order->payment_method, ['online', 'bank_transfer']) &&
+            in_array($order->payment_status, ['pending', 'failed']) &&
+            in_array($order->status, ['pending', 'cancelled'])
+        ) {
+            // Tạo mã giao dịch mới
+            $order->update([
+                'vnp_txn_ref' => 'RETRY' . time() . $order->id,
+            ]);
+
+            session(['pending_order_id' => $order->id]);
+
+            // Cấu hình VNPay
+            $vnp_TmnCode = env('VNPAY_TMN_CODE', 'WOQ9FKH5');
+            $vnp_HashSecret = env('VNPAY_HASH_SECRET', '8LFGJRBPXUPDP2M2EP394Y12EO1OD4TM');
+            $vnp_Url        = env('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html');
+            $vnp_Returnurl  = env('VNPAY_RETURN_URL', route('vnpay.return'));
+
+            $inputData = [
+                "vnp_Version"    => "2.1.0",
+                "vnp_TmnCode"    => $vnp_TmnCode,
+                "vnp_Amount"     => $order->total_price * 100,
+                "vnp_Command"    => "pay",
+                "vnp_CreateDate" => date('YmdHis'),
+                "vnp_CurrCode"   => "VND",
+                "vnp_IpAddr"     => $request->ip(),
+                "vnp_Locale"     => "vn",
+                "vnp_OrderInfo"  => "Thanh toán lại đơn hàng #" . $order->order_code,
+                "vnp_OrderType"  => "billpayment",
+                "vnp_ReturnUrl"  => $vnp_Returnurl,
+                "vnp_TxnRef"     => $order->vnp_txn_ref,
+                "vnp_BankCode"   => "NCB",
+            ];
+
+            // Bước 1: Sắp xếp dữ liệu theo key
+            ksort($inputData);
+
+            // Bước 2: Tạo chuỗi hash đúng định dạng
+            $hashData = "";
+            foreach ($inputData as $key => $value) {
+                if ($key !== 'vnp_SecureHash') {
+                    $hashData .= urlencode($key) . '=' . urlencode($value) . '&';
+                }
+            }
+            $hashData = rtrim($hashData, '&');
+
+            // Bước 3: Tạo secure hash
+            $vnp_SecureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+
+            // Bước 4: Gắn vào URL
+            $inputData['vnp_SecureHash'] = $vnp_SecureHash;
+            $vnpayUrl = $vnp_Url . '?' . http_build_query($inputData);
+
+            Log::info('VNPay hashData', ['hashData' => $hashData]);
+            Log::info('VNPay secureHash', ['vnp_SecureHash' => $vnp_SecureHash]);
+            Log::info('VNPay URL', ['url' => $vnpayUrl]);
+
+            return redirect($vnpayUrl);
+        }
+
+        return redirect()->back()->with('error', 'Không thể thanh toán lại đơn hàng này.');
     }
 }
