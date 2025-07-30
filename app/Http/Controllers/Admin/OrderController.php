@@ -158,6 +158,9 @@ class OrderController extends Controller
 
         $order->save();
 
+        // Hoàn trả số lượng sản phẩm về kho khi hủy đơn hàng
+        $this->restoreStockQuantity($order);
+
         // Tạo thông báo cho khách
         if ($order->cancellation_requested) {
             $message = "Đơn hàng #{$order->order_code} đã được huỷ theo yêu cầu của bạn. ";
@@ -249,6 +252,9 @@ if ($order->cancel_confirmed) {
             }
 
             $order->save();
+
+            // Hoàn trả số lượng sản phẩm về kho khi hủy đơn hàng
+            $this->restoreStockQuantity($order);
 
             // Gửi thông báo
             $this->createOrderNotificationToClient($order, "Đơn hàng #{$order->order_code} đã được huỷ theo yêu cầu của bạn.", 'Đơn hàng đã được huỷ');
@@ -383,6 +389,19 @@ if ($order->cancel_confirmed) {
             ]);
         } catch (\Exception $e) {
             Log::error('Lỗi tạo thông báo đơn hàng: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Hoàn trả số lượng sản phẩm về kho khi hủy đơn hàng
+     */
+    private function restoreStockQuantity(Order $order)
+    {
+        foreach ($order->orderDetails as $item) {
+            $productVariant = $item->productVariant;
+            if ($productVariant) {
+                $productVariant->increment('stock_quantity', $item->quantity);
+            }
         }
     }
 
