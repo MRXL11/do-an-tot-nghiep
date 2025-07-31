@@ -127,10 +127,9 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
         Route::post('/slides/{id}/restore', [SlideController::class, 'restore'])->name('slides.restore');
 
         // Voucher (Coupons)
-        Route::get('/coupons', [CouponController::class, 'index'])->name('admin.coupons.index');
-        Route::get('/coupons/trashed', [CouponController::class, 'trashed'])->name('admin.coupons.trashed');
-        Route::resource('coupons', CouponController::class);
-        Route::post('/coupons/{id}/restore', [CouponController::class, 'restore'])->name('admin.coupons.restore');
+        Route::get('coupons/trashed', [CouponController::class, 'trashed'])->name('coupons.trashed');
+        Route::post('coupons/{id}/restore', [CouponController::class, 'restore'])->name('coupons.restore');
+        Route::resource('coupons', CouponController::class)->except(['show']);
     });
 
     // Người dùng (Users)
@@ -183,9 +182,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/check-stock', [CartController::class, 'checkStock'])->name('cart.checkStock');
 
     // Route hiển thị và xử lý thanh toán
+   
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
-    Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.applyCoupon');
+    
+    // [XÓA BỎ] - Route cũ để áp dụng một mã
+    // Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.applyCoupon');
+
+    // [THÊM MỚI] - Các route cho việc lấy và áp dụng voucher bằng AJAX
+    Route::get('/checkout/get-coupons', [CheckoutController::class, 'getAvailableCoupons'])->name('checkout.getAvailableCoupons');
+    Route::post('/checkout/apply-coupons', [CheckoutController::class, 'applyCoupons'])->name('checkout.applyCoupons');
+
     Route::post('/checkout/retry/{order}', [CheckoutController::class, 'retryPayment'])->name('checkout.retry');
 });
 
