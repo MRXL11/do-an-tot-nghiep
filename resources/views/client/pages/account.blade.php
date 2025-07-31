@@ -157,9 +157,21 @@
                     @endif
 
                     @if (session('cancel-request-success'))
-                        <div class="alert alert-success mt-3">{{ session('cancel-request-success') }}</div>
+                        <div class="alert alert-success alert-dismissible fade show m-3 rounded-3 border-0 shadow-sm"
+                            role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            {{ session('cancel-request-success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                aria-label="Close"></button>
+                        </div>
                     @elseif (session('cancel-request-error'))
-                        <div class="alert alert-danger mt-3">{{ session('cancel-request-error') }}</div>
+                        <div class="alert alert-danger alert-dismissible fade show m-3 rounded-3 border-0 shadow-sm"
+                            role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            {{ session('cancel-request-error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                aria-label="Close"></button>
+                        </div>
                     @endif
 
                     @if (session('return-success'))
@@ -299,7 +311,6 @@
                                                                             <span class="text-muted fst-italic">Không có lý
                                                                                 do được cung cấp.</span>
                                                                         @endif
-
                                                                     </div>
                                                                 </div>
                                                             @endif
@@ -330,7 +341,7 @@
                                                                             <i
                                                                                 class="bi bi-shield-check text-success me-1"></i>
                                                                             <span class="text-success">
-                                                                                {{ $returnRequest->admin_note }}
+                                                                                {{ $returnRequest->admin_note ?? 'Yêu cầu trả hàng đã được phê duyệt.' }}
                                                                             </span>
                                                                         @elseif ($returnRequest->status === 'rejected')
                                                                             <i class="bi bi-shield-x text-danger me-1"></i>
@@ -407,8 +418,7 @@
                                                 $momoRetry =
                                                     in_array($order->payment_method, ['online', 'bank_transfer']) &&
                                                     $order->payment_status === 'pending' &&
-                                                    empty($order->vnp_txn_ref); // dùng empty() thay vì phủ định
-
+                                                    empty($order->vnp_txn_ref);
                                                 $vpnRetry =
                                                     in_array($order->payment_method, ['online', 'bank_transfer']) &&
                                                     $order->payment_status === 'pending' &&
@@ -417,30 +427,30 @@
                                             @endphp
 
                                             @if ($momoRetry)
-                                                <form id="auto-momo-form" action="{{ route('momo_payment') }}"
-                                                    method="POST" style="display: none;">
+                                                <form id="auto-momo-form-{{ $order->id }}"
+                                                    action="{{ route('momo_payment') }}" method="POST"
+                                                    style="display: none;">
                                                     @csrf
                                                     <input type="hidden" name="order_id" value="{{ $order->id }}">
                                                     <input type="hidden" name="total_momo"
                                                         value="{{ $order->total_price }}">
                                                 </form>
                                                 <a href="javascript:void(0)"
-                                                    onclick="document.getElementById('auto-momo-form').submit();"
+                                                    onclick="document.getElementById('auto-momo-form-{{ $order->id }}').submit();"
                                                     class="btn btn-outline-primary">
                                                     Thanh toán lại
                                                 </a>
                                             @elseif ($vpnRetry)
-                                                <form id="retry-payment-form"
+                                                <form id="retry-payment-form-{{ $order->id }}"
                                                     action="{{ route('checkout.retry', $order->id) }}" method="POST"
                                                     style="display: none;">
                                                     @csrf
                                                 </form>
                                                 <a href="javascript:void(0)"
-                                                    onclick="document.getElementById('retry-payment-form').submit();"
+                                                    onclick="document.getElementById('retry-payment-form-{{ $order->id }}').submit();"
                                                     class="btn btn-outline-primary">
                                                     🔁 Thanh toán lại
                                                 </a>
-                                            @else
                                             @endif
 
                                             <!-- Action Buttons -->
@@ -460,37 +470,34 @@
                                                         $return = $order->returnRequest;
                                                     @endphp
 
-                                                    {{-- Nếu chưa gửi yêu cầu trả hàng --}}
-                                                    @if (!$return)
-                                                        <form action="{{ route('order.received', $order->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-success"
-                                                                onclick="return confirm('Chỉ chọn nút này khi bạn đã nhận được hàng! Xác nhận?')">
-                                                                <i class="bi bi-check-circle me-2"></i>Đã nhận hàng
-                                                            </button>
-                                                        </form>
+                                                    {{-- Nếu chưa gửi yêu cầu trả hàng và chưa hoàn thành --}}
+                                                    @if (!$return && $order->status !== 'completed')
+                                                        <button type="button" class="btn btn-success btn-received"
+                                                            data-order-id="{{ $order->id }}"
+                                                            data-order-code="{{ $order->order_code }}">
+                                                            <i class="bi bi-check-circle me-2"></i>Đã nhận hàng
+                                                        </button>
 
                                                         <button type="button" class="btn btn-outline-primary"
                                                             onclick="showReturnRequestPrompt({{ $order->id }})">
                                                             <i class="bi bi-arrow-return-left me-2"></i>Trả hàng/Hoàn tiền
                                                         </button>
-
-                                                        {{-- Nếu đã gửi yêu cầu trả hàng --}}
-                                                    @else
-                                                        {{-- Trạng thái: Bị từ chối → cho khách xác nhận lại là đã nhận hàng --}}
-                                                        @if ($return->status === 'rejected' && !$order->is_received)
-                                                            <form action="{{ route('order.received', $order->id) }}"
-                                                                method="POST">
-                                                                @csrf
-                                                                <button type="submit" class="btn btn-success"
-                                                                    onclick="return confirm('Yêu cầu hoàn hàng của bạn đã bị từ chối. Bạn xác nhận đã nhận hàng?')">
-                                                                    <i class="bi bi-check-circle me-2"></i>Xác nhận đã nhận
-                                                                    hàng
-                                                                </button>
-                                                            </form>
-                                                        @endif
+                                                        {{-- Nếu yêu cầu trả hàng bị từ chối và chưa hoàn thành --}}
+                                                    @elseif($return && $return->status === 'rejected' && $order->status !== 'completed')
+                                                        <button type="button" class="btn btn-success btn-received"
+                                                            data-order-id="{{ $order->id }}"
+                                                            data-order-code="{{ $order->order_code }}">
+                                                            <i class="bi bi-check-circle me-2"></i>Xác nhận đã nhận hàng
+                                                        </button>
                                                     @endif
+                                                </div>
+                                            @elseif($order->status === 'refund_in_processing')
+                                                <div class="d-flex justify-content-end gap-3 mt-1 flex-wrap">
+                                                    <span class="text-info">Đang xử lý yêu cầu trả hàng</span>
+                                                </div>
+                                            @elseif($order->status === 'refunded')
+                                                <div class="d-flex justify-content-end gap-3 mt-1 flex-wrap">
+                                                    <span class="text-success">Đã hoàn tiền</span>
                                                 </div>
                                             @endif
                                         </div>
@@ -579,7 +586,7 @@
                                                                     <div class="d-flex align-items-center">
                                                                         <div class="p-2 me-3">
                                                                             <img src="{{ $detail->productVariant->image }}"
-                                                                                alt=""
+                                                                                alt="{{ $detail->productVariant->product->name }}"
                                                                                 style="width: 50px; height: 50px; object-fit:fill;">
                                                                         </div>
                                                                         <span
@@ -679,8 +686,6 @@
                                                     </ul>
                                                 </div>
                                             @endif
-
-
                                         </div>
                                     </div>
                                 </div>
@@ -714,17 +719,17 @@
                 @csrf
                 <div class="modal-content">
                     <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Yêu cầu huỷ
+                        <h5 class="modal-title" id="clientCancelModalLabel"><i class="bi bi-x-circle me-2"></i>Yêu cầu
+                            huỷ
                             đơn hàng</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                             aria-label="Đóng"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="cancel_reason" class="form-label">Lý do huỷ đơn
-                                hàng:</label>
+                            <label for="cancel_reason" class="form-label">Lý do huỷ đơn hàng:</label>
                             <textarea name="cancel_reason" id="cancel_reason" rows="3" class="form-control"
-                                placeholder="Nhập lý do huỷ..."></textarea>
+                                placeholder="Nhập lý do huỷ..." required></textarea>
                             <div class="invalid-feedback">
                                 Vui lòng nhập lý do huỷ đơn hàng (ít nhất 10 ký tự).
                             </div>
@@ -754,7 +759,7 @@
                     <div class="mb-4">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                     </div>
-                    <h4 class="mb-3">{{ session('received-success') }}</h4>
+                    <h4 class="mb-3"></h4> <!-- Sẽ được cập nhật bằng JavaScript -->
                     <p class="text-muted">Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của chúng tôi!</p>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
@@ -782,7 +787,7 @@
                     <div class="mb-4">
                         <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
                     </div>
-                    <h4 class="mb-3 text-danger">{{ session('received-error') }}</h4>
+                    <h4 class="mb-3 text-danger"></h4> <!-- Sẽ được cập nhật bằng JavaScript -->
                     <p class="text-muted">Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
@@ -996,10 +1001,71 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.btn-pay-again').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                });
+            // Gắn sự kiện click bằng event delegation
+            document.addEventListener('click', function(event) {
+                if (event.target.closest('.btn-received')) {
+                    const button = event.target.closest('.btn-received');
+                    const orderId = button.dataset.orderId;
+                    const orderCode = button.dataset.orderCode;
+                    console.log('Clicked Đã nhận hàng:', {
+                        orderId,
+                        orderCode
+                    });
+
+                    Swal.fire({
+                        title: 'Xác nhận nhận hàng',
+                        text: `Bạn có chắc chắn đã nhận được đơn hàng #${orderCode}?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Xác nhận',
+                        cancelButtonText: 'Hủy',
+                        showLoaderOnConfirm: true,
+                        preConfirm: () => {
+                            button.disabled = true;
+                            button.innerHTML =
+                                '<i class="bi bi-hourglass-split me-2"></i>Đang xử lý...';
+                            return fetch("{{ route('order.received', ':id') }}".replace(':id',
+                                    orderId), {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector(
+                                            'meta[name="csrf-token"]').getAttribute(
+                                            'content')
+                                    }
+                                })
+                                .then(response => {
+                                    console.log('Response status:', response.status);
+                                    if (!response.ok) {
+                                        throw new Error(
+                                            `HTTP error! Status: ${response.status}`);
+                                    }
+                                    return response.json();
+                                })
+                                .catch(error => {
+                                    console.error('Fetch error:', error);
+                                    Swal.showValidationMessage(`Lỗi: ${error.message}`);
+                                });
+                        }
+                    }).then((result) => {
+                        button.disabled = false;
+                        button.innerHTML = '<i class="bi bi-check-circle me-2"></i>Đã nhận hàng';
+                        if (result.isConfirmed) {
+                            console.log('Fetch result:', result.value);
+                            const modal = new bootstrap.Modal(document.getElementById(result.value
+                                .success ? 'orderModal' : 'orderErrorModal'));
+                            const modalMessage = modal._element.querySelector('.modal-body h4');
+                            modalMessage.textContent = result.value.message;
+                            modal.show();
+                            if (result.value.success) {
+                                setTimeout(() => {
+                                    modal.hide();
+                                    location.reload();
+                                }, 4000);
+                            }
+                        }
+                    });
+                }
             });
         });
     </script>
@@ -1053,8 +1119,10 @@
                 'processing': 'Đang xử lý',
                 'shipped': 'Đang giao hàng',
                 'delivered': 'Đã giao hàng',
-                'completed': 'Hoàn thành',
-                'cancelled': 'Đơn đã hủy'
+                'completed': 'Đã hoàn thành',
+                'cancelled': 'Đơn đã hủy',
+                'refund_in_processing': 'Đang xử lý trả hàng',
+                'refunded': 'Đã hoàn tiền'
             };
             console.log('Status:', status, 'Label:', statusMap[status] || status);
             return statusMap[status] || status;
@@ -1066,55 +1134,51 @@
                 'processing': 'bg-primary',
                 'shipped': 'bg-info',
                 'delivered': 'bg-success',
-                'completed': 'bg-info',
-                'cancelled': 'bg-danger'
+                'completed': 'bg-dark',
+                'cancelled': 'bg-danger',
+                'refund_in_processing': 'bg-info',
+                'refunded': 'bg-success'
             };
             return colorMap[status] || 'bg-secondary';
         }
 
         function updateOrderActions(orderElement, status, orderId) {
             const cancelButton = orderElement.querySelector('.open-client-cancel-modal');
-            // Xóa tất cả container hành động cũ để tránh trùng lặp
             const oldActionContainers = orderElement.querySelectorAll('.d-flex.justify-content-end.gap-3.mt-1');
             oldActionContainers.forEach(container => container.remove());
 
-            // Tạo container hành động mới
             const actionContainer = createActionContainer(orderElement);
 
-            // Ẩn nút huỷ nếu không phải pending/processing
             if (cancelButton) {
                 cancelButton.style.display = ['pending', 'processing'].includes(status) ? 'block' : 'none';
             }
 
-            // Nếu trạng thái là delivered, thêm nút nhận hàng và trả hàng
             if (status === 'delivered') {
-                // Tạo nút "Đã nhận hàng"
                 const receiveButton = document.createElement('button');
-                receiveButton.type = 'submit';
-                receiveButton.className = 'btn btn-success';
+                receiveButton.type = 'button';
+                receiveButton.className = 'btn btn-success btn-received';
+                receiveButton.dataset.orderId = orderId;
+                receiveButton.dataset.orderCode = orderElement.dataset.orderCode;
                 receiveButton.innerHTML = '<i class="bi bi-check-circle me-2"></i>Đã nhận hàng';
-                receiveButton.onclick = () => {
-                    if (confirm('Chỉ chọn nút này khi bạn đã nhận được hàng! Xác nhận?')) {
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = `/orders/${orderId}/received`;
-                        form.innerHTML =
-                            `<input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">`;
-                        document.body.appendChild(form);
-                        form.submit();
-                    }
-                };
 
-                // Tạo nút "Trả hàng/Hoàn tiền"
                 const returnButton = document.createElement('button');
                 returnButton.type = 'button';
                 returnButton.className = 'btn btn-outline-primary';
                 returnButton.innerHTML = '<i class="bi bi-arrow-return-left me-2"></i>Trả hàng/Hoàn tiền';
                 returnButton.onclick = () => showReturnRequestPrompt(orderId);
 
-                // Thêm các nút vào container
                 actionContainer.appendChild(receiveButton);
                 actionContainer.appendChild(returnButton);
+            } else if (status === 'refund_in_processing') {
+                const span = document.createElement('span');
+                span.className = 'text-info';
+                span.textContent = 'Đang xử lý yêu cầu trả hàng';
+                actionContainer.appendChild(span);
+            } else if (status === 'refunded') {
+                const span = document.createElement('span');
+                span.className = 'text-success';
+                span.textContent = 'Đã hoàn tiền';
+                actionContainer.appendChild(span);
             }
         }
 
@@ -1127,7 +1191,6 @@
             if (flexColumn) {
                 flexColumn.appendChild(container);
             } else {
-                // Nếu không tìm thấy flexColumn, thêm vào accordionHeader như fallback
                 accordionHeader.appendChild(container);
             }
             return container;

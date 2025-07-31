@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Events\OrderStatusUpdated;
 
 class OrderController extends Controller
 {
@@ -41,23 +42,35 @@ class OrderController extends Controller
     {
         $order = Order::find($id);
         if (!$order) {
-            return redirect()->back()->with('cancel-request-error', 'Đơn hàng không tồn tại.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Đơn hàng không tồn tại.'
+            ], 404);
         }
 
         // Chỉ cho phép huỷ nếu đơn chưa xử lý xong
         if (!in_array($order->status, ['pending', 'processing'])) {
-            return redirect()->back()->with('cancel-request-error', 'Đơn hàng này không thể huỷ nữa.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Đơn hàng này không thể huỷ nữa.'
+            ], 400);
         }
 
         // Kiểm tra đã gửi yêu cầu chưa
         if ($order->cancellation_requested) {
-            return redirect()->back()->with('cancel-request-error', 'Bạn đã gửi yêu cầu huỷ đơn hàng này trước đó. Vui lòng chờ admin xử lý.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn đã gửi yêu cầu huỷ đơn hàng này trước đó. Vui lòng chờ admin xử lý.'
+            ], 400);
         }
 
         // Lấy lý do từ form
         $reason = $request->cancel_reason;
         if (empty($reason)) {
-            return redirect()->back()->with('cancel-request-error', 'Vui lòng nhập lý do huỷ đơn hàng.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng nhập lý do huỷ đơn hàng.'
+            ], 400);
         }
 
         try {
@@ -80,7 +93,10 @@ class OrderController extends Controller
             // Gửi thông báo đến admin
             $admins = User::where('role_id', 1)->get();
             if ($admins->isEmpty()) {
-                return redirect()->back()->with('cancel-request-error', 'Không có admin nào để gửi thông báo.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không có admin nào để gửi thông báo.'
+                ], 400);
             }
 
             $message = "Người dùng {$order->user->name} yêu cầu huỷ đơn hàng #{$order->order_code} với lý do: {$order->cancel_reason}. Vui lòng kiểm tra và xử lý.";
@@ -97,10 +113,16 @@ class OrderController extends Controller
                 ]);
             }
 
-            return redirect()->back()->with('cancel-request-success', 'Đã gửi yêu cầu huỷ đơn hàng thành công. Vui lòng chờ admin xử lý.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã gửi yêu cầu huỷ đơn hàng thành công. Vui lòng chờ admin xử lý.'
+            ]);
         } catch (\Exception $e) {
             Log::error('Lỗi tạo yêu cầu huỷ đơn hàng: ' . $e->getMessage());
-            return redirect()->back()->with('cancel-request-error', 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại.'
+            ], 500);
         }
     }
 
@@ -312,40 +334,120 @@ class OrderController extends Controller
         return response()->json(['error' => 'Payment failed']);
     }
 
-    public function received($id)
+    public function received(Request $request, $id)
     {
         $user = Auth::user();
-        $order = Order::find($id);
+        $order = Order::findOrFail($id);
 
-        if (!$order || $order->user_id !== $user->id) {
-            return redirect()->back()->with('received-error', 'Bạn không có quyền xác nhận đơn hàng này.');
+        // Kiểm tra quyền sở hữu đơn hàng
+        if ($order->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền xác nhận đơn hàng này.'
+            ], 403);
         }
 
+        // Kiểm tra trạng thái đơn hàng
         if ($order->status === 'completed') {
-            return redirect()->back()->with('received-info', 'Đơn hàng này đã được xác nhận trước đó.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Đơn hàng này đã được xác nhận trước đó.'
+            ], 400);
         }
 
-        $order->status = 'completed';
-        $order->payment_status = 'completed';
-        // $order->confirmed_at = now(); // nếu có cột
-        $order->save();
+        if ($order->status !== 'delivered') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đơn hàng chưa ở trạng thái đã giao!'
+            ], 400);
+        }
 
-        return redirect()->back()->with(
-            'received-success',
-            "Cảm ơn quý khách! Đơn hàng #{$order->order_code} đã được xác nhận là đã nhận vào lúc " . now()->format('H:i d/m/Y')
-        );
+        try {
+            // Cập nhật trạng thái
+            $order->status = 'completed';
+            $order->payment_status = 'completed';
+            $order->save();
+
+            // Gửi sự kiện cập nhật trạng thái
+            Log::info('Broadcasting OrderStatusUpdated event for received order', [
+                'order_id' => $order->id,
+                'user_id' => $order->user_id,
+                'channel' => 'orders.' . $order->user_id,
+                'status' => $order->status,
+            ]);
+            broadcast(new OrderStatusUpdated($order));
+
+            // Tạo thông báo cho khách hàng
+            $this->createOrderNotificationToClient(
+                $order,
+                "Đơn hàng #{$order->order_code} đã được xác nhận hoàn thành vào lúc " . now()->format('H:i d/m/Y') . ".",
+                'Đơn hàng hoàn thành'
+            );
+
+            // Tạo thông báo cho admin
+            $this->createOrderNotificationToAdmin(
+                $order,
+                "Khách hàng {$user->name} đã xác nhận nhận hàng cho đơn #{$order->order_code}.",
+                'Xác nhận nhận hàng'
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => "Cảm ơn quý khách! Đơn hàng #{$order->order_code} đã được xác nhận hoàn thành.",
+                'order_code' => $order->order_code,
+                'status' => $order->status
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi cập nhật đơn hàng: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã có lỗi xảy ra. Vui lòng thử lại!'
+            ], 500);
+        }
     }
-    /**
-     * Trang thành công
-     */
+
+    private function createOrderNotificationToClient(Order $order, $message, $title)
+    {
+        try {
+            Notification::create([
+                'user_id'    => $order->user_id,
+                'title'      => $title,
+                'message'    => $message,
+                'type'       => 'order',
+                'is_read'    => false,
+                'order_id'   => $order->id,
+                'created_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi tạo thông báo đơn hàng: ' . $e->getMessage());
+        }
+    }
+
+    private function createOrderNotificationToAdmin(Order $order, $message, $title)
+    {
+        try {
+            $admins = User::where('role_id', 1)->get();
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id'    => $admin->id,
+                    'title'      => $title,
+                    'message'    => $message,
+                    'type'       => 'order',
+                    'is_read'    => false,
+                    'order_id'   => $order->id,
+                    'created_at' => now(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Lỗi tạo thông báo cho admin: ' . $e->getMessage());
+        }
+    }
+
     public function success(Order $order)
     {
         return view('client.pages.order-success', ['order' => $order]);
     }
 
-    /**
-     * Trang thất bại
-     */
     public function failed()
     {
         $error = session('payment_error', 'Thanh toán không thành công. Vui lòng thử lại.');
