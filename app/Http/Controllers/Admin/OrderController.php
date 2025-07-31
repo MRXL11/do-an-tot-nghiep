@@ -136,6 +136,8 @@ class OrderController extends Controller
 
         // Đánh dấu trạng thái đơn hàng là huỷ
         $order->status = 'cancelled';
+        // Lưu lại trạng thái thanh toán trước khi cập nhật
+$originalPaymentStatus = $order->payment_status;
 
         // Xử lý trạng thái thanh toán dựa vào phương thức và trạng thái thanh toán
         if ($order->payment_status === 'completed') {
@@ -157,6 +159,16 @@ class OrderController extends Controller
         }
 
         $order->save();
+
+        // Hoàn kho nếu:
+// - Là COD (đã trừ kho khi đặt)
+// - Hoặc Online/Bank đã thanh toán thành công trước đó (tức là đã trừ kho)
+if (
+    $order->payment_method === 'cod' ||
+    in_array($order->payment_method, ['bank_transfer', 'online']) && $originalPaymentStatus === 'completed'
+) {
+    $this->restoreStockQuantity($order);
+}
 
         // Tạo thông báo cho khách
         if ($order->cancellation_requested) {
@@ -234,27 +246,42 @@ if ($order->cancel_confirmed) {
         }
 
         if ($action === 'approve') {
-            // Xác nhận huỷ đơn
-            $order->cancel_confirmed = true;
-            $order->admin_cancel_note = $note ?: 'Admin xác nhận yêu cầu huỷ từ khách.';
-            $order->status = 'cancelled';
+    // Lưu trạng thái thanh toán gốc
+    $originalPaymentStatus = $order->payment_status;
 
-            // Xử lý trạng thái thanh toán
-            if ($order->payment_status === 'completed') {
-                $order->payment_status = in_array($order->payment_method, ['online', 'bank_transfer'])
-                    ? 'refund_in_processing'
-                    : 'failed';
-            } else {
-                $order->payment_status = 'failed';
-            }
+    // Xác nhận huỷ đơn
+    $order->cancel_confirmed = true;
+    $order->admin_cancel_note = $note ?: 'Admin xác nhận yêu cầu huỷ từ khách.';
+    $order->status = 'cancelled';
 
-            $order->save();
+    // Xử lý trạng thái thanh toán
+    if ($order->payment_status === 'completed') {
+        $order->payment_status = in_array($order->payment_method, ['online', 'bank_transfer'])
+            ? 'refund_in_processing'
+            : 'failed';
+    } else {
+        $order->payment_status = 'failed';
+    }
 
-            // Gửi thông báo
-            $this->createOrderNotificationToClient($order, "Đơn hàng #{$order->order_code} đã được huỷ theo yêu cầu của bạn.", 'Đơn hàng đã được huỷ');
+    $order->save();
 
-            return response()->json(['success' => 'Đã xác nhận yêu cầu huỷ đơn hàng.']);
-        }
+    // Hoàn kho nếu đơn đã từng trừ kho
+    if (
+        $order->payment_method === 'cod' ||
+        in_array($order->payment_method, ['online', 'bank_transfer']) && $originalPaymentStatus === 'completed'
+    ) {
+        $this->restoreStockQuantity($order);
+    }
+
+    // Gửi thông báo
+    $this->createOrderNotificationToClient(
+        $order,
+        "Đơn hàng #{$order->order_code} đã được huỷ theo yêu cầu của bạn.",
+        'Đơn hàng đã được huỷ'
+    );
+
+    return response()->json(['success' => 'Đã xác nhận yêu cầu huỷ đơn hàng.']);
+}
 
         if ($action === 'reject') {
             // Từ chối yêu cầu huỷ
@@ -383,6 +410,19 @@ if ($order->cancel_confirmed) {
             ]);
         } catch (\Exception $e) {
             Log::error('Lỗi tạo thông báo đơn hàng: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Hoàn trả số lượng sản phẩm về kho khi hủy đơn hàng
+     */
+    private function restoreStockQuantity(Order $order)
+    {
+        foreach ($order->orderDetails as $item) {
+            $productVariant = $item->productVariant;
+            if ($productVariant) {
+                $productVariant->increment('stock_quantity', $item->quantity);
+            }
         }
     }
 

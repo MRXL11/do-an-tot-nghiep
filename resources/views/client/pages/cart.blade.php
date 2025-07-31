@@ -24,6 +24,7 @@
                             </p>
                         </div>
                     @else
+                        <!-- Hiển thị danh sách sản phẩm trong giỏ -->
                         <table class="table align-middle mb-0">
                             <thead class="bg-light">
                                 <tr>
@@ -40,12 +41,11 @@
                             <tbody>
                                 @foreach ($cartItems as $item)
                                     <tr id="row-{{ $item->id }}"
-                                        class="{{ $item->productVariant->status != 'active' || $item->is_locked ? 'inactive-item' : '' }}">
+                                        class="{{ $item->productVariant->status != 'active' ? 'inactive-item' : '' }}">
                                         <td>
                                             <input type="checkbox" class="item-checkbox" data-id="{{ $item->id }}"
                                                 data-price="{{ $item->productVariant->price }}"
-                                                data-quantity="{{ $item->quantity }}"
-                                                @if ($item->productVariant->status != 'active' || $item->is_locked) disabled @endif>
+                                                data-quantity="{{ $item->quantity }}">
                                         </td>
                                         <td>
                                             <img src="{{ asset($item->productVariant->image ?? 'path/to/default.jpg') }}"
@@ -64,29 +64,27 @@
                                             <div class="d-flex align-items-center">
                                                 <button class="btn btn-outline-secondary btn-sm btn-minus"
                                                     data-cartid="{{ $item->id }}"
-                                                    @if ($item->productVariant->status != 'active' || $item->is_locked) disabled @endif>
+                                                    @if ($item->productVariant->status != 'active') disabled @endif>
                                                     <i class="bi bi-dash"></i>
                                                 </button>
                                                 <input type="text" id="quantity-{{ $item->id }}"
                                                     value="{{ $item->quantity }}" readonly
                                                     class="form-control text-center mx-1 quantity-input"
-                                                    style="@if ($item->productVariant->status != 'active' || $item->is_locked) cursor: not-allowed; @endif">
+                                                    style="@if ($item->productVariant->status != 'active') cursor: not-allowed; @endif">
                                                 <button class="btn btn-outline-secondary btn-sm btn-plus"
                                                     data-cartid="{{ $item->id }}"
                                                     data-stock="{{ $item->productVariant->stock_quantity }}"
-                                                    @if ($item->productVariant->status != 'active' || $item->is_locked) disabled @endif>
+                                                    @if ($item->productVariant->status != 'active') disabled @endif>
                                                     <i class="bi bi-plus"></i>
                                                 </button>
                                             </div>
                                         </td>
                                         <td class="fw-bold item-total" id="item-total-{{ $item->id }}">
-                                            {{ number_format($item->productVariant->price * $item->quantity, 0, ',', '.') }}
-                                            đ
+                                            {{ number_format($item->productVariant->price * $item->quantity, 0, ',', '.') }} đ
                                         </td>
                                         <td>
                                             <button class="btn btn-outline-danger btn-remove"
-                                                data-cartid="{{ $item->id }}"
-                                                @if ($item->is_locked) disabled @endif>
+                                                data-cartid="{{ $item->id }}">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -138,11 +136,11 @@
         body.swal2-shown {
             padding-right: 0 !important;
         }
-
+        
         .swal2-container {
             padding-right: 0 !important;
         }
-
+        
         /* Đảm bảo scrollbar không bị thay đổi */
         html {
             scrollbar-gutter: stable;
@@ -180,84 +178,6 @@
 
         $(document).ready(function() {
             let quantityUpdateTimeout;
-            // Khởi tạo giá trị cartLastModified khi tải trang
-            let lastModified = localStorage.getItem('cartLastModified') || Date.now().toString();
-            console.log('Cart initialized:', {
-                lastModified,
-                cartLastModified: localStorage.getItem('cartLastModified')
-            });
-
-            // Hàm kiểm tra thay đổi trong localStorage
-            function checkCartChanges() {
-                const currentModified = localStorage.getItem('cartLastModified');
-                console.log('checkCartChanges:', {
-                    currentModified,
-                    lastModified
-                });
-                if (currentModified && currentModified !== lastModified) {
-                    console.log('Cart changed via checkCartChanges, showing Swal');
-                    Swal.fire({
-                        title: 'Giỏ hàng đã thay đổi',
-                        text: 'Giỏ hàng của bạn đã được cập nhật ở tab khác. Vui lòng làm mới trang để tiếp tục.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Làm mới ngay',
-                        cancelButtonText: 'Hủy',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.reload();
-                        }
-                    });
-                }
-            }
-
-            // Fallback cho tab inactive
-            setInterval(checkCartChanges, 5000);
-
-            // Lắng nghe sự kiện storage để phát hiện thay đổi
-            window.addEventListener('storage', function(event) {
-                console.log('Storage event:', {
-                    key: event.key,
-                    newValue: event.newValue,
-                    lastModified
-                });
-                if (event.key === 'cartLastModified' && event.newValue && event.newValue !== lastModified) {
-                    console.log('Cart changed via storage event, showing Swal');
-                    Swal.fire({
-                        title: 'Giỏ hàng đã thay đổi',
-                        text: 'Giỏ hàng của bạn đã được cập nhật ở tab khác. Vui lòng làm mới trang để tiếp tục.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Làm mới ngay',
-                        cancelButtonText: 'Hủy',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.reload();
-                        }
-                    });
-                }
-                if (event.key === 'paymentInProgress' && event.newValue === '1') {
-                    console.log('Payment in progress, showing Swal');
-                    Swal.fire({
-                        title: 'Đang xử lý thanh toán',
-                        text: 'Một tab khác đang thực hiện thanh toán. Vui lòng làm mới trang để tiếp tục.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Làm mới ngay',
-                        cancelButtonText: 'Hủy',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.reload();
-                        }
-                    });
-                }
-            });
 
             // Gọi kiểm tra tồn kho khi trang load
             checkStockRealtime();
@@ -268,25 +188,12 @@
                     $(this).prop('readonly', false).focus().select();
                 }
             });
-
             // Khi blur hoặc nhấn Enter thì cập nhật số lượng và chuyển về readonly
             $(document).on('blur', '.quantity-input', function() {
                 const id = $(this).attr('id').replace('quantity-', '');
                 let qty = parseInt($(this).val());
-                const plusBtn = $(`.btn-plus[data-cartid="${id}"]`);
+                const plusBtn = $('.btn-plus[data-cartid="' + id + '"]');
                 const stock = plusBtn.data('stock');
-                const product = cartItems.find(p => p.id === id);
-                if (product.status !== 'active' || product.is_locked) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Sản phẩm không thể chỉnh sửa',
-                        text: 'Sản phẩm này đã ngừng bán hoặc đang bị khóa!',
-                        timer: 1500,
-                        scrollbarPadding: false
-                    });
-                    $(this).val(product.quantity).prop('readonly', true);
-                    return;
-                }
                 if (isNaN(qty) || qty < 1) qty = 1;
                 if (typeof stock !== 'undefined' && qty > stock) {
                     Swal.fire({
@@ -300,20 +207,8 @@
                 }
                 $(this).val(qty).prop('readonly', true);
                 updateQuantityDebounced(id, qty);
-
                 checkStockRealtime();
-
-                // Cập nhật cartLastModified và lastModified cục bộ
-                lastModified = Date.now().toString();
-                localStorage.setItem('cartLastModified', lastModified);
-                console.log('Quantity updated:', {
-                    id,
-                    qty,
-                    lastModified
-                });
-
             });
-
             $(document).on('keydown', '.quantity-input', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -325,32 +220,21 @@
             $(document).on('click', '.btn-minus', function() {
                 const id = $(this).data('cartid');
                 const product = cartItems.find(p => p.id === id);
-                if (product.status !== 'active' || product.is_locked) {
+                if (product.status !== 'active') {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Sản phẩm không thể chỉnh sửa',
-                        text: 'Sản phẩm này đã ngừng bán hoặc đang bị khóa!',
+                        title: 'Sản phẩm ngừng hoạt động',
+                        text: 'Không thể thay đổi!',
                         timer: 1500
                     });
                     return;
                 }
-                const input = $(`#quantity-${id}`);
+                const input = $('#quantity-' + id);
                 let qty = parseInt(input.val()) - 1;
                 if (qty >= 1) {
                     input.val(qty);
                     updateQuantityDebounced(id, qty);
-
                     checkStockRealtime();
-
-                    // Cập nhật cartLastModified và lastModified cục bộ
-                    lastModified = Date.now().toString();
-                    localStorage.setItem('cartLastModified', lastModified);
-                    console.log('Quantity decreased:', {
-                        id,
-                        qty,
-                        lastModified
-                    });
-
                 } else {
                     Swal.fire({
                         icon: 'info',
@@ -365,33 +249,22 @@
             $(document).on('click', '.btn-plus', function() {
                 const id = $(this).data('cartid');
                 const product = cartItems.find(p => p.id === id);
-                if (product.status !== 'active' || product.is_locked) {
+                if (product.status !== 'active') {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Sản phẩm không thể chỉnh sửa',
-                        text: 'Sản phẩm này đã ngừng bán hoặc đang bị khóa!',
+                        title: 'Sản phẩm ngừng hoạt động',
+                        text: 'Không thể thay đổi!',
                         timer: 1500
                     });
                     return;
                 }
-                const input = $(`#quantity-${id}`);
+                const input = $('#quantity-' + id);
                 let qty = parseInt(input.val()) + 1;
                 const stock = $(this).data('stock');
                 if (qty <= stock) {
                     input.val(qty);
                     updateQuantityDebounced(id, qty);
-
                     checkStockRealtime();
-
-                    // Cập nhật cartLastModified và lastModified cục bộ
-                    lastModified = Date.now().toString();
-                    localStorage.setItem('cartLastModified', lastModified);
-                    console.log('Quantity increased:', {
-                        id,
-                        qty,
-                        lastModified
-                    });
-
                 } else {
                     Swal.fire({
                         icon: 'info',
@@ -406,16 +279,6 @@
             $(document).on('click', '.btn-remove', function(e) {
                 e.preventDefault();
                 const id = $(this).data('cartid');
-                const product = cartItems.find(p => p.id === id);
-                if (product.is_locked) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Sản phẩm bị khóa',
-                        text: 'Không thể xóa sản phẩm này vì nó đang trong đơn hàng chưa thanh toán!',
-                        timer: 1500
-                    });
-                    return;
-                }
                 Swal.fire({
                     title: 'Xác nhận xóa?',
                     text: 'Bạn có chắc muốn xóa sản phẩm này?',
@@ -430,7 +293,7 @@
                             cart_id: id
                         }, res => {
                             if (res.success) {
-                                $(`#row-${id}`).remove();
+                                $('#row-' + id).remove();
                                 const index = cartItems.findIndex(item => item.id === id);
                                 if (index !== -1) cartItems.splice(index, 1);
                                 updateSummary();
@@ -442,21 +305,6 @@
                                     icon: 'success',
                                     title: 'Đã xóa!',
                                     timer: 1000
-                                });
-                                // Cập nhật cartLastModified và lastModified cục bộ
-                                lastModified = Date.now().toString();
-                                localStorage.setItem('cartLastModified', lastModified);
-                                console.log('Item removed:', {
-                                    id,
-                                    lastModified
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Lỗi',
-                                    text: res.message ||
-                                        'Không thể xóa sản phẩm này!',
-                                    timer: 1500
                                 });
                             }
                         });
@@ -478,19 +326,6 @@
                     });
                     return;
                 }
-                const lockedItems = selected.filter(id => {
-                    const product = cartItems.find(p => p.id === id);
-                    return product.is_locked;
-                });
-                if (lockedItems.length > 0) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Sản phẩm bị khóa',
-                        text: 'Một số sản phẩm đang trong đơn hàng chưa thanh toán và không thể xóa!',
-                        timer: 1500
-                    });
-                    return;
-                }
                 Swal.fire({
                     title: 'Xóa các sản phẩm đã chọn?',
                     text: 'Bạn có chắc muốn xóa tất cả?',
@@ -506,7 +341,7 @@
                         }, res => {
                             if (res.success) {
                                 selected.forEach(id => {
-                                    $(`#row-${id}`).remove();
+                                    $('#row-' + id).remove();
                                     const index = cartItems.findIndex(item => item
                                         .id === id);
                                     if (index !== -1) cartItems.splice(index, 1);
@@ -521,37 +356,15 @@
                                     title: 'Đã xóa các sản phẩm đã chọn!',
                                     timer: 1200
                                 });
-                                // Cập nhật cartLastModified và lastModified cục bộ
-                                lastModified = Date.now().toString();
-                                localStorage.setItem('cartLastModified', lastModified);
-                                console.log('Selected items removed:', {
-                                    selected,
-                                    lastModified
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Lỗi',
-                                    text: res.message ||
-                                        'Không thể xóa các sản phẩm này!',
-                                    timer: 1500
-                                });
                             }
                         });
                     }
                 });
             });
 
-            // Chọn/bỏ tất cả
+            // Chọn/Bỏ chọn tất cả
             $(document).on('change', '#check-all', function() {
-                const isChecked = $(this).prop('checked');
-                $('.item-checkbox').each(function() {
-                    const itemId = $(this).data('id');
-                    const item = cartItems.find(i => i.id === itemId);
-                    if (item.status === 'active' && !item.is_locked) {
-                        $(this).prop('checked', isChecked);
-                    }
-                });
+                $('.item-checkbox').prop('checked', $(this).prop('checked'));
                 updateSummary();
             });
 
@@ -563,64 +376,44 @@
             });
 
             // Kiểm tra trước khi thanh toán
-            $(document).on('click', '.btn-checkout', function (e) {
+            $('.btn-checkout').click(function(e) {
                 e.preventDefault();
-            
-                // Kiểm tra trạng thái thanh toán đang xử lý ở tab khác
-                if (localStorage.getItem('paymentInProgress') === '1') {
-                    Swal.fire({
-                        title: 'Đang xử lý thanh toán',
-                        text: 'Một tab khác đang thực hiện thanh toán. Vui lòng làm mới trang để tiếp tục.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Làm mới ngay',
-                        cancelButtonText: 'Hủy',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.reload();
-                        }
-                    });
-                    return;
-                }
-            
+
                 let selectedIds = [];
                 let selectedQuantities = [];
-            
-                $('.item-checkbox:checked').each(function () {
+
+                $('.item-checkbox:checked').each(function() {
                     const id = $(this).data('id');
-                    const product = cartItems.find(p => p.id === id);
-                    if (product && product.status === 'active' && !product.is_locked) {
-                        selectedIds.push(id);
-                        selectedQuantities.push(parseInt($('#quantity-' + id).val()));
-                    }
+                    selectedIds.push(id);
+                    selectedQuantities.push(parseInt($('#quantity-' + id).val()));
                 });
-            
+
                 if (selectedIds.length === 0) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Không thể thanh toán',
-                        text: 'Vui lòng chọn ít nhất 1 sản phẩm hợp lệ để thanh toán.',
+                        text: 'Vui lòng chọn ít nhất 1 sản phẩm để thanh toán.',
                         timer: 2000,
                         scrollbarPadding: false
                     });
                     return;
                 }
-            
-                // Gọi API kiểm tra tồn kho trước khi chuyển sang checkout
+
+                // Gọi API kiểm tra tồn kho lần cuối chỉ cho các sản phẩm được chọn
                 $.post("{{ route('cart.checkStock') }}", {
                     _token: "{{ csrf_token() }}",
                     cart_ids: selectedIds,
                     quantities: selectedQuantities
-                }, function (res) {
+                }, function(res) {
                     if (res.ok) {
+                        // Chuyển hướng sang checkout nếu đủ hàng
                         const url = new URL(window.location.origin + '/checkout');
                         url.searchParams.set('cart_item_ids', selectedIds.join(','));
                         window.location.href = url.toString();
                     } else {
+                        // Hiển thị cảnh báo chỉ khi nhấn thanh toán
                         let msg = '<ul>';
-                        res.out_of_stock.forEach(function (item) {
+                        res.out_of_stock.forEach(function(item) {
                             msg += '<li>' + item.reason + '</li>';
                         });
                         msg += '</ul>';
@@ -632,12 +425,6 @@
                         });
                     }
                 });
-            
-                // (Tùy chọn) Ghi log
-                console.log('Checkout initiated:', {
-                    selectedIds,
-                    lastModified: localStorage.getItem('cartLastModified')
-                });
             });
 
             // Hàm render cảnh báo sản phẩm ngưng bán
@@ -646,11 +433,11 @@
                 const inactiveProducts = cartItems.filter(p => p.status !== 'active');
                 if (inactiveProducts.length > 0) {
                     const warning = `
-                <div class="alert alert-warning mt-3">
-                    ⚠️ <strong>Chú ý:</strong> Có ${inactiveProducts.length} sản phẩm đã ngưng bán.
-                    Vui lòng xóa chúng khỏi giỏ hàng nếu không còn cần thiết.
-                </div>
-            `;
+                    <div class="alert alert-warning mt-3">
+                        ⚠️ <strong>Chú ý:</strong> Có ${inactiveProducts.length} sản phẩm đã ngưng bán.
+                        Vui lòng xóa chúng khỏi giỏ hàng nếu không còn cần thiết.
+                    </div>
+                `;
                     $('.table-responsive').before(warning);
                 }
             }
@@ -663,31 +450,10 @@
                         _token: '{{ csrf_token() }}',
                         cart_id: id,
                         quantity: qty
-                    }, res => {
-                        if (res.success) {
-                            $(`#item-total-${id}`).text(res.itemTotal.toLocaleString('vi-VN') +
-                                ' đ');
-                            updateSummary();
-                            // Cập nhật cartLastModified và lastModified cục bộ
-                            lastModified = Date.now().toString();
-                            localStorage.setItem('cartLastModified', lastModified);
-                            console.log('Quantity updated via AJAX:', {
-                                id,
-                                qty,
-                                lastModified
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Lỗi',
-                                text: res.message || 'Không thể cập nhật số lượng!',
-                                timer: 1500
-                            });
-                            // Khôi phục số lượng trước đó
-                            const product = cartItems.find(p => p.id === id);
-                            $(`#quantity-${id}`).val(product.quantity);
-                        }
-                    });
+                                    }, res => {
+                    $('#item-total-' + id).text(res.itemTotal.toLocaleString('vi-VN') + ' đ');
+                    updateSummary();
+                });
                 }, 800);
             }
 
@@ -698,28 +464,8 @@
                     cart_id: id,
                     quantity: qty
                 }, res => {
-                    if (res.success) {
-                        $(`#item-total-${id}`).text(res.itemTotal.toLocaleString('vi-VN') + ' đ');
-                        updateSummary();
-                        // Cập nhật cartLastModified và lastModified cục bộ
-                        lastModified = Date.now().toString();
-                        localStorage.setItem('cartLastModified', lastModified);
-                        console.log('Quantity updated immediately:', {
-                            id,
-                            qty,
-                            lastModified
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi',
-                            text: res.message || 'Không thể cập nhật số lượng!',
-                            timer: 1500
-                        });
-                        // Khôi phục số lượng trước đó
-                        const product = cartItems.find(p => p.id === id);
-                        $(`#quantity-${id}`).val(product.quantity);
-                    }
+                    $('#item-total-' + id).text(res.itemTotal.toLocaleString('vi-VN') + ' đ');
+                    updateSummary();
                 });
             }
 
@@ -730,19 +476,19 @@
                 $('.item-checkbox:checked').each(function() {
                     const id = $(this).data('id');
                     const price = parseFloat($(this).data('price'));
-                    const qty = parseInt($(`#quantity-${id}`).val());
+                    const qty = parseInt($('#quantity-' + id).val());
                     const product = cartItems.find(p => p.id === id);
-                    if (product && product.status === 'active' && !product.is_locked) {
+                    if (product && product.status === 'active') {
                         total += price * qty;
                         count++;
                     } else {
                         $(this).prop('checked', false);
                         Swal.fire({
                             icon: 'warning',
-                            title: 'Sản phẩm không thể chọn',
-                            text: 'Sản phẩm này đã ngừng bán hoặc đang bị khóa!',
+                            title: 'Sản phẩm ngừng hoạt động',
+                            text: 'Sản phẩm này đã ngừng bán, không thể thanh toán!',
                             timer: 1500,
-                            showConfirmButton: false
+                            showConfirmButton: false,
                         });
                     }
                 });
