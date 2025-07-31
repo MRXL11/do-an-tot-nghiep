@@ -197,7 +197,8 @@
                     <div class="card-body p-4">
                         <div class="accordion accordion-flush" id="orderAccordion">
                             @forelse ($orders as $order)
-                                <div class="accordion-item border-0 mb-4 rounded-4 shadow-sm overflow-hidden">
+                                <div class="accordion-item border-0 mb-4 rounded-4 shadow-sm overflow-hidden"
+                                    data-order-code="{{ $order->order_code }}">
                                     <h2 class="accordion-header" id="heading{{ $order->id }}">
                                         <div class="d-flex align-items-end bg-light rounded-4 p-4 border-0 flex-column">
                                             <button
@@ -213,7 +214,6 @@
                                                             <div class="mb-3 d-flex flex-column">
                                                                 <h6 class="fw-bold text-dark mb-1">
                                                                     #{{ $order->order_code }}
-
                                                                 </h6>
                                                                 <h6 class="mb-1">
                                                                     {{ $order->getPaymentMethod($order->payment_method)['label'] }}
@@ -229,7 +229,7 @@
                                                                 </small>
                                                             </div>
 
-                                                            {{-- hiển thị trnagj thái yêu cầu huỷ (nếu có) --}}
+                                                            {{-- hiển thị trạng thái yêu cầu huỷ (nếu có) --}}
                                                             @php
                                                                 $isRequested = $order->cancellation_requested;
                                                                 $isConfirmed = $order->cancel_confirmed;
@@ -369,23 +369,26 @@
                                                         {{-- Ưu tiên hiển thị: hoàn hàng > huỷ đơn > trạng thái đơn --}}
                                                         @if ($return && in_array($return->status, ['requested', 'approved', 'rejected', 'refunded']))
                                                             <span
-                                                                class="badge bg-{{ $returnStatus['color'] }} px-3 py-2 rounded-pill">
+                                                                class="badge bg-{{ $returnStatus['color'] }} px-3 py-2 rounded-pill"
+                                                                data-status-badge>
                                                                 <i class="{{ $returnStatus['icon'] }} me-1"></i>
                                                                 {{ $returnStatus['title'] }}
                                                             </span>
                                                         @elseif ($cancelRequested)
-                                                            <span
-                                                                class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                                                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"
+                                                                data-status-badge>
                                                                 <i class="bi bi-hourglass-split me-1"></i> Yêu cầu huỷ đang
                                                                 chờ xử lý
                                                             </span>
                                                         @elseif ($cancelConfirmed)
-                                                            <span class="badge bg-danger px-3 py-2 rounded-pill">
+                                                            <span class="badge bg-danger px-3 py-2 rounded-pill"
+                                                                data-status-badge>
                                                                 <i class="bi bi-x-octagon me-1"></i> Đơn hàng đã huỷ
                                                             </span>
                                                         @else
                                                             <span
-                                                                class="badge {{ $order->getStatusMeta($order->status)['color'] }} px-3 py-2 rounded-pill">
+                                                                class="badge {{ $order->getStatusMeta($order->status)['color'] }} px-3 py-2 rounded-pill"
+                                                                data-status-badge>
                                                                 {{ $order->getStatusMeta($order->status)['label'] }}
                                                             </span>
                                                         @endif
@@ -875,7 +878,7 @@
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    @if (session('received-success'))
+    @if (session('success') || session('received-success'))
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const modal = new bootstrap.Modal(document.getElementById('orderModal'));
@@ -889,11 +892,7 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const modal = new bootstrap.Modal(document.getElementById('orderErrorModal'));
                 modal.show();
-
-                // Tự đóng sau 4 giây
-                setTimeout(() => {
-                    modal.hide();
-                }, 4000);
+                setTimeout(() => modal.hide(), 4000);
             });
         </script>
     @endif
@@ -920,7 +919,6 @@
         });
     </script>
 
-    {{-- xử lý hiển thị modal yêu cầu huỷ đơn --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const buttons = document.querySelectorAll('.open-client-cancel-modal');
@@ -931,29 +929,25 @@
             buttons.forEach(button => {
                 button.addEventListener('click', function() {
                     const orderId = this.dataset.orderId;
-                    form.action =
-                        `/order/${orderId}/cancel-request`; // hoặc dùng route('orders.cancel-request', orderId)
-                    form.reset(); // reset textarea
+                    form.action = `/order/${orderId}/cancel-request`;
+                    form.reset();
                     modal.show();
                 });
             });
 
-            // Validate lý do trước khi gửi
             form.addEventListener('submit', function(e) {
                 const reason = reasonField.value.trim();
-
                 if (reason.length < 10) {
-                    e.preventDefault(); // chặn gửi form
-                    reasonField.classList.add('is-invalid'); // thêm class lỗi
+                    e.preventDefault();
+                    reasonField.classList.add('is-invalid');
                     reasonField.focus();
                 } else {
-                    reasonField.classList.remove('is-invalid'); // xoá class lỗi
+                    reasonField.classList.remove('is-invalid');
                 }
             });
         });
     </script>
 
-    {{-- Xử lý hiển thị modal yêu cầu trả hàng --}}
     <script>
         function showReturnRequestPrompt(orderId) {
             Swal.fire({
@@ -981,14 +975,12 @@
                     form.method = 'POST';
                     form.action = `/orders/${orderId}/return-request`;
 
-                    // CSRF
                     const token = document.createElement('input');
                     token.type = 'hidden';
                     token.name = '_token';
                     token.value = csrfToken;
                     form.appendChild(token);
 
-                    // Lý do
                     const reason = document.createElement('input');
                     reason.type = 'hidden';
                     reason.name = 'reason';
@@ -1002,19 +994,143 @@
         }
     </script>
 
-    {{-- xử lý gọi thanh toán lại --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.btn-pay-again').forEach(btn => {
                 btn.addEventListener('click', function(e) {
-                    e.stopPropagation(); // ✅ Ngăn không cho accordion toggle
+                    e.stopPropagation();
                 });
             });
         });
     </script>
 
     <script>
-        // Khi người dùng đã quay lại trang từ VNPay hoặc hoàn tất thanh toán
         sessionStorage.removeItem('paymentInProgress');
+    </script>
+
+    @vite('resources/js/app.js')
+    <script defer>
+        window.addEventListener('load', () => {
+            console.log('User ID:', {{ auth()->id() ?? 'null' }});
+            console.log('Echo:', window.Echo);
+            if (window.Echo) {
+                window.Echo.channel(`orders.{{ auth()->id() }}`)
+                    .subscribed(() => {
+                        console.log('Đã đăng ký kênh orders.{{ auth()->id() }}');
+                    })
+                    .listen('.order.status.updated', (e) => {
+                        console.log('Đơn hàng đã cập nhật:', e);
+                        console.log('Tìm order_code:', e.order_code);
+                        const orderElement = document.querySelector(`[data-order-code="${e.order_code}"]`);
+                        console.log('Order element:', orderElement);
+                        if (orderElement) {
+                            const statusBadge = orderElement.querySelector('[data-status-badge]');
+                            console.log('Status badge:', statusBadge);
+                            if (statusBadge) {
+                                console.log('Cập nhật status:', e.status, 'Label:', getStatusLabel(e.status));
+                                statusBadge.textContent = getStatusLabel(e.status);
+                                statusBadge.className =
+                                    `badge ${getStatusColor(e.status)} px-3 py-2 rounded-pill`;
+                            } else {
+                                console.error('Không tìm thấy status badge');
+                            }
+                            updateOrderActions(orderElement, e.status, e.id);
+                        } else {
+                            console.error('Không tìm thấy order element với order_code:', e.order_code);
+                        }
+                    })
+                    .error((error) => {
+                        console.error('Lỗi khi đăng ký kênh:', error);
+                    });
+            } else {
+                console.error('Echo không được khởi tạo');
+            }
+        });
+
+        function getStatusLabel(status) {
+            const statusMap = {
+                'pending': 'Chờ xác nhận',
+                'processing': 'Đang xử lý',
+                'shipped': 'Đang giao hàng',
+                'delivered': 'Đã giao hàng',
+                'completed': 'Hoàn thành',
+                'cancelled': 'Đơn đã hủy'
+            };
+            console.log('Status:', status, 'Label:', statusMap[status] || status);
+            return statusMap[status] || status;
+        }
+
+        function getStatusColor(status) {
+            const colorMap = {
+                'pending': 'bg-warning text-dark',
+                'processing': 'bg-primary',
+                'shipped': 'bg-info',
+                'delivered': 'bg-success',
+                'completed': 'bg-info',
+                'cancelled': 'bg-danger'
+            };
+            return colorMap[status] || 'bg-secondary';
+        }
+
+        function updateOrderActions(orderElement, status, orderId) {
+            const cancelButton = orderElement.querySelector('.open-client-cancel-modal');
+            // Xóa tất cả container hành động cũ để tránh trùng lặp
+            const oldActionContainers = orderElement.querySelectorAll('.d-flex.justify-content-end.gap-3.mt-1');
+            oldActionContainers.forEach(container => container.remove());
+
+            // Tạo container hành động mới
+            const actionContainer = createActionContainer(orderElement);
+
+            // Ẩn nút huỷ nếu không phải pending/processing
+            if (cancelButton) {
+                cancelButton.style.display = ['pending', 'processing'].includes(status) ? 'block' : 'none';
+            }
+
+            // Nếu trạng thái là delivered, thêm nút nhận hàng và trả hàng
+            if (status === 'delivered') {
+                // Tạo nút "Đã nhận hàng"
+                const receiveButton = document.createElement('button');
+                receiveButton.type = 'submit';
+                receiveButton.className = 'btn btn-success';
+                receiveButton.innerHTML = '<i class="bi bi-check-circle me-2"></i>Đã nhận hàng';
+                receiveButton.onclick = () => {
+                    if (confirm('Chỉ chọn nút này khi bạn đã nhận được hàng! Xác nhận?')) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/orders/${orderId}/received`;
+                        form.innerHTML =
+                            `<input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">`;
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                };
+
+                // Tạo nút "Trả hàng/Hoàn tiền"
+                const returnButton = document.createElement('button');
+                returnButton.type = 'button';
+                returnButton.className = 'btn btn-outline-primary';
+                returnButton.innerHTML = '<i class="bi bi-arrow-return-left me-2"></i>Trả hàng/Hoàn tiền';
+                returnButton.onclick = () => showReturnRequestPrompt(orderId);
+
+                // Thêm các nút vào container
+                actionContainer.appendChild(receiveButton);
+                actionContainer.appendChild(returnButton);
+            }
+        }
+
+        function createActionContainer(orderElement) {
+            const container = document.createElement('div');
+            container.className = 'd-flex justify-content-end gap-3 mt-1 flex-wrap';
+            const accordionHeader = orderElement.querySelector('.accordion-header');
+            const flexColumn = accordionHeader.querySelector(
+                '.d-flex.align-items-end.bg-light.rounded-4.p-4.border-0.flex-column');
+            if (flexColumn) {
+                flexColumn.appendChild(container);
+            } else {
+                // Nếu không tìm thấy flexColumn, thêm vào accordionHeader như fallback
+                accordionHeader.appendChild(container);
+            }
+            return container;
+        }
     </script>
 @endsection

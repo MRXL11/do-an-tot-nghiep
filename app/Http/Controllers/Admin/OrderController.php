@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Notification;
 use App\Models\ReturnRequest;
 use Illuminate\Support\Facades\Log;
+use App\Events\OrderStatusUpdated;
 
 class OrderController extends Controller
 {
@@ -100,7 +101,14 @@ class OrderController extends Controller
         // Lưu trạng thái mới
         $order->status = $newStatus;
         $order->save();
-
+        // Gửi sự kiện cập nhật trạng thái đơn hàng
+        Log::info('Broadcasting OrderStatusUpdated event', [
+            'order_id' => $order->id,
+            'user_id' => $order->user_id,
+            'channel' => 'orders.' . $order->user_id,
+            'status' => $newStatus,
+        ]);
+        broadcast(new OrderStatusUpdated($order));
         // Tạo thông báo cho người dùng
         $message = "Trạng thái đơn hàng #{$order->order_code} đã được cập nhật từ '{$oldStatusLabel}' thành '{$newStatusLabel}'.";
         $this->createOrderNotificationToClient($order, $message, 'Đơn hàng đã được cập nhật');
@@ -157,7 +165,8 @@ class OrderController extends Controller
         }
 
         $order->save();
-
+        // Gửi sự kiện cập nhật trạng thái đơn hàng
+        // broadcast(new OrderStatusUpdated($order));
         // Tạo thông báo cho khách
         if ($order->cancellation_requested) {
             $message = "Đơn hàng #{$order->order_code} đã được huỷ theo yêu cầu của bạn. ";
@@ -225,9 +234,9 @@ class OrderController extends Controller
         $note = $request->input('admin_cancel_note');
 
         // Đầu mỗi nhánh xử lý (approve/reject), kiểm tra nếu đã xử lý thì không cho tiếp tục
-if ($order->cancel_confirmed) {
-    return response()->json(['error' => 'Yêu cầu hủy đã được xử lý trước đó.'], 400);
-}
+        if ($order->cancel_confirmed) {
+            return response()->json(['error' => 'Yêu cầu hủy đã được xử lý trước đó.'], 400);
+        }
 
         if (!in_array($action, ['approve', 'reject'])) {
             return response()->json(['error' => 'Hành động không hợp lệ.'], 400);
@@ -316,8 +325,10 @@ if ($order->cancel_confirmed) {
         if ($newStatus === 'approved') {
             $returnRequest->admin_note =  'Yêu cầu trả hàng đã được phê duyệt';
             // Nếu đơn dùng phương thức thanh toán online hoặc chuyển khoản
-            if (in_array($order->payment_method, ['online', 'bank_transfer'])
-               && $order->payment_status === 'completed') {
+            if (
+                in_array($order->payment_method, ['online', 'bank_transfer'])
+                && $order->payment_status === 'completed'
+            ) {
                 $order->payment_status = 'refund_in_processing';
             }
             // Với COD thì giữ nguyên
@@ -327,8 +338,10 @@ if ($order->cancel_confirmed) {
         if ($newStatus === 'refunded') {
             $returnRequest->admin_note = 'Yêu cầu trả hàng đã hoàn tất và tiền đã được hoàn lại';
             // Chỉ cho phép cập nhật 'refunded' nếu phương thức có hoàn tiền
-            if (in_array($order->payment_method, ['online', 'bank_transfer'])
-               && $order->payment_status === 'refund_in_processing') {
+            if (
+                in_array($order->payment_method, ['online', 'bank_transfer'])
+                && $order->payment_status === 'refund_in_processing'
+            ) {
                 $order->payment_status = 'refunded';
                 $order->save();
             }

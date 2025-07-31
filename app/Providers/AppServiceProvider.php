@@ -4,48 +4,40 @@ namespace App\Providers;
 
 use App\Models\Cart;
 use App\Services\SmsService;
-use Illuminate\Pagination\Paginator;// Thư viện phân trang của Laravel
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Route; // Thêm dòng này
 use Illuminate\Support\ServiceProvider;
 use App\Http\View\Composers\SlideComposer;
+
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-    //    $this->app->singleton(SmsService::class, function () {
-    //     return new SmsService();
-    //     });
-        // Đăng ký dịch vụ SMS nhưng chưa thực hiện
-     
+        // $this->app->singleton(SmsService::class, function () {
+        //     return new SmsService();
+        // });
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
-        // \Illuminate\Pagination\Paginator::useBootstrapFive();
-        // Chỉ sử dụng Bootstrap cho Paginator -PHÂN TRANG
         Paginator::useBootstrap();
 
-        // View Composer: Chia sẻ biến $cartCount tới tất cả các view ('*')
         View::composer('*', function ($view) {
             $cartCount = 0;
-
             if (Auth::check()) {
-                $cartCount = Cart::where('user_id', Auth::id())->count(); // đếm số sản phẩm khác nhau
+                $cartCount = Cart::where('user_id', Auth::id())->count();
             }
-
             $view->with('cartCount', $cartCount);
         });
-         // THÊM ĐOẠN CODE NÀY VÀO
-        // Dòng này có nghĩa là: "Mỗi khi view 'banner-left' được render,
-        // hãy chạy lớp SlideComposer để cung cấp dữ liệu cho nó."
+
         View::composer('client.layouts.banner', SlideComposer::class);
+
+        // Đăng ký route API
+        Route::prefix('api')
+             ->middleware('api')
+             ->namespace('App\Http\Controllers')
+             ->group(base_path('routes/api.php'));
     }
 }

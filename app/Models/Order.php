@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use App\Events\OrderStatusUpdated;
 /**
  * @property int $id
  * @property string $order_code
@@ -140,4 +140,9 @@ class Order extends Model
 
         return $paymentStatuses[$paymentStatus] ?? ['label' => 'Không xác định'];
     }
+
+    protected $dispatchesEvents = [
+        'updated' => OrderStatusUpdated::class,
+        // 'created' => OrderStatusUpdated::class,
+    ];
 }
