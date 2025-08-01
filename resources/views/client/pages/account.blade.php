@@ -206,40 +206,50 @@
                         </div>
                     </div>
 
-                    <div class="card-body p-4">
-                        <div class="accordion accordion-flush" id="orderAccordion">
-                            @forelse ($orders as $order)
-                                <div class="accordion-item border-0 mb-4 rounded-4 shadow-sm overflow-hidden"
-                                    data-order-code="{{ $order->order_code }}">
-                                    <h2 class="accordion-header" id="heading{{ $order->id }}">
-                                        <div class="d-flex align-items-end bg-light rounded-4 p-4 border-0 flex-column">
-                                            <button
-                                                class="accordion-button collapsed bg-transparent border-0 p-0 flex-grow-1 shadow-none"
-                                                type="button" data-bs-toggle="collapse"
-                                                data-bs-target="#collapse{{ $order->id }}">
-                                                <div class="d-flex align-items-center justify-content-between w-100">
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="bg-primary rounded-circle p-2 me-3">
-                                                            <i class="bi bi-box-seam text-white"></i>
-                                                        </div>
-                                                        <div>
-                                                            <div class="mb-3 d-flex flex-column">
-                                                                <h6 class="fw-bold text-dark mb-1">
-                                                                    #{{ $order->order_code }}
-                                                                </h6>
-                                                                <h6 class="mb-1">
-                                                                    {{ $order->getPaymentMethod($order->payment_method)['label'] }}
-                                                                    -
-                                                                    <span class="fw-semibold"
-                                                                        style="color: {{ $order->getPaymentStatus($order->payment_status)['color'] }}">
-                                                                        {{ $order->getPaymentStatus($order->payment_status)['label'] }}
-                                                                    </span>
-                                                                </h6>
-                                                                <small class="text-muted d-block mb-1">
-                                                                    <i class="bi bi-calendar3 me-1"></i>
-                                                                    {{ $order->created_at->format('d/m/Y - H:i') }}
-                                                                </small>
-                                                            </div>
+<div class="card-body p-4">
+    <div class="accordion accordion-flush" id="orderAccordion">
+        @forelse ($orders as $order)
+            <div class="accordion-item border-0 mb-4 rounded-4 shadow-sm overflow-hidden"
+                data-order-code="{{ $order->order_code }}">
+                <h2 class="accordion-header" id="heading{{ $order->id }}">
+                    <div class="d-flex align-items-end bg-light rounded-4 p-4 border-0 flex-column">
+                        <button
+                            class="accordion-button collapsed bg-transparent border-0 p-0 flex-grow-1 shadow-none"
+                            type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{ $order->id }}">
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary rounded-circle p-2 me-3">
+                                        <i class="bi bi-box-seam text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="mb-3 d-flex flex-column">
+                                            <h6 class="fw-bold text-dark mb-1">
+                                                #{{ $order->order_code }} - {{ $order->shippingAddress->name ?? $order->user->name }}
+                                            </h6>
+                                            <h6 class="mb-1">
+                                                {{ $order->getPaymentMethod($order->payment_method)['label'] }}
+                                                -
+                                                <span class="fw-semibold"
+                                                    style="color: {{ $order->getPaymentStatus($order->payment_status)['color'] }}">
+                                                    {{ $order->getPaymentStatus($order->payment_status)['label'] }}
+                                                </span>
+                                            </h6>
+                                            <small class="text-muted d-block mb-1">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                {{ $order->created_at->format('d/m/Y - H:i') }}
+                                            </small>
+                                            <small class="text-muted d-block">
+                                                <i class="bi bi-box me-1"></i>
+                                                @php
+                                                    $products = $order->orderDetails->take(2)->map(function($detail) {
+                                                        return $detail->productVariant->product->name . ' (x' . $detail->quantity . ')';
+                                                    })->join(', ');
+                                                    $more = $order->orderDetails->count() > 2 ? '...' : '';
+                                                @endphp
+                                                Sản phẩm: {{ $products }}{{ $more }}
+                                            </small>
+                                        </div>
 
                                                             {{-- hiển thị trạng thái yêu cầu huỷ (nếu có) --}}
                                                             @php

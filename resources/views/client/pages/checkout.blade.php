@@ -51,32 +51,40 @@
                     <div class="card bg-light border-0 shadow">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="mb-0"><i class="bi bi-credit-card-fill me-2 text-primary"></i>Chi tiết thanh toán</h5>
+                                <h5 class="mb-0"><i class="bi bi-credit-card-fill me-2 text-primary"></i>Chi tiết thanh
+                                    toán</h5>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Chọn phương thức thanh toán:</label>
                                 <div class="d-flex gap-3">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" value="cod" id="cod" checked>
-                                        <label class="form-check-label" for="cod"><i class="bi bi-cash-stack me-1"></i>COD</label>
+                                        <input class="form-check-input" type="radio" name="paymentMethod" value="cod"
+                                            id="cod" checked>
+                                        <label class="form-check-label" for="cod"><i
+                                                class="bi bi-cash-stack me-1"></i>COD</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" value="card" id="card">
-                                        <label class="form-check-label" for="card"><i class="bi bi-credit-card-2-front me-1"></i>VNpay</label>
+                                        <input class="form-check-input" type="radio" name="paymentMethod" value="card"
+                                            id="card">
+                                        <label class="form-check-label" for="card"><i
+                                                class="bi bi-credit-card-2-front me-1"></i>VNpay</label>
                                     </div>
                                 </div>
                             </div>
                             <div id="cod-details" class="payment-method-details">
-                                <div class="alert alert-success py-2 mb-3"><i class="bi bi-truck me-2"></i> Thanh toán khi nhận hàng (COD)</div>
+                                <div class="alert alert-success py-2 mb-3"><i class="bi bi-truck me-2"></i> Thanh toán khi
+                                    nhận hàng (COD)</div>
                             </div>
                             <div id="card-details" class="payment-method-details" style="display: none;">
-                                <div class="alert alert-info py-2 mb-3"><i class="bi bi-credit-card-2-front me-2"></i> Thanh toán bằng VNpay</div>
+                                <div class="alert alert-info py-2 mb-3"><i class="bi bi-credit-card-2-front me-2"></i> Thanh
+                                    toán bằng VNpay</div>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Voucher giảm giá</label>
-                                <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#coupon-modal">
-                                    <i class="bi bi-ticket-percent-fill me-2"></i> Chọn  Voucher
+                                <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal"
+                                    data-bs-target="#coupon-modal">
+                                    <i class="bi bi-ticket-percent-fill me-2"></i> Chọn Voucher
                                 </button>
                                 <div id="applied-coupons-list" class="mt-2"></div>
                             </div>
@@ -86,7 +94,11 @@
                                 <select class="form-select" id="address-select">
                                     <option value="">-- Thêm địa chỉ mới --</option>
                                     @foreach ($user->shippingAddresses ?? [] as $address)
-                                        <option value="{{ $address->id }}" data-name="{{ $address->name }}" data-phone="{{ $address->phone_number }}" data-address="{{ $address->address }}" data-ward="{{ $address->ward }}" data-district="{{ $address->district }}" data-city="{{ $address->city }}" data-full-address="{{ $address->full_address }}">
+                                        <option value="{{ $address->id }}" data-name="{{ $address->name }}"
+                                            data-phone="{{ $address->phone_number }}"
+                                            data-address="{{ $address->address }}" data-ward="{{ $address->ward }}"
+                                            data-district="{{ $address->district }}" data-city="{{ $address->city }}"
+                                            data-full-address="{{ $address->full_address }}">
                                             {{ $address->full_address }}
                                         </option>
                                     @endforeach
@@ -100,21 +112,51 @@
                             <div class="mb-4 mt-4" id="manual-address-input">
                                 <label class="form-label fw-semibold">Thông tin giao hàng</label>
                                 <div class="mb-2">
-                                    <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" placeholder="Họ và tên người nhận" value="{{ old('name') }}">
-                                    @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <input type="text" name="name"
+                                        class="form-control @error('name') is-invalid @enderror"
+                                        placeholder="Họ và tên người nhận" value="{{ old('name') }}">
+                                    @error('name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-2">
-                                    <input type="text" name="phone_number" class="form-control @error('phone_number') is-invalid @enderror" placeholder="Số điện thoại" value="{{ old('phone_number') }}">
-                                    @error('phone_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <input type="text" name="phone_number"
+                                        class="form-control @error('phone_number') is-invalid @enderror"
+                                        placeholder="Số điện thoại" value="{{ old('phone_number') }}">
+                                    @error('phone_number')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-2">
-                                    <input type="text" name="address" class="form-control @error('address') is-invalid @enderror" placeholder="Địa chỉ cụ thể (Số nhà, tên đường...)" value="{{ old('address') }}">
-                                    @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <input type="text" name="address"
+                                        class="form-control @error('address') is-invalid @enderror"
+                                        placeholder="Địa chỉ cụ thể (Số nhà, tên đường...)" value="{{ old('address') }}">
+                                    @error('address')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-4 mb-2"><input type="text" name="ward" class="form-control @error('ward') is-invalid @enderror" placeholder="Xã/Phường" value="{{ old('ward') }}">@error('ward')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
-                                    <div class="col-md-4 mb-2"><input type="text" name="district" class="form-control @error('district') is-invalid @enderror" placeholder="Quận/Huyện" value="{{ old('district') }}">@error('district')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
-                                    <div class="col-md-4 mb-2"><input type="text" name="city" class="form-control @error('city') is-invalid @enderror" placeholder="Tỉnh/Thành phố" value="{{ old('city') }}">@error('city')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+                                    <div class="col-md-4 mb-2"><input type="text" name="ward"
+                                            class="form-control @error('ward') is-invalid @enderror"
+                                            placeholder="Xã/Phường" value="{{ old('ward') }}">
+                                        @error('ward')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-4 mb-2"><input type="text" name="district"
+                                            class="form-control @error('district') is-invalid @enderror"
+                                            placeholder="Quận/Huyện" value="{{ old('district') }}">
+                                        @error('district')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-4 mb-2"><input type="text" name="city"
+                                            class="form-control @error('city') is-invalid @enderror"
+                                            placeholder="Tỉnh/Thành phố" value="{{ old('city') }}">
+                                        @error('city')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
                             </div>
 
@@ -128,11 +170,13 @@
                                 <strong>{{ number_format($shippingFee, 0, ',', '.') }} ₫</strong>
                             </div>
                             {{-- Placeholder cho các loại giảm giá --}}
-                            <div id="order-discount-row" class="d-flex justify-content-between text-success" style="display: none;">
+                            <div id="order-discount-row" class="d-flex justify-content-between text-success"
+                                style="display: none;">
                                 <span>Giảm giá đơn hàng:</span>
                                 <strong id="order-discount-amount"></strong>
                             </div>
-                            <div id="shipping-discount-row" class="d-flex justify-content-between text-success" style="display: none;">
+                            <div id="shipping-discount-row" class="d-flex justify-content-between text-success"
+                                style="display: none;">
                                 <span>Giảm giá vận chuyển:</span>
                                 <strong id="shipping-discount-amount"></strong>
                             </div>
@@ -147,7 +191,8 @@
                             <div class="form-check mt-3">
                                 <input class="form-check-input" type="checkbox" id="agree" checked>
                                 <label class="form-check-label" for="agree">
-                                    Tôi đồng ý với <a href="#" class="text-decoration-underline">chính sách mua hàng</a>
+                                    Tôi đồng ý với <a href="#" class="text-decoration-underline">chính sách mua
+                                        hàng</a>
                                 </label>
                             </div>
                             <button type="submit" class="btn btn-success w-100 mt-3" id="submit-btn">
@@ -161,19 +206,21 @@
     </form>
 
     <div class="modal fade" id="coupon-modal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="couponModalLabel">Chọn Voucher</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-             <div id="coupon-list-container">
-                 <div class="text-center"><div class="spinner-border text-primary" role="status"></div></div>
-             </div>
-          </div>
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="couponModalLabel">Chọn Voucher</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="coupon-list-container">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 @endsection
 
@@ -203,7 +250,10 @@
             const cityInput = document.querySelector('input[name="city"]');
 
             // [TÍCH HỢP] - Khai báo biến cho logic mã giảm giá mới
-            let appliedCoupons = { order: null, shipping: null };
+            let appliedCoupons = {
+                order: null,
+                shipping: null
+            };
             const subtotal = {{ $subtotal }};
             const shippingFee = {{ $shippingFee }};
             const cartItemIds = "{{ implode(',', $cartItems->pluck('id')->toArray()) }}";
@@ -239,7 +289,7 @@
 
                 detailBox.classList.toggle('d-none', useNewAddress);
                 manualAddressInput.classList.toggle('d-none', !useNewAddress);
-                
+
                 if (!useNewAddress) {
                     nameSpan.textContent = selected.dataset.name || '';
                     phoneSpan.textContent = selected.dataset.phone || '';
@@ -252,8 +302,12 @@
                     cityInput.value = selected.dataset.city || '';
                     shippingAddressIdInput.value = selected.value;
                 } else {
-                    nameInput.value = ''; phoneInput.value = ''; addressInput.value = '';
-                    wardInput.value = ''; districtInput.value = ''; cityInput.value = '';
+                    nameInput.value = '';
+                    phoneInput.value = '';
+                    addressInput.value = '';
+                    wardInput.value = '';
+                    districtInput.value = '';
+                    cityInput.value = '';
                     shippingAddressIdInput.value = '';
                 }
             });
@@ -261,26 +315,31 @@
             select.dispatchEvent(new Event('change'));
 
             // [MỚI] - Logic cho mã giảm giá
-            document.querySelector('[data-bs-target="#coupon-modal"]').addEventListener('click', fetchAvailableCoupons);
+            document.querySelector('[data-bs-target="#coupon-modal"]').addEventListener('click',
+                fetchAvailableCoupons);
 
             async function fetchAvailableCoupons() {
-                couponListContainer.innerHTML = `<div class="text-center p-3"><div class="spinner-border text-primary"></div></div>`;
+                couponListContainer.innerHTML =
+                    `<div class="text-center p-3"><div class="spinner-border text-primary"></div></div>`;
                 try {
-                    const response = await fetch(`{{ route('checkout.getAvailableCoupons') }}?cart_item_ids=${cartItemIds}`);
+                    const response = await fetch(
+                        `{{ route('checkout.getAvailableCoupons') }}?cart_item_ids=${cartItemIds}`);
                     const coupons = await response.json();
                     renderCouponsInModal(coupons);
                 } catch (error) {
-                    couponListContainer.innerHTML = `<p class="text-danger text-center">Không thể tải danh sách voucher.</p>`;
+                    couponListContainer.innerHTML =
+                        `<p class="text-danger text-center">Không thể tải danh sách voucher.</p>`;
                 }
             }
 
             function renderCouponsInModal(coupons) {
                 couponListContainer.innerHTML = '';
                 if (!coupons || coupons.length === 0) {
-                    couponListContainer.innerHTML = `<p class="text-muted text-center">Không có voucher nào phù hợp.</p>`;
+                    couponListContainer.innerHTML =
+                        `<p class="text-muted text-center">Không có voucher nào phù hợp.</p>`;
                     return;
                 }
-                
+
                 coupons.forEach(coupon => {
                     const isApplied = appliedCoupons[coupon.type]?.code === coupon.code;
                     const isDisabled = !isApplied && appliedCoupons[coupon.type] !== null;
@@ -299,7 +358,7 @@
                         </div>`;
                     couponListContainer.appendChild(couponEl);
                 });
-                
+
                 couponListContainer.querySelectorAll('.apply-coupon-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => handleApplyOrRemoveCoupon(e.target.dataset.code));
                 });
@@ -342,20 +401,37 @@
 
             async function recalculateTotals(codes) {
                 couponModal.hide();
-                Swal.fire({ title: 'Đang cập nhật...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+                Swal.fire({
+                    title: 'Đang cập nhật...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
 
                 try {
                     const response = await fetch('{{ route('checkout.applyCoupons') }}', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
-                        body: JSON.stringify({ coupon_codes: codes, cart_item_ids: cartItemIds })
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            coupon_codes: codes,
+                            cart_item_ids: cartItemIds
+                        })
                     });
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.message || 'Lỗi khi áp dụng mã.');
 
-                    appliedCoupons = { order: null, shipping: null };
-                    data.applied_coupons.forEach(c => { appliedCoupons[c.type] = c; });
-                    
+                    appliedCoupons = {
+                        order: null,
+                        shipping: null
+                    };
+                    data.applied_coupons.forEach(c => {
+                        appliedCoupons[c.type] = c;
+                    });
+
                     updateUI(data.order_discount, data.shipping_discount, data.total);
                     Swal.close();
                 } catch (error) {
@@ -368,8 +444,10 @@
                 Object.values(appliedCoupons).forEach(coupon => {
                     if (coupon) {
                         const appliedEl = document.createElement('div');
-                        appliedEl.className = 'alert alert-success py-2 px-3 mt-2 d-flex justify-content-between align-items-center';
-                        appliedEl.innerHTML = `
+                        appliedEl.className =
+                            'alert alert-success py-2 px-3 mt-2 d-flex justify-content-between align-items-center';
+                        appliedEl.innerHTML =
+                            `
                             <span><i class="bi bi-check-circle-fill me-2"></i><strong>${coupon.code}</strong></span>
                             <button type="button" class="btn-close remove-coupon-btn" data-type="${coupon.type}"></button>`;
                         appliedCouponsList.appendChild(appliedEl);
@@ -389,33 +467,81 @@
                 totalAmountEl.textContent = `${total.toLocaleString('vi-VN')} ₫`;
                 updatePaymentButton(); // Cập nhật lại text nút thanh toán
             }
-            
+
             // [GIỮ NGUYÊN] - Logic submit form
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(form);
                 if (!document.getElementById('agree').checked) {
-                    Swal.fire({icon: 'warning', title: 'Lỗi', text: 'Bạn cần đồng ý với chính sách mua hàng.'});
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Lỗi',
+                        text: 'Bạn cần đồng ý với chính sách mua hàng.'
+                    });
                     return;
                 }
-                Swal.fire({ title: 'Đang xử lý đơn hàng...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-                
-                fetch('{{ route('checkout.submit') }}', { method: 'POST', body: formData })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (data.vnpay_url) {
-                            window.location.href = data.vnpay_url;
-                        } else {
-                            window.location.href = data.redirect;
-                        }
-                    } else {
-                        Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message || 'Có lỗi xảy ra.' });
+
+                // Xóa lỗi cũ
+                document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+
+                Swal.fire({
+                    title: 'Đang xử lý đơn hàng...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading()
                     }
-                })
-                .catch(error => {
-                    Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Đã có lỗi xảy ra khi xử lý đơn hàng.' });
                 });
+
+                fetch('{{ route('checkout.submit') }}', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.close();
+                        if (data.success) {
+                            if (data.vnpay_url) {
+                                window.location.href = data.vnpay_url;
+                            } else {
+                                window.location.href = data.redirect;
+                            }
+                        } else {
+                            if (data.errors) {
+                                // Hiển thị lỗi validate dưới từng trường
+                                Object.keys(data.errors).forEach(field => {
+                                    const input = document.querySelector(
+                                        `input[name="${field}"]`);
+                                    if (input) {
+                                        input.classList.add('is-invalid');
+                                        const errorDiv = document.createElement('div');
+                                        errorDiv.className = 'invalid-feedback';
+                                        errorDiv.textContent = data.errors[field][0];
+                                        input.parentNode.appendChild(errorDiv);
+                                    }
+                                });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: data.message || 'Vui lòng kiểm tra lại thông tin.'
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: data.message || 'Có lỗi xảy ra.'
+                                });
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: 'Đã có lỗi xảy ra khi xử lý đơn hàng.'
+                        });
+                    });
             });
         });
     </script>
