@@ -48,49 +48,42 @@ class OrderController extends Controller
             ], 404);
         }
 
-        // Chỉ cho phép huỷ nếu đơn chưa xử lý xong
         if (!in_array($order->status, ['pending', 'processing'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Đơn hàng này không thể huỷ nữa.'
+                'message' => 'Đơn hàng này không thể hủy nữa.'
             ], 400);
         }
 
-        // Kiểm tra đã gửi yêu cầu chưa
         if ($order->cancellation_requested) {
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn đã gửi yêu cầu huỷ đơn hàng này trước đó. Vui lòng chờ admin xử lý.'
+                'message' => 'Bạn đã gửi yêu cầu hủy đơn hàng này trước đó. Vui lòng chờ admin xử lý.'
             ], 400);
         }
 
-        // Lấy lý do từ form
         $reason = $request->cancel_reason;
         if (empty($reason)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Vui lòng nhập lý do huỷ đơn hàng.'
+                'message' => 'Vui lòng nhập lý do hủy đơn hàng.'
             ], 400);
         }
 
         try {
-            // Cập nhật đơn hàng: đánh dấu đã gửi yêu cầu + lưu lý do
             $order->cancel_reason = $reason;
             $order->cancellation_requested = true;
-            $order->cancel_confirmed = false; // chưa được duyệt
+            $order->cancel_confirmed = false;
             if (
                 !empty($order->vnp_txn_ref) &&
                 $order->payment_method === 'online' &&
                 $order->payment_status === 'pending' &&
                 $order->status === 'pending'
             ) {
-                // Người dùng hủy khi chưa thanh toán => coi như không mua nữa
                 $order->payment_status = 'failed';
             }
-
             $order->save();
 
-            // Gửi thông báo đến admin
             $admins = User::where('role_id', 1)->get();
             if ($admins->isEmpty()) {
                 return response()->json([
@@ -99,7 +92,7 @@ class OrderController extends Controller
                 ], 400);
             }
 
-            $message = "Người dùng {$order->user->name} yêu cầu huỷ đơn hàng #{$order->order_code} với lý do: {$order->cancel_reason}. Vui lòng kiểm tra và xử lý.";
+            $message = "Người dùng {$order->user->name} yêu cầu hủy đơn hàng #{$order->order_code} với lý do: {$order->cancel_reason}. Vui lòng kiểm tra và xử lý.";
 
             foreach ($admins as $admin) {
                 Notification::create([
@@ -115,10 +108,10 @@ class OrderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Đã gửi yêu cầu huỷ đơn hàng thành công. Vui lòng chờ admin xử lý.'
+                'message' => 'Đã gửi yêu cầu hủy đơn hàng thành công. Vui lòng chờ admin xử lý.'
             ]);
         } catch (\Exception $e) {
-            Log::error('Lỗi tạo yêu cầu huỷ đơn hàng: ' . $e->getMessage());
+            Log::error('Lỗi tạo yêu cầu hủy đơn hàng: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại.'
