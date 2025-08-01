@@ -924,34 +924,78 @@
         });
     </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const buttons = document.querySelectorAll('.open-client-cancel-modal');
-            const form = document.getElementById('client-cancel-form');
-            const modal = new bootstrap.Modal(document.getElementById('clientCancelModal'));
-            const reasonField = document.getElementById('cancel_reason');
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.open-client-cancel-modal');
+    const form = document.getElementById('client-cancel-form');
+    const modal = new bootstrap.Modal(document.getElementById('clientCancelModal'));
+    const reasonField = document.getElementById('cancel_reason');
 
-            buttons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const orderId = this.dataset.orderId;
-                    form.action = `/order/${orderId}/cancel-request`;
-                    form.reset();
-                    modal.show();
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.dataset.orderId;
+            form.action = `/order/${orderId}/cancel-request`;
+            form.reset();
+            modal.show();
+        });
+    });
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const reason = reasonField.value.trim();
+
+        if (reason.length < 10) {
+            reasonField.classList.add('is-invalid');
+            reasonField.focus();
+            return;
+        }
+
+        reasonField.classList.remove('is-invalid');
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ cancel_reason: reason })
+        })
+        .then(response => response.json())
+        .then(data => {
+            modal.hide();
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: data.message,
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    location.reload(); // Tải lại trang để cập nhật trạng thái
                 });
-            });
-
-            form.addEventListener('submit', function(e) {
-                const reason = reasonField.value.trim();
-                if (reason.length < 10) {
-                    e.preventDefault();
-                    reasonField.classList.add('is-invalid');
-                    reasonField.focus();
-                } else {
-                    reasonField.classList.remove('is-invalid');
-                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: data.message,
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK'
+                });
+            }
+        })
+        .catch(error => {
+            modal.hide();
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Đã có lỗi xảy ra. Vui lòng thử lại!',
+                showConfirmButton: true,
+                confirmButtonText: 'OK'
             });
         });
-    </script>
+    });
+});
+</script>
 
     <script>
         function showReturnRequestPrompt(orderId) {
