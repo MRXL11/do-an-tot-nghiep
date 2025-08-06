@@ -372,7 +372,7 @@ public function submit(Request $request)
             $vnp_OrderType = "billpayment";
             $vnp_Amount = $totalPrice * 100;
             $vnp_Locale = "vn";
-            $vnp_BankCode = "NCB";
+            // $vnp_BankCode = "NCB";
             $vnp_IpAddr = $request->ip();
 
             $inputData = [
@@ -389,7 +389,9 @@ public function submit(Request $request)
                 "vnp_TxnRef" => $vnp_TxnRef,
                 "vnp_Version" => "2.1.0"
             ];
-            if (!empty($vnp_BankCode)) $inputData['vnp_BankCode'] = $vnp_BankCode;
+           if ($request->has('bank_code') && !empty($request->input('bank_code'))) {
+                $inputData['vnp_BankCode'] = $request->input('bank_code');
+            }
 
             ksort($inputData);
             $hashData = "";

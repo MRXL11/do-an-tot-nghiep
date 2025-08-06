@@ -8,7 +8,6 @@
                 <div class="shop__sidebar">
                     {{-- Search --}}
                     <div class="shop__sidebar__search mb-4">
-
                         <form action="{{ route('products-client') }}" method="GET" class="d-flex">
                             @foreach (request()->query() as $key => $value)
                                 @if ($key !== 'search')
@@ -39,7 +38,7 @@
                                         <ul class="list-unstyled">
                                             @foreach($categories as $cat)
                                                 <li class="{{ request()->route('slug') == $cat->slug ? 'active' : '' }}">
-                                                    <a href="{{ route('products-client', $cat->slug) }}" class="d-block py-2 px-3 rounded-2">
+                                                    <a href="{{ route('products-client', array_merge(request()->route()->parameters(), request()->query(), ['slug' => $cat->slug])) }}" class="d-block py-2 px-3 rounded-2">
                                                         {{ $cat->name }}
                                                     </a>
                                                 </li>
@@ -63,12 +62,9 @@
                                 <div class="card-body p-3">
                                     <div class="shop__sidebar__brand">
                                         <ul class="list-unstyled">
-
                                             @foreach ($brands as $brand)
                                                 <li class="{{ request()->brand == $brand->id ? 'active' : '' }}">
-                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['brand' => $brand->id])) }}"
-                                                        class="d-block py-2 px-3 rounded-2">
-
+                                                    <a href="{{ route('products-client', array_merge(request()->route()->parameters(), request()->query(), ['brand' => $brand->id])) }}" class="d-block py-2 px-3 rounded-2">
                                                         {{ $brand->name }}
                                                     </a>
                                                 </li>
@@ -91,26 +87,24 @@
                             <div class="collapse" id="priceCollapse">
                                 <div class="card-body p-3">
                                     <div class="shop__sidebar__price">
-                                        @php
-                                            $priceRanges = [
-                                                ['min' => 0, 'max' => 50, 'label' => '0.00 - 50.00'],
-                                                ['min' => 50, 'max' => 100, 'label' => '50.00 - 100.00'],
-                                                ['min' => 100, 'max' => 150, 'label' => '100.00 - 150.00'],
-                                                ['min' => 150, 'max' => 200, 'label' => '150.00 - 200.00'],
-                                                ['min' => 200, 'max' => 250, 'label' => '200.00 - 250.00'],
-                                                ['min' => 250, 'max' => null, 'label' => '250.00+'],
-                                            ];
-                                        @endphp
-                                        <ul class="list-unstyled">
-                                            @foreach ($priceRanges as $range)
-                                                <li
-                                                    class="{{ request()->price_min == $range['min'] && request()->price_max == $range['max'] ? 'active' : '' }}">
-                                                    <a href="{{ route('products-client', array_merge(request()->query(), ['price_min' => $range['min'], 'price_max' => $range['max']])) }}"
-                                                        class="d-block py-2 px-3 rounded-2">
-                                                        {{ $range['label'] }}
-                                                    </a>
-                                                </li>
-                                            @endforeach
+                                     @php
+                                        $priceRanges = [
+                                            ['min' => 0, 'max' => 200000, 'label' => '0 - 200.000 đ'],
+                                            ['min' => 200000, 'max' => 400000, 'label' => '200.000 - 400.000 đ'],
+                                            ['min' => 400000, 'max' => 600000, 'label' => '400.000 - 600.000 đ'],
+                                            ['min' => 600000, 'max' => 800000, 'label' => '600.000 - 800.000 đ'],
+                                            ['min' => 800000, 'max' => 1000000, 'label' => '800.000 - 1.000.000 đ'],
+                                            ['min' => 1000000, 'max' => null, 'label' => '1.000.000 đ +'],
+                                        ];
+                                    @endphp
+
+                                    @foreach ($priceRanges as $range)
+                                        <li class="{{ request()->price_min == $range['min'] && request()->price_max == $range['max'] ? 'active' : '' }}">
+                                            <a href="{{ route('products-client', array_merge(request()->route()->parameters(), request()->query(), ['price_min' => $range['min'], 'price_max' => $range['max']])) }}">
+                                                {{ $range['label'] }}
+                                            </a>
+                                        </li>
+                                    @endforeach
                                         </ul>
                                     </div>
                                 </div>
@@ -134,8 +128,8 @@
                                                 class="btn btn-outline-dark rounded-3 m-1 {{ request()->size == $size ? 'active' : '' }}">
                                                 {{ $size }}
                                                 <input type="radio" name="size" id="size-{{ $size }}"
-                                                    onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['size' => $size])) }}'"
-                                                    @if(request()->size == $size) checked @endif>
+                                                onchange="location.href='{{ route('products-client', array_merge(request()->route()->parameters(), request()->query(), ['size' => $size])) }}'"
+                                                @if(request()->size == $size) checked @endif>
                                             </label>
                                         @endforeach
                                     </div>
@@ -156,14 +150,14 @@
                                 <div class="card-body p-3">
                                     <div class="shop__sidebar__color">
                                         @foreach (collect($colors)->unique(function ($item) {
-            return strtolower($item);
-        }) as $color)
+                                                    return strtolower($item);
+                                                }) as $color)
                                             <label
                                                 class="c-{{ $loop->iteration }} {{ strtolower(request()->color) == strtolower($color) ? 'active' : '' }}"
                                                 for="color-{{ $color }}">
                                                 <input type="radio" name="color" id="color-{{ $color }}"
-                                                    onchange="location.href='{{ route('products-client', array_merge(request()->query(), ['color' => $color])) }}'"
-                                                    @if(strtolower(request()->color) == strtolower($color)) checked @endif>
+                                                onchange="location.href='{{ route('products-client', array_merge(request()->route()->parameters(), request()->query(), ['color' => $color])) }}'"
+                                                @if(strtolower(request()->color) == strtolower($color)) checked @endif>
                                             </label>
                                         @endforeach
                                     </div>
@@ -183,12 +177,7 @@
                         <a href="{{ request()->route('slug') ? route('products-client', request()->route('slug')) . '?sort=newest' : route('products-client', array_merge(request()->query(), ['sort' => 'newest'])) }}"
                             class="btn btn-outline-primary {{ request()->sort == 'newest' || !request()->sort ? 'active' : '' }}"><i
                                 class="bi bi-sort-alpha-down"></i> Mới nhất</a>
-                        <a href="{{ request()->route('slug') ? route('products-client', request()->route('slug')) . '?sort=sales' : route('products-client', array_merge(request()->query(), ['sort' => 'sales'])) }}"
-                            class="btn btn-outline-primary {{ request()->sort == 'sales' ? 'active' : '' }}"><i
-                                class="bi bi-bag-check"></i> Bán chạy</a>
-                        <a href="{{ route('products-client', array_merge(request()->query(), ['sort' => 'likes'])) }}"
-                            class="btn btn-outline-primary {{ request()->sort == 'likes' ? 'active' : '' }}"><i
-                                class="bi bi-heart"></i> lượt thích</a>
+                        
                         <a href="{{ route('products-client', array_merge(request()->query(), ['sort' => 'discount'])) }}"
                             class="btn btn-outline-primary {{ request()->sort == 'discount' ? 'active' : '' }}"><i
                                 class="bi bi-star"></i> Đánh giá</a>
@@ -205,14 +194,11 @@
                         <h5 class="mb-3">Kết quả tìm kiếm cho từ khoá '<span class="text-primary">{{ request()->header_search }}</span>'</h5>
                     @endif
                     @php
-                        // if (request()->has('category') && request()->category) {
-                        //     $category = $categories->firstWhere('id', request()->category);
-                        //     $filters[] = 'Danh mục: ' . ($category ? $category->name : 'Không xác định');
-                        // }
-                        // if (request()->has('brand') && request()->brand) {
-                        //     $brand = $brands->firstWhere('slug', request()->brand);
-                        //     $filters[] = 'Thương hiệu: ' . ($brand ? $brand->name : 'Không xác định');
-                        // }
+                        if (request()->has('category') && request()->category) {
+                            $category = $categories->firstWhere('id', request()->category);
+                            $filters[] = 'Danh mục: ' . ($category ? $category->name : 'Không xác định');
+                        }
+                        // Lọc theo slug
                         if(request()->route('slug')) {
                             $category = $categories->firstWhere('slug', request()->route('slug'));
                             $filters[] = 'Danh mục: ' . ($category ? $category->name : 'Không xác định');
@@ -223,12 +209,14 @@
                             $brand = $brands->firstWhere('id', request()->brand);
                             $filters[] = 'Thương hiệu: ' . ($brand ? $brand->name : 'Không xác định');
                         }
-                        // Nếu là tìm kiếm header thì không thêm filter brand ở đây
+                        // Lọc theo size
                         if (request()->has('size') && request()->size) {
-                            $filters[] = 'Kích cỡ: ' . request()->size;
+                            $sizeLabel = is_array($sizes) && in_array(request()->size, $sizes) ? request()->size : (is_object($sizes) && $sizes->contains(request()->size) ? request()->size : request()->size);
+                            $filters[] = 'Kích cỡ: ' . $sizeLabel;
                         }
                         if (request()->has('color') && request()->color) {
-                            $filters[] = 'Màu sắc: ' . request()->color;
+                            $colorLabel = ucfirst(e(request()->color));
+                            $filters[] = 'Màu sắc: ' . $colorLabel;
                         }
                         if (request()->has('price_min') && request()->price_min !== null) {
                             $filters[] =
@@ -270,7 +258,7 @@
                                     </img>
                                     @php
                                         /* lấy data sản phẩm để truyền vào view,
- sau đó dùng JS để xử lý thêm vào localStorage để lưu wishlist cho user chưa đăng nhập */
+                                     sau đó dùng JS để xử lý thêm vào localStorage để lưu wishlist cho user chưa đăng nhập */
                                         $productData = [
                                             'id' => $product->id,
                                             'status' => $product->status,
@@ -291,10 +279,7 @@
                                             <i class="bi bi-heart"></i>
                                         </button>
                                     @endif
-                                    @if ($product->variants->whereNotNull('discount_price')->count() > 0)
-                                        <span class="badge bg-danger position-absolute top-0 start-0 m-2"
-                                            style="z-index:1;">Sale</span>
-                                    @endif
+                                
                                     @if ($product->variants->where('is_new', true)->count() > 0)
                                         <span class="badge bg-success position-absolute"
                                             style="top: 2.5rem; right: 0.5rem; z-index:1;">Mới</span>
@@ -312,20 +297,20 @@
                                                 @endif
                                             @endfor
                                         </div>
-                                        <div class="text-muted">
-                                            <i class="bi bi-basket3"></i> {{ $product->sales_count }} bán
+                                        {{-- <div class="text-muted">
+                                            <i class="bi bi-basket3"></i> {{ $product->sales_count ?? 0}} bán
                                         </div>
                                         <div class="text-muted">
-                                            <i class="bi bi-heart"></i> {{ $product->likes_count }} yêu thích
-                                        </div>
+                                            <i class="bi bi-heart"></i> {{ $product->likes_count ?? 0 }} yêu thích
+                                        </div> --}}
                                     </div>
+                                  
                                     @php
-                                        $effectivePrices = $product->variants->map(function ($variant) {
-                                            return $variant->discount_price ?? $variant->price;
-                                        });
-                                        $minPrice = $effectivePrices->min();
-                                        $maxPrice = $effectivePrices->max();
+                                        $prices = $product->variants->pluck('price');
+                                        $minPrice = $prices->min();
+                                        $maxPrice = $prices->max();
                                     @endphp
+
 
                                     @if ($minPrice == $maxPrice)
                                         <p class="text-danger fw-bold mb-3">{{ number_format($minPrice) }} đ</p>
@@ -359,42 +344,42 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Success Modal -->
-    <div class="modal fade" id="wishlistModal" tabindex="-1" aria-labelledby="wishlistModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow rounded-4">
-                <div class="modal-header bg-success text-white rounded-top-4">
-                    <h5 class="modal-title fw-bold" id="wishlistModalLabel">
-                        <i class="bi bi-heart-fill me-2"></i> Thông báo
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Đóng"></button>
-                </div>
-                <div class="modal-body text-center p-4">
-                    <i class="bi bi-check-circle-fill text-success display-4 mb-3"></i>
-                    <p class="mb-0 fs-5">{{ session('success') }}</p>
+        <!-- Success Modal -->
+        <div class="modal fade" id="wishlistModal" tabindex="-1" aria-labelledby="wishlistModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow rounded-4">
+                    <div class="modal-header bg-success text-white rounded-top-4">
+                        <h5 class="modal-title fw-bold" id="wishlistModalLabel">
+                            <i class="bi bi-heart-fill me-2"></i> Thông báo
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body text-center p-4">
+                        <i class="bi bi-check-circle-fill text-success display-4 mb-3"></i>
+                        <p class="mb-0 fs-5">{{ session('success') }}</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Error Modal -->
-    <div class="modal fade" id="wishlistErrorModal" tabindex="-1" aria-labelledby="wishlistErrorModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow rounded-4">
-                <div class="modal-header bg-danger text-white rounded-top-4">
-                    <h5 class="modal-title fw-bold" id="wishlistErrorModalLabel">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Lỗi
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Đóng"></button>
-                </div>
-                <div class="modal-body text-center p-4">
-                    <i class="bi bi-x-circle-fill text-danger display-4 mb-3"></i>
-                    <p class="mb-0 fs-5">{{ session('error') }}</p>
+        <!-- Error Modal -->
+        <div class="modal fade" id="wishlistErrorModal" tabindex="-1" aria-labelledby="wishlistErrorModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow rounded-4">
+                    <div class="modal-header bg-danger text-white rounded-top-4">
+                        <h5 class="modal-title fw-bold" id="wishlistErrorModalLabel">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Lỗi
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body text-center p-4">
+                        <i class="bi bi-x-circle-fill text-danger display-4 mb-3"></i>
+                        <p class="mb-0 fs-5">{{ session('error') }}</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -433,7 +418,7 @@
 
         .shop__sidebar__search form {
             position: relative;
-        }
+Baldwin         }
 
         .shop__sidebar__search input {
             border: 1px solid #dee2e6;
@@ -478,7 +463,7 @@
         }
 
         .shop__sidebar__filters .card-body {
-            padding: 15px;
+            padding: 15 YM15px;
             border-top: 1px solid #e9ecef;
         }
 
@@ -532,7 +517,7 @@
             font-weight: 500;
             border: 1px solid #dee2e6;
             padding: 8px;
-            margin-right: 8px;
+            margin-right: 8 creaturepx;
             margin-bottom: 8px;
             cursor: pointer;
             transition: all 0.3s;
@@ -671,7 +656,7 @@
 
             // Hàm mở collapse nếu có tham số URL phù hợp
             function initializeCollapse(collapseId, param) {
-                const collapseElement = document.getElementById(collapseId);
+                const collapseElement AVIATORdocument.getElementById(collapseId);
                 if (!collapseElement) return;
 
                 const collapseInstance = new bootstrap.Collapse(collapseElement, {
@@ -761,7 +746,7 @@
                         fetch(`/wishlist/check/product/${productId}`)
                             .then(response => {
                                 if (!response.ok) {
-                                    throw new Error("Không tìm thấy sạn phẩm hoặc lỗi máy chủ.");
+                                    throw new Error("Không tìm thấy sản phẩm hoặc lỗi máy chủ.");
                                 }
                                 return response.json();
                             })
