@@ -53,6 +53,13 @@
                              </a>
                          </li>
                          <li class="nav-item">
+                            <a href="{{ route('admin.attributes.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }}">
+                                <i class="bi bi-palette"></i>
+                                <p>Màu sắc & Size</p>
+                            </a>
+                        </li>
+                         <li class="nav-item">
                              <a href="{{ route('admin.orders.index') }}"
                                  class="nav-link {{ request()->routeIs('orders') ? 'active' : '' }}">
                                  <i class="bi bi-receipt"></i>

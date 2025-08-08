@@ -3,7 +3,6 @@
 @section('content')
     <div class="container-fluid px-4 py-5">
         <div class="row g-4">
-            <!-- Left Column: User Profile -->
             <div class="col-xl-4 col-lg-5">
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
                     <div class="card-header bg-gradient-primary text-white p-4 border-0">
@@ -25,7 +24,6 @@
                         <form method="POST" action="{{ route('account.update') }}" class="needs-validation" novalidate>
                             @csrf
 
-                            <!-- Avatar Section -->
                             <div class="text-center mb-4">
                                 <div class="position-relative d-inline-block">
                                     <img src="{{ Auth::user()->avatar ?? 'https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp' }}"
@@ -41,7 +39,6 @@
                                 </p>
                             </div>
 
-                            <!-- Form Fields -->
                             <div class="row g-3">
                                 <div class="col-12">
                                     <div class="form-floating">
@@ -141,11 +138,9 @@
                 </div>
             </div>
 
-            <!-- Right Column: Order History -->
             <div class="col-xl-8 col-lg-7">
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
 
-                    <!-- Success/Error Alerts -->
                     @if (session('order-success'))
                         <div class="alert alert-success alert-dismissible fade show m-3 rounded-3 border-0 shadow-sm"
                             role="alert">
@@ -453,7 +448,6 @@
                                                 </a>
                                             @endif
 
-                                            <!-- Action Buttons -->
                                             @if (in_array($order->status, ['pending', 'processing']))
                                                 @if (!$isRequested && !$isCancelled)
                                                     <div class="d-flex justify-content-end mt-1">
@@ -507,7 +501,6 @@
                                         data-bs-parent="#orderAccordion">
                                         <div class="accordion-body p-4 bg-white">
 
-                                            <!-- Order Info Cards -->
                                             <div class="row g-3 mb-4">
                                                 <div class="col-md-6">
                                                     <div class="card bg-light border-0 h-100">
@@ -538,7 +531,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Payment & Status Info -->
                                             <div class="row g-3 mb-4">
                                                 <div class="col-md-6">
                                                     <div class="d-flex align-items-center p-3 bg-light rounded-3">
@@ -566,7 +558,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Product Table -->
                                             <div class="table-responsive">
                                                 <table class="table table-hover">
                                                     <thead class="table-light">
@@ -574,9 +565,11 @@
                                                             <th class="border-0 fw-bold">Sản phẩm</th>
                                                             <th class="border-0 fw-bold">Màu</th>
                                                             <th class="border-0 fw-bold">Size</th>
-                                                            <th class="border-0 fw-bold">SL</th>
+                                                            <th class="border-0 fw-bold text-center">SL</th>
                                                             <th class="border-0 fw-bold">Đơn giá</th>
                                                             <th class="border-0 fw-bold text-end">Tổng</th>
+                                                            {{-- [SỬA ĐỔI] Thêm cột Đánh giá --}}
+                                                            <th class="border-0 fw-bold text-center">Đánh giá</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -601,7 +594,7 @@
                                                                     <span
                                                                         class="badge bg-info p-2">{{ $detail->productVariant->size }}</span>
                                                                 </td>
-                                                                <td class="align-middle">
+                                                                <td class="align-middle text-center">
                                                                     <span
                                                                         class="badge bg-primary p-2">{{ $detail->quantity }}</span>
                                                                 </td>
@@ -610,14 +603,37 @@
                                                                 <td class="align-middle text-end fw-bold">
                                                                     {{ number_format($detail->subtotal, 0, ',', '.') }}₫
                                                                 </td>
+                                                                {{-- [SỬA ĐỔI] Thêm ô chứa nút đánh giá --}}
+                                                                <td class="align-middle text-center">
+                                                                    @if ($order->status === 'completed')
+                                                                        @php
+                                                                            $review = \App\Models\Review::where('order_detail_id', $detail->id)->first();
+                                                                        @endphp
+                                                                        @if ($review)
+                                                                            <div class="text-warning">
+                                                                                @for ($i = 1; $i <= 5; $i++)
+                                                                                    <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
+                                                                                @endfor
+                                                                            </div>
+                                                                        @else
+                                                                            <button class="btn btn-outline-warning btn-sm"
+                                                                                data-bs-toggle="modal"
+                                                                                data-bs-target="#reviewModal"
+                                                                                data-product-id="{{ $detail->productVariant->product->id }}"
+                                                                                data-product-name="{{ $detail->productVariant->product->name }}"
+                                                                                data-order-detail-id="{{ $detail->id }}">
+                                                                                <i class="bi bi-star"></i>
+                                                                            </button>
+                                                                        @endif
+                                                                    @endif
+                                                                </td>
                                                             </tr>
                                                         @endforeach
                                                     </tbody>
                                                 </table>
                                             </div>
 
-                                            <!-- Order Summary -->
-                                            <div class="row justify-content-end">
+                                            <div class="row justify-content-end mt-3">
                                                 <div class="col-md-12">
                                                     <div class="card border-0 bg-light">
                                                         <div class="card-body">
@@ -648,44 +664,9 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            
+                                            {{-- [SỬA ĐỔI] Xoá bỏ phần review ở đây --}}
 
-                                            {{-- review --}}
-                                            @if ($order->status === 'completed')
-                                                <div class="border-top pt-3 mt-3">
-                                                    <h6 class="fw-semibold">Đánh giá sản phẩm:</h6>
-                                                    <ul class="list-group">
-                                                        @foreach ($order->orderDetails as $detail)
-                                                            @php
-                                                                $review = \App\Models\Review::where(
-                                                                    'order_detail_id',
-                                                                    $detail->id,
-                                                                )->first();
-                                                            @endphp
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                <span>{{ $detail->productVariant->product->name }}</span>
-                                                                @if ($review)
-                                                                    <div class="text-warning">
-                                                                        @for ($i = 1; $i <= 5; $i++)
-                                                                            <i
-                                                                                class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
-                                                                        @endfor
-                                                                    </div>
-                                                                @else
-                                                                    <button class="btn btn-outline-warning btn-sm"
-                                                                        data-bs-toggle="modal"
-                                                                        data-bs-target="#reviewModal"
-                                                                        data-product-id="{{ $detail->productVariant->product->id }}"
-                                                                        data-product-name="{{ $detail->productVariant->product->name }}"
-                                                                        data-order-detail-id="{{ $detail->id }}">
-                                                                        <i class="bi bi-star"></i> Viết đánh giá
-                                                                    </button>
-                                                                @endif
-                                                            </li>
-                                                        @endforeach
-                                                    </ul>
-                                                </div>
-                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -711,7 +692,6 @@
         </div>
     </div>
 
-    <!-- Modal Huỷ đơn từ khách -->
     <div class="modal fade" id="clientCancelModal" tabindex="-1" aria-labelledby="clientCancelModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
@@ -744,7 +724,6 @@
         </div>
     </div>
 
-    <!-- Success Modal -->
     <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4">
@@ -759,8 +738,7 @@
                     <div class="mb-4">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                     </div>
-                    <h4 class="mb-3"></h4> <!-- Sẽ được cập nhật bằng JavaScript -->
-                    <p class="text-muted">Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của chúng tôi!</p>
+                    <h4 class="mb-3"></h4> <p class="text-muted">Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của chúng tôi!</p>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
                     <button type="button" class="btn btn-success btn-lg rounded-pill px-4" data-bs-dismiss="modal">
@@ -771,7 +749,6 @@
         </div>
     </div>
 
-    <!-- Error Modal -->
     <div class="modal fade" id="orderErrorModal" tabindex="-1" aria-labelledby="orderErrorModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -787,8 +764,7 @@
                     <div class="mb-4">
                         <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
                     </div>
-                    <h4 class="mb-3 text-danger"></h4> <!-- Sẽ được cập nhật bằng JavaScript -->
-                    <p class="text-muted">Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
+                    <h4 class="mb-3 text-danger"></h4> <p class="text-muted">Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
                     <button type="button" class="btn btn-outline-danger btn-lg rounded-pill px-4"
@@ -800,7 +776,6 @@
         </div>
     </div>
 
-    <!-- Review Modal -->
     <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">

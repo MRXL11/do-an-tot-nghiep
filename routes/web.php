@@ -56,7 +56,11 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
         Route::resource('products', AdminProductController::class);
         Route::post('/products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
         Route::post('/products/{id}/addVariants', [AdminProductController::class, 'addVariants'])->name('products.addVariants');
-
+        // Thuộc tính (Màu sắc, Size)
+        Route::get('attributes-manager', [\App\Http\Controllers\Admin\AttributeController::class, 'index'])->name('attributes.index');
+        Route::post('attributes-manager/store-value', [\App\Http\Controllers\Admin\AttributeController::class, 'storeValue'])->name('attributes.storeValue');
+        Route::put('attributes-manager/update-value/{id}', [\App\Http\Controllers\Admin\AttributeController::class, 'updateValue'])->name('attributes.updateValue');
+        Route::delete('attributes-manager/values/{id}', [\App\Http\Controllers\Admin\AttributeController::class, 'destroyValue'])->name('attributes.destroyValue');
         // Đơn hàng (Orders)
         Route::resource('orders', OrderController::class)
             ->except(['store', 'create', 'edit', 'destroy']);
@@ -70,7 +74,7 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
         // Xác nhận hoặc từ chối yêu cầu huỷ đơn
         Route::post('orders/cancel-request/{order}', [OrderController::class, 'handleCancelRequest'])
             ->name('admin.orders.handleCancelRequest');
-
+        
         // Danh mục (Categories)
         Route::get('/categories/trashed', [CategoryController::class, 'trashed'])->name('categories.trashed');
         Route::resource('categories', CategoryController::class);

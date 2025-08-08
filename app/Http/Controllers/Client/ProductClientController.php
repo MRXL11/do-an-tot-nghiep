@@ -7,11 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
-use App\Models\ProductVariant;
 use App\Models\Wishlist;
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Attribute;
 
 class ProductClientController extends Controller
 {
@@ -20,8 +20,11 @@ class ProductClientController extends Controller
         // lấy fetch categories, brands, sizes, and colors
         $categories = Category::where('status', 'active')->get();
         $brands = Brand::where('status', 'active')->get();
-        $sizes = ProductVariant::select('size')->distinct()->pluck('size');
-        $colors = ProductVariant::select('color')->distinct()->pluck('color');
+        $colorAttribute = Attribute::where('name', 'Color')->with('values')->first();
+        $colors = $colorAttribute ? $colorAttribute->values : collect();
+        
+        $sizeAttribute = Attribute::where('name', 'Size')->with('values')->first();
+        $sizes = $sizeAttribute ? $sizeAttribute->values : collect();
         
 
         $headerSearch = $request->input('header_search');
@@ -53,13 +56,13 @@ class ProductClientController extends Controller
                 }
             }
             if ($request->has('size') && $request->size) {
-                $productsQuery->whereHas('variants', function ($query) use ($request) {
-                    $query->where('size', $request->size);
+                $productsQuery->whereHas('variants.attributes', function ($query) use ($request) {
+                    $query->where('attribute_value_id', $request->size);
                 });
             }
             if ($request->has('color') && $request->color) {
-                $productsQuery->whereHas('variants', function ($query) use ($request) {
-                    $query->where('color', $request->color);
+                $productsQuery->whereHas('variants.attributes', function ($query) use ($request) {
+                    $query->where('attribute_value_id', $request->color);
                 });
             }
             if ($request->has('price_min') && $request->price_min !== null) {

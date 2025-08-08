@@ -76,7 +76,7 @@
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Voucher giảm giá</label>
                                 <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#coupon-modal">
-                                    <i class="bi bi-ticket-percent-fill me-2"></i> Chọn  Voucher
+                                    <i class="bi bi-ticket-percent-fill me-2"></i> Chọn Voucher
                                 </button>
                                 <div id="applied-coupons-list" class="mt-2"></div>
                             </div>
@@ -161,19 +161,28 @@
     </form>
 
     <div class="modal fade" id="coupon-modal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="couponModalLabel">Chọn Voucher</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-             <div id="coupon-list-container">
-                 <div class="text-center"><div class="spinner-border text-primary" role="status"></div></div>
-             </div>
-          </div>
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="couponModalLabel">Chọn Voucher</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="coupon-list-container">
+                        <div class="text-center" id="coupon-loader">
+                            <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+                        <h6 class="text-primary fw-bold">Mã giảm giá đơn hàng</h6>
+                        <div id="order-coupons-list" class="mb-4">
+                        </div>
+                        <hr>
+                        <h6 class="text-primary fw-bold">Mã giảm giá vận chuyển</h6>
+                        <div id="shipping-coupons-list">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 @endsection
 
@@ -202,20 +211,22 @@
             const districtInput = document.querySelector('input[name="district"]');
             const cityInput = document.querySelector('input[name="city"]');
 
-            // [TÍCH HỢP] - Khai báo biến cho logic mã giảm giá mới
+            // [GIỮ NGUYÊN] - Khai báo biến cho logic mã giảm giá
             let appliedCoupons = { order: null, shipping: null };
             const subtotal = {{ $subtotal }};
             const shippingFee = {{ $shippingFee }};
             const cartItemIds = "{{ implode(',', $cartItems->pluck('id')->toArray()) }}";
             const couponModal = new bootstrap.Modal(document.getElementById('coupon-modal'));
             const couponListContainer = document.getElementById('coupon-list-container');
+            const couponLoader = document.getElementById('coupon-loader');
+            const orderCouponsList = document.getElementById('order-coupons-list');
+            const shippingCouponsList = document.getElementById('shipping-coupons-list');
             const appliedCouponsList = document.getElementById('applied-coupons-list');
             const totalAmountEl = document.getElementById('total-amount');
             const orderDiscountRow = document.getElementById('order-discount-row');
             const orderDiscountAmountEl = document.getElementById('order-discount-amount');
             const shippingDiscountRow = document.getElementById('shipping-discount-row');
             const shippingDiscountAmountEl = document.getElementById('shipping-discount-amount');
-
 
             // [GIỮ NGUYÊN] - Logic xử lý thanh toán và địa chỉ
             function updatePaymentButton() {
@@ -236,10 +247,8 @@
             select.addEventListener('change', function() {
                 const selected = select.options[select.selectedIndex];
                 const useNewAddress = !selected.value;
-
                 detailBox.classList.toggle('d-none', useNewAddress);
                 manualAddressInput.classList.toggle('d-none', !useNewAddress);
-                
                 if (!useNewAddress) {
                     nameSpan.textContent = selected.dataset.name || '';
                     phoneSpan.textContent = selected.dataset.phone || '';
@@ -257,74 +266,78 @@
                     shippingAddressIdInput.value = '';
                 }
             });
-            // Kích hoạt sự kiện change ban đầu để đồng bộ trạng thái
             select.dispatchEvent(new Event('change'));
 
-            // [MỚI] - Logic cho mã giảm giá
+            // [GIỮ NGUYÊN] - Logic cho mã giảm giá
             document.querySelector('[data-bs-target="#coupon-modal"]').addEventListener('click', fetchAvailableCoupons);
 
             async function fetchAvailableCoupons() {
-                couponListContainer.innerHTML = `<div class="text-center p-3"><div class="spinner-border text-primary"></div></div>`;
+                couponLoader.style.display = 'block';
+                orderCouponsList.innerHTML = '';
+                shippingCouponsList.innerHTML = '';
                 try {
                     const response = await fetch(`{{ route('checkout.getAvailableCoupons') }}?cart_item_ids=${cartItemIds}`);
                     const coupons = await response.json();
                     renderCouponsInModal(coupons);
                 } catch (error) {
-                    couponListContainer.innerHTML = `<p class="text-danger text-center">Không thể tải danh sách voucher.</p>`;
+                    orderCouponsList.innerHTML = `<p class="text-danger text-center">Không thể tải danh sách voucher.</p>`;
+                } finally {
+                    couponLoader.style.display = 'none';
                 }
             }
 
             function renderCouponsInModal(coupons) {
-                couponListContainer.innerHTML = '';
-                if (!coupons || coupons.length === 0) {
-                    couponListContainer.innerHTML = `<p class="text-muted text-center">Không có voucher nào phù hợp.</p>`;
-                    return;
-                }
-                
-                coupons.forEach(coupon => {
-                    const isApplied = appliedCoupons[coupon.type]?.code === coupon.code;
-                    const isDisabled = !isApplied && appliedCoupons[coupon.type] !== null;
+                const orderCoupons = coupons.filter(c => c.type === 'order');
+                const shippingCoupons = coupons.filter(c => c.type === 'shipping');
 
-                    const couponEl = document.createElement('div');
-                    couponEl.className = 'card mb-2';
-                    couponEl.innerHTML = `
-                        <div class="card-body d-flex justify-content-between align-items-center p-2">
-                            <div>
-                                <h6 class="card-title mb-0 text-success">${coupon.code}</h6>
-                                <small class="text-muted">${coupon.description}</small>
-                            </div>
-                            <button class="btn btn-sm btn-primary apply-coupon-btn" data-code="${coupon.code}" ${isDisabled ? 'disabled' : ''}>
-                                ${isApplied ? 'Bỏ chọn' : 'Áp dụng'}
-                            </button>
-                        </div>`;
-                    couponListContainer.appendChild(couponEl);
-                });
-                
+                if (orderCoupons.length > 0) {
+                    orderCoupons.forEach(coupon => {
+                        orderCouponsList.appendChild(createCouponElement(coupon));
+                    });
+                } else {
+                    orderCouponsList.innerHTML = `<p class="text-muted text-center">Không có voucher nào phù hợp.</p>`;
+                }
+
+                if (shippingCoupons.length > 0) {
+                    shippingCoupons.forEach(coupon => {
+                        shippingCouponsList.appendChild(createCouponElement(coupon));
+                    });
+                } else {
+                    shippingCouponsList.innerHTML = `<p class="text-muted text-center">Không có voucher nào phù hợp.</p>`;
+                }
+
                 couponListContainer.querySelectorAll('.apply-coupon-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => handleApplyOrRemoveCoupon(e.target.dataset.code));
                 });
             }
 
-            function handleApplyOrRemoveCoupon(code) {
-                // Kiểm tra xem mã này đã được áp dụng chưa
-                let typeOfCode = null;
-                let isAlreadyApplied = false;
-                if (appliedCoupons.order && appliedCoupons.order.code === code) {
-                    typeOfCode = 'order';
-                    isAlreadyApplied = true;
-                } else if (appliedCoupons.shipping && appliedCoupons.shipping.code === code) {
-                    typeOfCode = 'shipping';
-                    isAlreadyApplied = true;
-                }
+            function createCouponElement(coupon) {
+                const isApplied = appliedCoupons[coupon.type]?.code === coupon.code;
+                const isDisabled = !isApplied && appliedCoupons[coupon.type] !== null;
+                const couponEl = document.createElement('div');
+                couponEl.className = 'card mb-2';
+                couponEl.innerHTML = `
+                    <div class="card-body d-flex justify-content-between align-items-center p-2">
+                        <div>
+                            <h6 class="card-title mb-0 text-success">${coupon.code}</h6>
+                            <small class="text-muted">${coupon.description}</small>
+                        </div>
+                        <button class="btn btn-sm btn-primary apply-coupon-btn" data-code="${coupon.code}" ${isDisabled ? 'disabled' : ''}>
+                            ${isApplied ? 'Bỏ chọn' : 'Áp dụng'}
+                        </button>
+                    </div>`;
+                return couponEl;
+            }
 
+            function handleApplyOrRemoveCoupon(code) {
                 let codesToApply = new Set();
                 if (appliedCoupons.order) codesToApply.add(appliedCoupons.order.code);
                 if (appliedCoupons.shipping) codesToApply.add(appliedCoupons.shipping.code);
 
-                if (isAlreadyApplied) {
-                    codesToApply.delete(code); // Bỏ chọn
+                if (codesToApply.has(code)) {
+                    codesToApply.delete(code);
                 } else {
-                    codesToApply.add(code); // Thêm để áp dụng
+                    codesToApply.add(code);
                 }
                 recalculateTotals(Array.from(codesToApply));
             }
@@ -363,14 +376,22 @@
                 }
             }
 
+            // [SỬA ĐỔI] - Cập nhật UI để hiển thị loại voucher
             function updateUI(orderDiscount, shippingDiscount, total) {
                 appliedCouponsList.innerHTML = '';
                 Object.values(appliedCoupons).forEach(coupon => {
                     if (coupon) {
+                        // Xác định văn bản hiển thị dựa trên loại coupon
+                        const couponTypeText = coupon.type === 'order' ? 'Giảm giá đơn hàng' : 'Giảm giá vận chuyển';
+                        
                         const appliedEl = document.createElement('div');
                         appliedEl.className = 'alert alert-success py-2 px-3 mt-2 d-flex justify-content-between align-items-center';
                         appliedEl.innerHTML = `
-                            <span><i class="bi bi-check-circle-fill me-2"></i><strong>${coupon.code}</strong></span>
+                            <span>
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <strong>${coupon.code}</strong>
+                                <small class="text-muted fst-italic ms-2">(${couponTypeText})</small>
+                            </span>
                             <button type="button" class="btn-close remove-coupon-btn" data-type="${coupon.type}"></button>`;
                         appliedCouponsList.appendChild(appliedEl);
                     }
@@ -387,7 +408,7 @@
                 shippingDiscountAmountEl.textContent = `- ${shippingDiscount.toLocaleString('vi-VN')} ₫`;
 
                 totalAmountEl.textContent = `${total.toLocaleString('vi-VN')} ₫`;
-                updatePaymentButton(); // Cập nhật lại text nút thanh toán
+                updatePaymentButton();
             }
             
             // [GIỮ NGUYÊN] - Logic submit form
