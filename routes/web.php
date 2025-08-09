@@ -243,11 +243,7 @@ Route::get('/fashion-newsletters', [\App\Http\Controllers\Client\ClientNewsContr
 // Route cho chi tiết bài viết
 Route::get('/news/{id}', [\App\Http\Controllers\Client\ClientNewsController::class, 'show'])->name('news.show');
 
-// Route cho Fashion Newsletters
-Route::get('/fashion-newsletters', [\App\Http\Controllers\Client\ClientNewsController::class, 'fashionNewsletters'])->name('fashion-newsletters');
 
-// Route cho chi tiết bài viết
-Route::get('/news/{id}', [\App\Http\Controllers\Client\ClientNewsController::class, 'show'])->name('news.show');
 
 // Thông báo khách hàng
 Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');

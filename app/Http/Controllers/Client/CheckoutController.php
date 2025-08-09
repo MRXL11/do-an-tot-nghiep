@@ -415,7 +415,7 @@ public function submit(Request $request)
             return response()->json(['success' => true, 'redirect' => route('pay'), 'message' => 'Đơn hàng đã được tạo. Vui lòng thanh toán để hoàn tất.']);
         } else {
             session()->flash('order_success', 'Đơn hàng đã được tạo thành công!');
-            return response()->json(['success' => true, 'redirect' => route('account.show'), 'message' => 'Đặt hàng thành công! Đơn hàng của bạn đang được xử lý.']);
+            return response()->json(['success' => true, 'redirect' => route('orders.index'), 'message' => 'Đặt hàng thành công! Đơn hàng của bạn đang được xử lý.']);
         }
     } catch (\Illuminate\Validation\ValidationException $e) {
         return response()->json([
