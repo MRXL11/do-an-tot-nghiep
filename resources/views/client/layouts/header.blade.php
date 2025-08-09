@@ -76,6 +76,12 @@
                                         </a>
                                     </li>
                                     <li>
+                                        <a href="{{ route('orders.index') }}"
+                                            class="{{ Request::route()->named('orders.index') ? 'active' : '' }}">
+                                            <i class="bi bi-journal-text me-1"></i> Đơn hàng
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a href="{{ url('/client/notifications') }}"
                                             class="{{ Request::is('client.notifications') ? 'active' : '' }}">
                                             <i class="bi bi-bell-fill me-1 text-warning"></i> Thông báo

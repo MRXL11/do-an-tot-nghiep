@@ -12,48 +12,14 @@ use App\Models\User;
 
 class AccountController extends Controller
 {
+    // hàm hiển thị trang tài khoản người dùng
     public function show()
     {
         $user = Auth::user();
         if (!$user) {
             return redirect()->route('login')->with('error', 'Bạn cần đăng nhập để truy cập trang này.');
-        }
-
-        // Lấy danh sách đơn hàng của người dùng 
-        $orders = Order::with('orderDetails.productVariant.product', 'coupon', 'returnRequest')
-            ->where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(6);
-
-        // Duyệt qua từng đơn hàng để tính discount (nếu có coupon)
-        foreach ($orders as $order) {
-            $discount = 0;
-
-            // Tính subtotal (chưa bao gồm phí ship)
-            $subtotal = $order->orderDetails->sum('subtotal');
-
-            if ($order->coupon) {
-                if ($order->coupon->discount_type === 'fixed') {
-                    $discount = $order->coupon->discount_value;
-                } elseif ($order->coupon->discount_type === 'percent') {
-                    $discount = round($subtotal * $order->coupon->discount_value / 100);
-                }
-            }
-
-            // Gán giảm giá tạm thời vào order (không cần lưu DB)
-            $order->calculated_discount = $discount;
-
-            // Gán subtotal để hiển thị
-            $order->total = $subtotal;
-
-            // Tính tổng tiền cuối cùng sau khi giảm giá
-            $order->final_price = $order->total_price;
-            // Nếu total đã bao gồm ship
-        }
-
-        $totalOrderCount = Order::where('user_id', auth()->id())->count();
-
-        return view('client.pages.account', compact('user', 'orders', 'totalOrderCount'));
+        }     
+        return view('client.pages.account', compact('user'));
     }
 
 

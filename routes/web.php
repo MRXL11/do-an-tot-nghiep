@@ -228,6 +228,9 @@ Route::get('/wishlist/check/product/{id}', [WishlistController::class, 'check'])
 // Route cho tài khoản khách hàng
 Route::get('/account', [AccountController::class, 'show'])->name('account.show');
 Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
+// Route cho trang đơn hàng của khách hàng
+Route::get('/orders', [ClientOrderController::class, 'index'])->name('orders.index');
+
 
 // Chi tiết sản phẩm và review
 Route::get('/products-client/{slug?}', [ProductClientController::class, 'index'])->name('products-client');
