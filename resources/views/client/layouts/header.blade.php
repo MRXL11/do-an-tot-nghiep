@@ -62,7 +62,14 @@
                             <a href="javascript:;">
                                 <i class="bi bi-person-circle me-1"></i>
                                 @auth
-                                    {{ Auth::user()->name }}
+                                    <span 
+                                        @if(strlen(Auth::user()->name) > 16)
+                                            title="{{ Auth::user()->name }}"
+                                        @endif
+                                        style="max-width: 120px; display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;"
+                                    >
+                                        {{ Str::limit(Auth::user()->name, 16, '...') }}
+                                    </span>
                                 @else
                                     Tài khoản
                                 @endauth
