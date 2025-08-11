@@ -42,7 +42,7 @@
                 </ul>
                 <div class="d-flex justify-content-center gap-3">
                     <a href="{{ route('home') }}" class="btn btn-outline-primary text-dark"><i class="bi bi-arrow-left"></i>Trang chủ</a>
-                    <a href="{{ route('order.index') }}" class="btn btn-outline-primary"><i class="bi bi-clock-history"></i> Lịch sử đơn hàng</a>
+                    <a href="{{ route('orders.index') }}" class="btn btn-outline-primary"><i class="bi bi-clock-history"></i> Lịch sử đơn hàng</a>
                 </div>
             </div>
         </div>

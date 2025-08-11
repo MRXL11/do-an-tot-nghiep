@@ -535,53 +535,55 @@
             }
 
             // Gửi đơn hàng
-            async function submitOrder(formData) {
-                try {
-                    Swal.fire({
-                        title: 'Đang xử lý...',
-                        allowOutsideClick: false,
-                        didOpen: () => Swal.showLoading()
-                    });
+           async function submitOrder(formData) {
+    try {
+        Swal.fire({
+            title: 'Đang xử lý...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
 
-                    const response = await fetch('{{ route('checkout.submit') }}', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: formData
-                    });
+        const response = await fetch('{{ route('checkout.submit') }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: formData
+        });
 
-                    const data = await response.json();
+        const data = await response.json();
 
-                    if (!response.ok) {
-                        throw new Error(data.message || 'Lỗi khi gửi đơn hàng');
-                    }
+        if (!response.ok) {
+            throw new Error(data.message || 'Lỗi khi gửi đơn hàng');
+        }
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Thành công',
-                        text: data.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        if (data.redirect) {
-                            window.location.href = data.redirect;
-                        } else if (data.order_id) {
-                            window.location.href = '{{ route('orders.index') }}?id=' + data.order_id;
-                        } else {
-                            window.location.reload();
-                        }
-                    });
-                } catch (err) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Lỗi',
-                        text: err.message || 'Đã xảy ra lỗi, vui lòng thử lại',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                }
+        Swal.fire({
+            icon: 'success',
+            title: 'Thành công',
+            text: data.message,
+            timer: 1500,
+            showConfirmButton: false
+        }).then(() => {
+            if (data.vnpay_url) {
+                window.location.href = data.vnpay_url;
+            } else if (data.redirect) {
+                window.location.href = data.redirect;
+            } else if (data.order_id) {
+                window.location.href = '{{ route('orders.index') }}?id=' + data.order_id;
+            } else {
+                window.location.reload();
             }
+        });
+    } catch (err) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: err.message || 'Đã xảy ra lỗi, vui lòng thử lại',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+}
 
             // Khởi tạo
             updateTotalAmount();
