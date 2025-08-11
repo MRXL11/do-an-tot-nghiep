@@ -9,14 +9,16 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminNotificationController extends Controller
 {   
-    // hàm này dùng để đổ ữ liệu
+    // hàm này dùng để đổ dữ liệu vào giao diện thông báo
     public function index()
     {
         $notifications = Notification::where('user_id', Auth::id())
             ->orderByDesc('created_at')
             ->paginate(10);
-
-        return view('admin.others_menu.notifications', compact('notifications'));
+         $unreadCount = Notification::where('user_id', Auth::id())
+        ->where('is_read', false)
+        ->count();
+        return view('admin.others_menu.notifications', compact('notifications', 'unreadCount'));
     }
     // hàm này lọc ra thông báo chưa đọc để đánh dấu đã đọc
     public function markAsRead($id)
