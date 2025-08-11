@@ -491,22 +491,19 @@
                                                 <div class="col-md-12">
                                                     <div class="card border-0 bg-light">
                                                         <div class="card-body">
-                                                            <div class="d-flex justify-content-between mb-2">
-                                                                <span>Tổng tiền hàng:</span>
-                                                                <span
-                                                                    class="fw-semibold">{{ number_format($order->total, 0, ',', '.') }}₫</span>
-                                                            </div>
+                                                          
                                                             @if ($order->calculated_discount > 0)
                                                                 <div
                                                                     class="d-flex justify-content-between mb-2 text-success">
                                                                     <span>Giảm giá:</span>
-                                                                    <span
-                                                                        class="fw-semibold">-{{ number_format($order->calculated_discount, 0, ',', '.') }}₫</span>
+                                                                    <span class="fw-semibold">-{{ number_format($order->calculated_discount, 0, ',', '.') }}₫</span>
                                                                 </div>
                                                             @endif
+                                                            {{-- hiển thị phí vận chuyển --}}
                                                             <div class="d-flex justify-content-between mb-2">
                                                                 <span>Phí vận chuyển:</span>
-                                                                <span class="fw-semibold">20.000₫</span>
+                                                                <span
+                                                                    class="fw-semibold">{{ number_format($order->shipping_fee, 0, ',', '.') }}₫</span>
                                                             </div>
                                                             <hr>
                                                             <div class="d-flex justify-content-between">
@@ -566,7 +563,7 @@
                                     </div>
                                     <h4 class="text-muted mb-2">Chưa có đơn hàng nào</h4>
                                     <p class="text-muted">Hãy bắt đầu mua sắm để tạo đơn hàng đầu tiên của bạn!</p>
-                                    <a href="#" class="btn btn-primary btn-lg rounded-pill px-4">
+                                    <a href="{{ route('products-client') }}" class="btn btn-primary btn-lg rounded-pill px-4">
                                         <i class="bi bi-shop me-2"></i>Bắt đầu mua sắm
                                     </a>
                                 </div>
@@ -1109,4 +1106,5 @@ document.addEventListener('DOMContentLoaded', function() {
             return container;
         }
     </script>
+
 @endsection

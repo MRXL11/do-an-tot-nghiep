@@ -31,7 +31,6 @@ class OrderController extends Controller
         // Duyệt qua từng đơn hàng để tính discount (nếu có coupon)
         foreach ($orders as $order) {
             $discount = 0;
-
             // Tính subtotal (chưa bao gồm phí ship)
             $subtotal = $order->orderDetails->sum('subtotal');
 
@@ -46,8 +45,8 @@ class OrderController extends Controller
             // Gán giảm giá tạm thời vào order (không cần lưu DB)
             $order->calculated_discount = $discount;
 
-            // Gán subtotal để hiển thị
-            $order->total = $subtotal;
+            // Đừng gán lại $order->total, hãy dùng biến phụ nếu cần
+            $order->subtotal_display = $subtotal;
 
             // Tính tổng tiền cuối cùng sau khi giảm giá
             $order->final_price = $order->total_price;
@@ -186,7 +185,8 @@ class OrderController extends Controller
         $subtotal = $order->orderDetails->sum(function ($detail) {
             return $detail->price * $detail->quantity;
         });
-        $shippingFee = 20000;
+
+        $shippingFee = $order->shipping_fee;
         $total = $order->total_price;
 
         $cartItems = Cart::where('user_id', Auth::id())->get();
@@ -488,3 +488,4 @@ class OrderController extends Controller
         return view('client.pages.order-failed', ['error' => $error]);
     }
 }
+
