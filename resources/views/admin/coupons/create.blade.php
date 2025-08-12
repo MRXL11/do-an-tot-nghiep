@@ -39,12 +39,12 @@
                                 <select name="discount_type" id="discount_type" class="form-select @error('discount_type') is-invalid @enderror">
                                     <option value="" disabled {{ old('discount_type') ? '' : 'selected' }}>-- Chọn loại giảm giá --</option>
                                     <optgroup label="Giảm giá đơn hàng">
-                                        <option value="percent" {{ old('discount_type') == 'percent' ? 'selected' : '' }}>Phần trăm (%)</option>
+                                        <option value="percent" {{ old('discount_type') == 'percent' ? 'selected' : '' }}>Phần trăm đơn hàng (%)</option>
                                         <option value="fixed" {{ old('discount_type') == 'fixed' ? 'selected' : '' }}>Số tiền cố định (VNĐ)</option>
                                     </optgroup>
                                     <optgroup label="Giảm giá vận chuyển">
-                                        <option value="free_shipping" {{ old('discount_type') == 'free_shipping' ? 'selected' : '' }}>Miễn phí vận chuyển</option>
-                                        <option value="fixed_shipping" {{ old('discount_type') == 'fixed_shipping' ? 'selected' : '' }}>Giảm giá vận chuyển (VNĐ)</option>
+                                        <option value="free_shipping" {{ old('discount_type') == 'free_shipping' ? 'selected' : '' }}>Phần trăm giá vận chuyển</option>
+                                        <option value="fixed_shipping" {{ old('discount_type') == 'fixed_shipping' ? 'selected' : '' }}>Số tiền vận chuyển cố định (VNĐ)</option>
                                     </optgroup>
                                 </select>
                                 @error('discount_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
