@@ -43,16 +43,23 @@ use App\Events\OrderStatusUpdated;
 class Order extends Model
 {
     //
- protected $fillable = [
-        'user_id',
+protected $fillable = [
+        'shop_address_id',
         'order_code',
+        'user_id',
         'total_price',
         'status',
         'payment_method',
         'payment_status',
         'note',
+        'cancellation_requested',
+        'cancel_reason',
+        'admin_cancel_note',
+        'cancel_confirmed',
         'shipping_address_id',
+        'shipping_fee',
         'coupon_id',
+        'extra_info',
         'vnp_txn_ref',
         'vnp_transaction_no',
         'vnp_response_code',
@@ -60,7 +67,7 @@ class Order extends Model
         'vnp_bank_tran_no',
         'vnp_card_type',
         'vnp_pay_date',
-        'vnp_secure_hash',
+        'vnp_secure_hash'
     ];
     public function user()
     {

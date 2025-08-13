@@ -289,13 +289,18 @@
                                     <h5 class="card-title text-truncate">{{ $product->name }}</h5>
                                     <div class="d-flex flex-column align-items-center gap-2 ">
                                         <div class="text-warning">
-                                            @for ($i = 1; $i <= 5; $i++)
-                                                @if ($i <= $product->reviews->avg('rating'))
-                                                    <i class="bi bi-star-fill"></i>
-                                                @else
-                                                    <i class="bi bi-star"></i>
-                                                @endif
-                                            @endfor
+                                   @php
+                                        // Lấy trung bình rating chỉ của các đánh giá đã được duyệt
+                                        $approvedReviews = $product->reviews->where('status', 'approved');
+                                        $avgRating = $approvedReviews->count() > 0 ? $approvedReviews->avg('rating') : 0;
+                                    @endphp
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        @if ($i <= $avgRating)
+                                            <i class="bi bi-star-fill"></i>
+                                        @else
+                                            <i class="bi bi-star"></i>
+                                        @endif
+                                    @endfor
                                         </div>
                                         {{-- <div class="text-muted">
                                             <i class="bi bi-basket3"></i> {{ $product->sales_count ?? 0}} bán

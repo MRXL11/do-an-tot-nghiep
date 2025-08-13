@@ -47,4 +47,10 @@ return [
     // ],
     // để sử dụng SMS service
 
+    //api của giao hàng nhanh
+    'ghn' => [
+    'token'  => env('b23654b9-7514-11f0-a383-b6878025f060'),
+    'url'    => env('GHN_API_URL', 'https://online-gateway.ghn.vn/shiip/public-api'),
+    'shop_id'=> env('5939923'),
+],
 ];

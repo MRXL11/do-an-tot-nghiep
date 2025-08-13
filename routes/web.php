@@ -228,6 +228,10 @@ Route::get('/wishlist/check/product/{id}', [WishlistController::class, 'check'])
 // Route cho tài khoản khách hàng
 Route::get('/account', [AccountController::class, 'show'])->name('account.show');
 Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
+// Route cho trang đơn hàng của khách hàng
+Route::get('/orders', [ClientOrderController::class, 'index'])->name('orders.index');
+// lấy phí vận chuyển
+Route::post('/checkout/shipping-fee', [CheckoutController::class, 'getShippingFee'])->name('checkout.getShippingFee');
 
 // Chi tiết sản phẩm và review
 Route::get('/products-client/{slug?}', [ProductClientController::class, 'index'])->name('products-client');
@@ -240,11 +244,7 @@ Route::get('/fashion-newsletters', [\App\Http\Controllers\Client\ClientNewsContr
 // Route cho chi tiết bài viết
 Route::get('/news/{id}', [\App\Http\Controllers\Client\ClientNewsController::class, 'show'])->name('news.show');
 
-// Route cho Fashion Newsletters
-Route::get('/fashion-newsletters', [\App\Http\Controllers\Client\ClientNewsController::class, 'fashionNewsletters'])->name('fashion-newsletters');
 
-// Route cho chi tiết bài viết
-Route::get('/news/{id}', [\App\Http\Controllers\Client\ClientNewsController::class, 'show'])->name('news.show');
 
 // Thông báo khách hàng
 Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
