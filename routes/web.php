@@ -5,11 +5,11 @@
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
-use App\Http\Controllers\Admin\SlideController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\CustomerNotificationController;
 use App\Http\Controllers\Client\Auth\LoginController;
@@ -93,43 +93,14 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
         Route::get('/news/trashed', [NewsController::class, 'trashed'])->name('news.trashed');
         Route::post('/news/{id}/restore', [NewsController::class, 'restore'])->name('news.restore');
 
-        // Slide Routes
-        Route::get('/slides', [SlideController::class, 'index'])->name('slides.index');
-        Route::get('/slides/create', [SlideController::class, 'create'])->name('slides.create');
-        Route::post('/slides', [SlideController::class, 'store'])->name('slides.store');
-        Route::get('/slides/{slide}/edit', [SlideController::class, 'edit'])->name('slides.edit');
-        Route::put('/slides/{slide}', [SlideController::class, 'update'])->name('slides.update');
-        Route::delete('/slides/{slide}', [SlideController::class, 'destroy'])->name('slides.destroy');
-        Route::patch('/slides/{slide}/toggle-status', [SlideController::class, 'toggleStatus'])->name('slides.toggleStatus');
-        Route::get('/slides/trashed', [SlideController::class, 'trashed'])->name('slides.trashed');
-        Route::post('/slides/{id}/restore', [SlideController::class, 'restore'])->name('slides.restore');
-
-        // News Routes
-        Route::get('/news', [NewsController::class, 'index'])->name('news.index');
-        Route::get('/news/create', [NewsController::class, 'create'])->name('news.create');
-        Route::post('/news', [NewsController::class, 'store'])->name('news.store');
-        Route::get('/news/{news}/edit', [NewsController::class, 'edit'])->name('news.edit');
-        Route::put('/news/{news}', [NewsController::class, 'update'])->name('news.update');
-        Route::delete('/news/{news}', [NewsController::class, 'destroy'])->name('news.destroy');
-        Route::patch('/news/{news}/toggle-status', [NewsController::class, 'toggleStatus'])->name('news.toggleStatus');
-        Route::get('/news/trashed', [NewsController::class, 'trashed'])->name('news.trashed');
-        Route::post('/news/{id}/restore', [NewsController::class, 'restore'])->name('news.restore');
-
-        // Slide Routes
-        Route::get('/slides', [SlideController::class, 'index'])->name('slides.index');
-        Route::get('/slides/create', [SlideController::class, 'create'])->name('slides.create');
-        Route::post('/slides', [SlideController::class, 'store'])->name('slides.store');
-        Route::get('/slides/{slide}/edit', [SlideController::class, 'edit'])->name('slides.edit');
-        Route::put('/slides/{slide}', [SlideController::class, 'update'])->name('slides.update');
-        Route::delete('/slides/{slide}', [SlideController::class, 'destroy'])->name('slides.destroy');
-        Route::patch('/slides/{slide}/toggle-status', [SlideController::class, 'toggleStatus'])->name('slides.toggleStatus');
-        Route::get('/slides/trashed', [SlideController::class, 'trashed'])->name('slides.trashed');
-        Route::post('/slides/{id}/restore', [SlideController::class, 'restore'])->name('slides.restore');
-
         // Voucher (Coupons)
         Route::get('coupons/trashed', [CouponController::class, 'trashed'])->name('coupons.trashed');
         Route::post('coupons/{id}/restore', [CouponController::class, 'restore'])->name('coupons.restore');
         Route::resource('coupons', CouponController::class)->except(['show']);
+        //banner (slides)
+        Route::get('/banners', [BannerController::class, 'index'])->name('admin.banners.index');
+        Route::post('/banners', [BannerController::class, 'update'])->name('admin.banners.update');
+
     });
 
     // Người dùng (Users)
