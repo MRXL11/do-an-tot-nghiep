@@ -150,7 +150,7 @@
                         </li>
                         
                         <li class="nav-item">
-                            <a href="{{ route('admin.slides.index') }}" class="nav-link">
+                            <a href="{{ route('admin.admin.banners.index') }}" class="nav-link">
                                 <i class="bi bi-image"></i>
                                 <p>Banner</p>
                             </a>
