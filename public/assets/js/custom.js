@@ -132,20 +132,30 @@
 	    });
 	});
 
-	function onScroll(event){
-	    var scrollPos = $(document).scrollTop();
-	    $('.nav a').each(function () {
-	        var currLink = $(this);
-	        var refElement = $(currLink.attr("href"));
-	        if (refElement.position().top <= scrollPos && refElement.position().top + refElement.height() > scrollPos) {
-	            $('.nav ul li a').removeClass("active");
-	            currLink.addClass("active");
-	        }
-	        else{
-	            currLink.removeClass("active");
-	        }
-	    });
+	function onScroll(event) {
+		var scrollPos = $(document).scrollTop();
+		$('.nav a').each(function () {
+			var currLink = $(this);
+			var href = currLink.attr("href");
+
+			// Chỉ xử lý nếu href bắt đầu bằng #
+			if (href && href.startsWith("#")) {
+				var refElement = $(href);
+				if (refElement.length) {
+					if (
+						refElement.position().top <= scrollPos &&
+						refElement.position().top + refElement.height() > scrollPos
+					) {
+						$('.nav ul li a').removeClass("active");
+						currLink.addClass("active");
+					} else {
+						currLink.removeClass("active");
+					}
+				}
+			}
+		});
 	}
+
 
 
 	// Page loading animation

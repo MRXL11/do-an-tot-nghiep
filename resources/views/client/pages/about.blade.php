@@ -39,12 +39,12 @@
             </div>
             <div class="col-lg-6">
                 <div class="right-content">
-                    <h4>Về Chúng Tôi &amp; Kỹ Năng Của Chúng Tôi</h4>
-                    <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod kon tempor incididunt ut labore.</span>
+                    <h4>Về Chúng Tôi & Hành Trình Khởi Đầu</h4>
+                    <span>Chúng tôi là một dự án thời trang mới được khởi tạo với mong muốn mang đến những sản phẩm chất lượng và trải nghiệm mua sắm tốt nhất cho khách hàng.</span>
                     <div class="quote">
-                        <i class="fa fa-quote-left"></i><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiuski smod kon tempor incididunt ut labore.</p>
+                        <i class="fa fa-quote-left"></i><p>Mỗi bước đi đều là sự học hỏi, mỗi sản phẩm đều là sự tâm huyết. Chúng tôi tin rằng sự chân thành sẽ tạo nên giá trị bền vững.</p>
                     </div>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod kon tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.</p>
+                    <p>Là một website thời trang mới, chúng tôi đang trong quá trình xây dựng và phát triển. Mặc dù còn non trẻ, nhưng chúng tôi cam kết mang đến những sản phẩm chất lượng, giá cả hợp lý và dịch vụ khách hàng tận tâm. Chúng tôi luôn lắng nghe phản hồi từ khách hàng để không ngừng cải thiện và hoàn thiện mình.</p>
                     <ul>
                         <li><a href="#"><i class="fa fa-facebook"></i></a></li>
                         <li><a href="#"><i class="fa fa-twitter"></i></a></li>
@@ -64,8 +64,8 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-heading">
-                    <h2>Đội Ngũ Tuyệt Vời Của Chúng Tôi</h2>
-                    <span>Chính những chi tiết nhỏ tạo nên sự khác biệt cho Hexashop so với các mẫu khác.</span>
+                    <h2>Đội Ngũ Đang Phát Triển</h2>
+                    <span>Chúng tôi đang xây dựng một đội ngũ chuyên nghiệp để phục vụ khách hàng tốt nhất.</span>
                 </div>
             </div>
             <div class="col-lg-4">
@@ -81,32 +81,11 @@
                                 </ul>
                             </div>
                         </div>
-                        <img src="assets/images/team-member-01.jpg">
+                        <img src="assets/images/team-member-01.jpg" alt="Thành viên đội ngũ">
                     </div>
                     <div class="down-content">
-                        <h4>Ragnar Lodbrok</h4>
-                        <span>Chăm Sóc Sản Phẩm</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="team-item">
-                    <div class="thumb">
-                        <div class="hover-effect">
-                            <div class="inner-content">
-                                <ul>
-                                    <li><a href="#"><i class="fa fa-facebook"></i></a></li>
-                                    <li><a href="#"><i class="fa fa-twitter"></i></a></li>
-                                    <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
-                                    <li><a href="#"><i class="fa fa-behance"></i></a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <img src="assets/images/team-member-02.jpg">
-                    </div>
-                    <div class="down-content">
-                        <h4>Ragnar Lodbrok</h4>
-                        <span>Chăm Sóc Sản Phẩm</span>
+                        <h4>Đang Tuyển Dụng</h4>
+                        <span>Vị Trí Đang Mở</span>
                     </div>
                 </div>
             </div>
@@ -123,11 +102,32 @@
                                 </ul>
                             </div>
                         </div>
-                        <img src="assets/images/team-member-03.jpg">
+                        <img src="assets/images/team-member-02.jpg" alt="Thành viên đội ngũ">
                     </div>
                     <div class="down-content">
-                        <h4>Ragnar Lodbrok</h4>
-                        <span>Chăm Sóc Sản Phẩm</span>
+                        <h4>Đang Tuyển Dụng</h4>
+                        <span>Vị Trí Đang Mở</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="team-item">
+                    <div class="thumb">
+                        <div class="hover-effect">
+                            <div class="inner-content">
+                                <ul>
+                                    <li><a href="#"><i class="fa fa-facebook"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-behance"></i></a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <img src="assets/images/team-member-03.jpg" alt="Thành viên đội ngũ">
+                    </div>
+                    <div class="down-content">
+                        <h4>Đang Tuyển Dụng</h4>
+                        <span>Vị Trí Đang Mở</span>
                     </div>
                 </div>
             </div>
@@ -142,29 +142,29 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-heading">
-                    <h2>Dịch Vụ Của Chúng Tôi</h2>
-                    <span>Chính những chi tiết nhỏ tạo nên sự khác biệt cho Hexashop so với các mẫu khác.</span>
+                    <h2>Dịch Vụ Chúng Tôi Cung Cấp</h2>
+                    <span>Chúng tôi đang phát triển và mở rộng các dịch vụ để đáp ứng nhu cầu ngày càng tăng của khách hàng.</span>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="service-item">
-                    <h4>Synther Vaporware</h4>
-                    <p>Lorem ipsum dolor sit amet, consecteturti adipiscing elit, sed do eiusmod temp incididunt ut labore, et dolore quis ipsum suspend.</p>
-                    <img src="assets/images/service-01.jpg" alt="">
+                    <h4>Bán Hàng Online</h4>
+                    <p>Website thương mại điện tử hiện đại, giao diện thân thiện, dễ sử dụng. Chúng tôi đang không ngừng cải thiện để mang đến trải nghiệm mua sắm tốt nhất.</p>
+                    <img src="assets/images/service-01.jpg" alt="Dịch vụ bán hàng online">
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="service-item">
-                    <h4>Locavore Squidward</h4>
-                    <p>Lorem ipsum dolor sit amet, consecteturti adipiscing elit, sed do eiusmod temp incididunt ut labore, et dolore quis ipsum suspend.</p>
-                    <img src="assets/images/service-02.jpg" alt="">
+                    <h4>Giao Hàng Tận Nơi</h4>
+                    <p>Dịch vụ giao hàng đang được phát triển và mở rộng. Chúng tôi cam kết giao hàng an toàn và đúng hẹn đến khách hàng.</p>
+                    <img src="assets/images/service-02.jpg" alt="Dịch vụ giao hàng">
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="service-item">
-                    <h4>Health Gothfam</h4>
-                    <p>Lorem ipsum dolor sit amet, consecteturti adipiscing elit, sed do eiusmod temp incididunt ut labore, et dolore quis ipsum suspend.</p>
-                    <img src="assets/images/service-03.jpg" alt="">
+                    <h4>Hỗ Trợ Khách Hàng</h4>
+                    <p>Đội ngũ hỗ trợ khách hàng đang được đào tạo để phục vụ tốt nhất. Chúng tôi luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc.</p>
+                    <img src="assets/images/service-03.jpg" alt="Dịch vụ hỗ trợ">
                 </div>
             </div>
         </div>
@@ -179,18 +179,18 @@
             <div class="col-lg-8">
                 <div class="section-heading">
                     <h2>Bằng Cách Đăng Ký Nhận Bản Tin, Bạn Sẽ Nhận Được Giảm Giá 30%</h2>
-                    <span>Chính những chi tiết nhỏ tạo nên sự khác biệt cho Hexashop so với các mẫu khác.</span>
+                    <span>Chính những chi tiết nhỏ tạo nên sự khác biệt cho HN_447 so với các mẫu khác.</span>
                 </div>
                 <form id="subscribe" action="" method="get">
                     <div class="row">
                         <div class="col-lg-5">
                             <fieldset>
-                                <input name="name" type="text" id="name" placeholder="Tên của bạn" required="">
+                                <input name="name" type="text" id="name" placeholder="Họ và tên" required="">
                             </fieldset>
                         </div>
                         <div class="col-lg-5">
                             <fieldset>
-                                <input name="email" type="text" id="email" pattern="[^ @]*@[^ @]*" placeholder="Địa chỉ email của bạn" required="">
+                                <input name="email" type="text" id="email" pattern="[^ @]*@[^ @]*" placeholder="Email" required="">
                             </fieldset>
                         </div>
                         <div class="col-lg-2">
@@ -205,16 +205,16 @@
                 <div class="row">
                     <div class="col-6">
                         <ul>
-                            <li>Địa Chỉ Cửa Hàng:<br><span>Sunny Isles Beach, FL 33160, Hoa Kỳ</span></li>
-                            <li>Điện Thoại:<br><span>010-020-0340</span></li>
-                            <li>Vị Trí Văn Phòng:<br><span>North Miami Beach</span></li>
+                        <li>Địa Chỉ Cửa Hàng:<br><span>Số 1 Trịnh Văn Bô, Hà Nội</span></li>
+                        <li>Điện Thoại:<br><span>010-020-0340</span></li>
+                        <li>Văn Phòng:<br><span>Fpt</span></li>
                         </ul>
                     </div>
                     <div class="col-6">
                         <ul>
-                            <li>Giờ Làm Việc:<br><span>07:30 AM - 9:30 PM Hàng Ngày</span></li>
-                            <li>Email:<br><span>info@company.com</span></li>
-                            <li>Mạng Xã Hội:<br><span><a href="#">Facebook</a>, <a href="#">Instagram</a>, <a href="#">Behance</a>, <a href="#">Linkedin</a></span></li>
+                        <li>Giờ Làm Việc:<br><span>07:30 Sáng - 9:30 Tối hàng ngày</span></li>
+                        <li>Email:<br><span>HN_447@company.com</span></li>
+                        <li>Mạng Xã Hội:<br><span><a href="#">Facebook</a>, <a href="#">Instagram</a>, <a href="#">Behance</a>, <a href="#">LinkedIn</a></span></li>, 
                         </ul>
                     </div>
                 </div>
