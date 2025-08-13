@@ -88,9 +88,9 @@ class CheckoutController extends Controller
             return $item->productVariant->price * $item->quantity;
         });
 
-        $shippingAddresses = ShippingAddress::selectRaw('MIN(id) as id, name, phone_number, address, ward, district, city')
+        $shippingAddresses = ShippingAddress::selectRaw('MIN(id) as id, name, phone_number, address, ward, district, city, province_id, district_id, ward_code')
             ->where('user_id', Auth::id())
-            ->groupBy('name', 'phone_number', 'address', 'ward', 'district', 'city')
+            ->groupBy('name', 'phone_number', 'address', 'ward', 'district', 'city', 'province_id', 'district_id', 'ward_code')
             ->get()
             ->map(function ($address) {
                 $address->full_address = implode(', ', array_filter([
@@ -330,6 +330,9 @@ class CheckoutController extends Controller
                 'ward' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}\p{N}\s]+$/u'],
                 'district' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}\p{N}\s]+$/u'],
                 'city' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}\p{N}\s]+$/u'],
+                'province_id' => ['required_without:shipping_address_id', 'integer'],
+                'district_id' => ['required_without:shipping_address_id', 'integer'],
+                'ward_code' => ['required_without:shipping_address_id', 'string', 'max:100'],
                 'shipping_address_id' => 'nullable|exists:shipping_addresses,id,user_id,' . Auth::id(),
                 'cart_item_ids' => 'required|string',
             ], [
@@ -350,8 +353,40 @@ class CheckoutController extends Controller
                 'city.regex' => 'Tỉnh/Thành phố chỉ được chứa chữ, số và khoảng trắng.',
                 'city.max' => 'Tỉnh/Thành phố không được vượt quá 100 ký tự.',
                 'cart_item_ids.required' => 'Danh sách sản phẩm không hợp lệ.',
+                'province_id.required_without' => 'Vui lòng chọn tỉnh/thành phố nếu không chọn địa chỉ có sẵn.',
+                'district_id.required_without' => 'Vui lòng chọn quận/huyện nếu không chọn địa chỉ có sẵn.',
+                'ward_code.required_without' => 'Vui lòng chọn xã/phường nếu không chọn địa chỉ có sẵn.',
+                'ward_code.max' => 'Mã xã/phường không được vượt quá 100 ký tự.',
             ]);
+                    if (!$request->filled('shipping_address_id')) {
+            $client = new \GuzzleHttp\Client();
+            $token = env('GHN_API_TOKEN');
+            $ghnUrl = env('GHN_API_URL');
 
+            // Fetch province name
+            $provinceRes = $client->get($ghnUrl . '/master-data/province', ['headers' => ['Token' => $token]]);
+            $provinces = json_decode($provinceRes->getBody(), true)['data'];
+            $province = collect($provinces)->firstWhere('ProvinceID', (int) $request->province_id);
+            $city = $province['ProvinceName'] ?? null;
+
+            // Fetch district name
+            $districtRes = $client->get($ghnUrl . '/master-data/district', [
+                'headers' => ['Token' => $token],
+                'query' => ['province_id' => (int) $request->province_id]
+            ]);
+            $districts = json_decode($districtRes->getBody(), true)['data'];
+            $districtData = collect($districts)->firstWhere('DistrictID', (int) $request->district_id);
+            $district = $districtData['DistrictName'] ?? null;
+
+            // Fetch ward name
+            $wardRes = $client->get($ghnUrl . '/master-data/ward', [
+                'headers' => ['Token' => $token],
+                'query' => ['district_id' => (int) $request->district_id]
+            ]);
+            $wards = json_decode($wardRes->getBody(), true)['data'];
+            $wardData = collect($wards)->firstWhere('WardCode', $request->ward_code);
+            $ward = $wardData['WardName'] ?? null;
+        }
             $cartItemIds = array_filter(explode(',', $request->input('cart_item_ids')), fn ($id) => is_numeric($id) && intval($id) > 0);
             if (empty($cartItemIds)) {
                 return response()->json(['success' => false, 'message' => 'Danh sách sản phẩm không hợp lệ.'], 422);
@@ -379,9 +414,9 @@ class CheckoutController extends Controller
                         'name' => $request->name,
                         'phone_number' => $request->phone_number,
                         'address' => $request->address,
-                        'ward' => $request->ward,
-                        'district' => $request->district,
-                        'city' => $request->city
+                        'ward' => $ward,
+                        'district' => $district,
+                        'city' => $city
                     ],
                     ['is_default' => false]
                 );
