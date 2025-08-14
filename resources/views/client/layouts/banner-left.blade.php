@@ -3,7 +3,7 @@
 @endphp
 <div class="col-lg-8">
     <div class="left-content">
-        <div class="thumb" style="height: 460px; position: relative; background-color: #000;">
+        <div class="thumb" style="height: 412px; position: relative; background-color: #000;">
             <div class="inner-content" @if(!$banner || !$banner->show_text) style="display: none;" @endif>
                 <h4>{{ $banner->title ?? 'Chào mừng đến với chúng tôi' }}</h4>
                 <span>{{ $banner->subtitle ?? 'Thời trang, phong cách &amp; thể hiện cá tính' }}</span>

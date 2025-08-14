@@ -33,6 +33,7 @@ class SocialAuthController extends Controller
                     'status' => 'active',
                     'role_id' => 2,
                     'google_id' => $googleUser->getId(),
+                    'avatar' => $googleUser->getAvatar(),
                 ]
             );
 
