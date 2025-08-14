@@ -7,6 +7,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Log;
+
+
+
 
 /**
  * @property int $id
@@ -104,6 +108,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class);
     }
+
     public function reviews()
     {
         return $this->hasMany(Review::class);
@@ -112,5 +117,23 @@ class User extends Authenticatable
     public function shippingAddresses()
     {
         return $this->hasMany(ShippingAddress::class);
+    }
+
+    /**
+     * Accessor để lấy URL đầy đủ của avatar
+     *
+     * @return string|null
+     */
+  public function getAvatarAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+        // Nếu là URL external (từ Google), trả về nguyên
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
+        // Nếu là đường dẫn local, thêm storage/
+        return asset('storage/' . $value);
     }
 }
