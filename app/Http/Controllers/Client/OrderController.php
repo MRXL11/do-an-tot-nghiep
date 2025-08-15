@@ -14,6 +14,46 @@ use App\Events\OrderStatusUpdated;
 
 class OrderController extends Controller
 {
+    // hàm lấy danh sách đơn hàng của người dùng
+    public function index()
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Bạn cần đăng nhập để truy cập trang này.');
+        }
+
+        // Lấy danh sách đơn hàng của người dùng
+        $orders = Order::with('orderDetails.productVariant.product', 'coupon', 'returnRequest')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(6);
+
+        // Duyệt qua từng đơn hàng để tính discount (nếu có coupon)
+        foreach ($orders as $order) {
+            $discount = 0;
+            // Tính subtotal (chưa bao gồm phí ship)
+            $subtotal = $order->orderDetails->sum('subtotal');
+
+            if ($order->coupon) {
+                if ($order->coupon->discount_type === 'fixed') {
+                    $discount = $order->coupon->discount_value;
+                } elseif ($order->coupon->discount_type === 'percent') {
+                    $discount = round($subtotal * $order->coupon->discount_value / 100);
+                }
+            }
+
+            // Gán giảm giá tạm thời vào order (không cần lưu DB)
+            $order->calculated_discount = $discount;
+
+            // Đừng gán lại $order->total, hãy dùng biến phụ nếu cần
+            $order->subtotal_display = $subtotal;
+
+            // Tính tổng tiền cuối cùng sau khi giảm giá
+            $order->final_price = $order->total_price;
+        }
+         $totalOrderCount = Order::where('user_id', auth()->id())->count();
+        return view('client.pages.orders', compact('user', 'orders', 'totalOrderCount'));
+    }
     public function execPostRequest($url, $data)
     {
         $ch = curl_init($url);
@@ -145,7 +185,8 @@ class OrderController extends Controller
         $subtotal = $order->orderDetails->sum(function ($detail) {
             return $detail->price * $detail->quantity;
         });
-        $shippingFee = 20000;
+
+        $shippingFee = $order->shipping_fee;
         $total = $order->total_price;
 
         $cartItems = Cart::where('user_id', Auth::id())->get();
@@ -447,3 +488,4 @@ class OrderController extends Controller
         return view('client.pages.order-failed', ['error' => $error]);
     }
 }
+

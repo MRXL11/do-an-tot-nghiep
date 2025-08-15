@@ -28,6 +28,46 @@
                          </p>
                      </a>
                      <ul class="nav nav-treeview">
+                               @php
+                            use App\Models\Notification;
+                            use Illuminate\Support\Facades\Auth;
+
+                            $unreadCount = Auth::check()
+                                ? Notification::where('user_id', Auth::id())->where('is_read', false)->count()
+                                : 0;
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('notifications') }}"
+                                class="nav-link {{ request()->routeIs('notifications') ? 'active' : '' }}">
+                                <i class="bi bi-bell"></i>
+                                <p>
+                                    Thông báo
+                                    @if($unreadCount > 0)
+                                        <span class="badge bg-danger ms-5">New {{ $unreadCount }}</span>
+                                    @endif
+                                </p>
+                            </a>
+                        </li>
+                       @php
+                            use App\Models\Order;
+
+                            // Đếm số đơn mới (pending)
+                            $newOrdersCount = Order::where('status', 'pending')->count();
+                        @endphp
+                        <li class="nav-item">
+                            <a href="{{ route('admin.orders.index') }}"
+                            class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+                                <i class="bi bi-receipt"></i>
+                                <p>
+                                    Đơn hàng
+                                    {{-- Hiển thị số lượng đơn hàng mới --}}
+                                    @if($newOrdersCount > 0)
+                                        <span class="badge bg-success ms-5"> New {{ $newOrdersCount }}</span>
+                                    @endif
+                                </p>
+                            </a>
+                        </li>
+
                          <li class="nav-item">
                              <a href="{{ route('statistical') }}"
                                  class="nav-link {{ request()->routeIs('statistical') ? 'active' : '' }}">
@@ -35,6 +75,8 @@
                                  <p>Thống kê</p>
                              </a>
                          </li>
+                  
+
                          <li class="nav-item">
                              <a href="{{ route('admin.users.index') }}"
                                  class="nav-link {{ request()->routeIs('users') ? 'active' : '' }}">
@@ -52,13 +94,7 @@
                                  <p>Sản Phẩm</p>
                              </a>
                          </li>
-                         <li class="nav-item">
-                             <a href="{{ route('admin.orders.index') }}"
-                                 class="nav-link {{ request()->routeIs('orders') ? 'active' : '' }}">
-                                 <i class="bi bi-receipt"></i>
-                                 <p>Đơn hàng</p>
-                             </a>
-                         </li>
+                         
                          <li class="nav-item">
                              <a href="{{ route('reviews') }}"
                                  class="nav-link {{ request()->routeIs('reviews') ? 'active' : '' }}">
@@ -80,13 +116,7 @@
                              <p>Voucher</p>
                           </a>
                          </li>
-                         <li class="nav-item">
-                             <a href="{{ route('notifications') }}"
-                                 class="nav-link {{ request()->routeIs('notifications') ? 'active' : '' }}">
-                                 <i class="bi bi-bell"></i>
-                                 <p>Thông báo</p>
-                             </a>
-                         </li>
+                         
                          <li class="nav-item">
                              <a href="{{ route('admin.categories.index') }}"
                                  class="nav-link {{ request()->routeIs('admin.categories') ? 'active' : '' }}">
@@ -120,7 +150,7 @@
                         </li>
                         
                         <li class="nav-item">
-                            <a href="{{ route('admin.slides.index') }}" class="nav-link">
+                            <a href="{{ route('admin.admin.banners.index') }}" class="nav-link">
                                 <i class="bi bi-image"></i>
                                 <p>Banner</p>
                             </a>
