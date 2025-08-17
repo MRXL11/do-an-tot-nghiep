@@ -18,23 +18,37 @@ class SocialAuthController extends Controller
     public function handleGoogleCallback()
     {
         try {
-            // Nếu ứng dụng dùng session (mặc định Laravel), bỏ 'stateless()'
-            // $googleUser = Socialite::driver('google')->user();
-
-            // Nếu ứng dụng không dùng session (ví dụ: API), giữ 'stateless()'
             $googleUser = Socialite::driver('google')->stateless()->user();
 
-            $user = User::updateOrCreate(
-                ['email' => $googleUser->getEmail()],
-                [
+            // Tìm user bằng google_id hoặc email
+            $user = User::where('google_id', $googleUser->getId())
+                ->orWhere('email', $googleUser->getEmail())
+                ->first();
+
+            if ($user) {
+                // Nếu tồn tại, update các field cần thiết, nhưng KHÔNG overwrite avatar nếu đã có
+                $user->update([
+                    'name' => $user->name ?? $googleUser->getName(),
+                    'email_verified_at' => now(),
+                    'status' => 'active',
+                    'role_id' => $user->role_id ?? 2,
+                    'google_id' => $googleUser->getId(),
+                    // Chỉ set avatar nếu chưa có
+                    'avatar' => $user->avatar ?? $googleUser->getAvatar(),
+                ]);
+            } else {
+                // Nếu không tồn tại, tạo mới
+                $user = User::create([
+                    'email' => $googleUser->getEmail(),
                     'name' => $googleUser->getName(),
-                    'password' => bcrypt(Str::random(16)), // Tăng độ dài mật khẩu lên 16
+                    'password' => bcrypt(Str::random(16)),
                     'email_verified_at' => now(),
                     'status' => 'active',
                     'role_id' => 2,
                     'google_id' => $googleUser->getId(),
-                ]
-            );
+                    'avatar' => $googleUser->getAvatar(),
+                ]);
+            }
 
             Auth::login($user);
 

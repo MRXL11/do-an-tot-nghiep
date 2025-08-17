@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
         ReviewsTableSeeder::class,
         NotificationsTableSeeder::class,
         CategoryGroupSeeder::class, // Thêm seeder cho CategoryGroup
+        ShopAddressSeeder::class, // Thêm seeder cho ShopAddress
     ]);
     }
 }
