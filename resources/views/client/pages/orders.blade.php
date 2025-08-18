@@ -514,11 +514,7 @@
                                                 <div class="col-md-12">
                                                     <div class="card border-0 bg-light">
                                                         <div class="card-body">
-                                                            <div class="d-flex justify-content-between mb-2">
-                                                                <span>Tổng tiền hàng:</span>
-                                                                <span
-                                                                    class="fw-semibold">{{ number_format($order->total, 0, ',', '.') }}₫</span>
-                                                            </div>
+                                                            
                                                             @if ($order->calculated_discount > 0)
                                                                 <div
                                                                     class="d-flex justify-content-between mb-2 text-success">
@@ -527,10 +523,7 @@
                                                                         class="fw-semibold">-{{ number_format($order->calculated_discount, 0, ',', '.') }}₫</span>
                                                                 </div>
                                                             @endif
-                                                            <div class="d-flex justify-content-between mb-2">
-                                                                <span>Phí vận chuyển:</span>
-                                                                <span class="fw-semibold">20.000₫</span>
-                                                            </div>
+                                                            
                                                             <hr>
                                                             <div class="d-flex justify-content-between">
                                                                 <span class="fw-bold fs-5">Thành tiền:</span>

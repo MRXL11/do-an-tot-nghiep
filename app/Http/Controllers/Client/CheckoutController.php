@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
 class CheckoutController extends Controller
 {
    
-  
+    const SHIPPING_FEE = 0;
      public function store(Request $request)
     {
         // Lấy dữ liệu từ request
@@ -324,15 +324,42 @@ class CheckoutController extends Controller
         try {
             $validated = $request->validate([
                 'paymentMethod' => 'required|in:cod,momo,card',
-                'name' => ['required_without:shipping_address_id', 'string', 'max:100', 'min:2', 'regex:/^[\p{L}\s]+$/u'],
-                'phone_number' => ['required_without:shipping_address_id', 'string', 'max:20', 'regex:/^(0|\+84)[0-9]{9,10}$/'],
-                'address' => ['required_without:shipping_address_id', 'string', 'max:255', 'regex:/^[\p{L}\p{N}\s,.-]+$/u'],
-                'ward' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}\p{N}\s]+$/u'],
-                'district' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}\p{N}\s]+$/u'],
-                'city' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}\p{N}\s]+$/u'],
-                'province_id' => ['required_without:shipping_address_id', 'integer'],
-                'district_id' => ['required_without:shipping_address_id', 'integer'],
-                'ward_code' => ['required_without:shipping_address_id', 'string', 'max:100'],
+                'name' => [
+                    'nullable',
+                    'exclude_if:shipping_address_id,!null',
+                    'required_without:shipping_address_id',
+                    'string', 'max:100', 'min:2', 'regex:/^[\p{L}\s]+$/u'
+                ],
+                'phone_number' => [
+                    'nullable',
+                    'exclude_if:shipping_address_id,!null',
+                    'required_without:shipping_address_id',
+                    'string', 'max:20', 'regex:/^(0|\+84)[0-9]{9,10}$/'
+                ],
+                'address' => [
+                    'nullable',
+                    'exclude_if:shipping_address_id,!null',
+                    'required_without:shipping_address_id',
+                    'string', 'max:255', 'regex:/^[\p{L}\p{N}\s,.-]+$/u'
+                ],
+                'province_id' => [
+                    'nullable',
+                    'exclude_if:shipping_address_id,!null',
+                    'required_without:shipping_address_id',
+                    'integer'
+                ],
+                'district_id' => [
+                    'nullable',
+                    'exclude_if:shipping_address_id,!null',
+                    'required_without:shipping_address_id',
+                    'integer'
+                ],
+                'ward_code' => [
+                    'nullable',
+                    'exclude_if:shipping_address_id,!null',
+                    'required_without:shipping_address_id',
+                    'string', 'max:100'
+                ],
                 'shipping_address_id' => 'nullable|exists:shipping_addresses,id,user_id,' . Auth::id(),
                 'cart_item_ids' => 'required|string',
             ], [
