@@ -4,9 +4,9 @@
     <div class="container-fluid px-4 pt-3">
         <div class="row g-4">
 
-            <div class="col-lg-10" style="margin: 0 auto;">
+            <div class="col-lg-11" style="margin: 0 auto;">
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                    <!-- Success/Error Alerts -->
+
                     @if (session('order-success'))
                         <div class="alert alert-success alert-dismissible fade show m-3 rounded-3 border-0 shadow-sm"
                             role="alert">
@@ -67,50 +67,51 @@
                         </div>
                     </div>
 
-                    <div class="card-body p-4">
-                        <div class="accordion accordion-flush" id="orderAccordion">
-                            @forelse ($orders as $order)
-                                <div class="accordion-item border-0 mb-4 rounded-4 shadow-sm overflow-hidden"
-                                    data-order-code="{{ $order->order_code }}">
-                                    <h2 class="accordion-header" id="heading{{ $order->id }}">
-                                        <div class="d-flex align-items-end bg-light rounded-4 p-4 border-0 flex-column">
-                                            <button
-                                                class="accordion-button collapsed bg-transparent border-0 p-0 flex-grow-1 shadow-none"
-                                                type="button" data-bs-toggle="collapse"
-                                                data-bs-target="#collapse{{ $order->id }}">
-                                                <div class="d-flex align-items-center justify-content-between w-100">
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="bg-primary rounded-circle p-2 me-3">
-                                                            <i class="bi bi-box-seam text-white"></i>
-                                                        </div>
-                                                        <div>
-                                                            <div class="mb-3 d-flex flex-column">
-                                                                <h6 class="fw-bold text-dark mb-1">
-                                                                    #{{ $order->order_code }} - {{ $order->shippingAddress->name ?? $order->user->name }}
-                                                                </h6>
-                                                                <h6 class="mb-1">
-                                                                    {{ $order->getPaymentMethod($order->payment_method)['label'] }}
-                                                                    -
-                                                                    <span class="fw-semibold"
-                                                                        style="color: {{ $order->getPaymentStatus($order->payment_status)['color'] }}">
-                                                                        {{ $order->getPaymentStatus($order->payment_status)['label'] }}
-                                                                    </span>
-                                                                </h6>
-                                                                <small class="text-muted d-block mb-1">
-                                                                    <i class="bi bi-calendar3 me-1"></i>
-                                                                    {{ $order->created_at->format('d/m/Y - H:i') }}
-                                                                </small>
-                                                                <small class="text-muted d-block">
-                                                                    <i class="bi bi-box me-1"></i>
-                                                                    @php
-                                                                        $products = $order->orderDetails->take(2)->map(function($detail) {
-                                                                            return $detail->productVariant->product->name . ' (x' . $detail->quantity . ')';
-                                                                        })->join(', ');
-                                                                        $more = $order->orderDetails->count() > 2 ? '...' : '';
-                                                                    @endphp
-                                                                    Sản phẩm: {{ $products }}{{ $more }}
-                                                                </small>
-                                                            </div>
+<div class="card-body p-4">
+    <div class="accordion accordion-flush" id="orderAccordion">
+        @forelse ($orders as $order)
+            <div class="accordion-item border-0 mb-4 rounded-4 shadow-sm overflow-hidden"
+                data-order-code="{{ $order->order_code }}">
+                <h2 class="accordion-header" id="heading{{ $order->id }}">
+                    <div class="d-flex align-items-end bg-light rounded-4 p-4 border-0 flex-column">
+                        <button
+                            class="accordion-button collapsed bg-transparent border-0 p-0 flex-grow-1 shadow-none"
+                            type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{ $order->id }}">
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary rounded-circle p-2 me-3">
+                                        <i class="bi bi-box-seam text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="mb-3 d-flex flex-column">
+                                            <h6 class="fw-bold text-dark mb-1">
+                                                #{{ $order->order_code }} - {{ $order->shippingAddress->name ?? $order->user->name }}
+                                            </h6>
+                                            <h6 class="mb-1">
+                                                {{ $order->getPaymentMethod($order->payment_method)['label'] }}
+                                                -
+                                                <span class="fw-semibold"
+                                                    style="color: {{ $order->getPaymentStatus($order->payment_status)['color'] }}">
+                                                    {{ $order->getPaymentStatus($order->payment_status)['label'] }}
+                                                </span>
+                                            </h6>
+                                            <small class="text-muted d-block mb-1">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                {{ $order->created_at->format('d/m/Y - H:i') }}
+                                            </small>
+                                            <small class="text-muted d-block">
+                                                <i class="bi bi-box me-1"></i>
+                                                @php
+                                                    $products = $order->orderDetails->take(2)->map(function($detail) {
+                                                        return $detail->productVariant->product->name . ' (x' . $detail->quantity . ')';
+                                                    })->join(', ');
+                                                    $more = $order->orderDetails->count() > 2 ? '...' : '';
+                                                @endphp
+                                                Sản phẩm: {{ $products }}{{ $more }}
+                                            </small>
+                                        </div>
+
                                                             {{-- hiển thị trạng thái yêu cầu huỷ (nếu có) --}}
                                                             @php
                                                                 $isRequested = $order->cancellation_requested;
@@ -323,7 +324,6 @@
                                                 </a>
                                             @endif
 
-                                            <!-- Action Buttons -->
                                             @if (in_array($order->status, ['pending', 'processing']))
                                                 @if (!$isRequested && !$isCancelled)
                                                     <div class="d-flex justify-content-end mt-1">
@@ -377,7 +377,6 @@
                                         data-bs-parent="#orderAccordion">
                                         <div class="accordion-body p-4 bg-white">
 
-                                            <!-- Order Info Cards -->
                                             <div class="row g-3 mb-4">
                                                 <div class="col-md-6">
                                                     <div class="card bg-light border-0 h-100">
@@ -408,7 +407,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Payment & Status Info -->
                                             <div class="row g-3 mb-4">
                                                 <div class="col-md-6">
                                                     <div class="d-flex align-items-center p-3 bg-light rounded-3">
@@ -436,7 +434,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Product Table -->
                                             <div class="table-responsive">
                                                 <table class="table table-hover">
                                                     <thead class="table-light">
@@ -447,6 +444,7 @@
                                                             <th class="border-0 fw-bold">SL</th>
                                                             <th class="border-0 fw-bold">Đơn giá</th>
                                                             <th class="border-0 fw-bold text-end">Tổng</th>
+                                                            <th class="border-0 fw-bold text-center">Đánh giá</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -480,31 +478,52 @@
                                                                 <td class="align-middle text-end fw-bold">
                                                                     {{ number_format($detail->subtotal, 0, ',', '.') }}₫
                                                                 </td>
+                                                                <td class="align-middle text-center">
+                                                                    @if ($order->status === 'completed')
+                                                                        @php
+                                                                            $review = \App\Models\Review::where(
+                                                                                'order_detail_id',
+                                                                                $detail->id,
+                                                                            )->first();
+                                                                        @endphp
+                                                                        @if ($review)
+                                                                            <div class="text-warning d-flex align-items-center justify-content-center">
+                                                                                <i class="bi bi-star-fill me-1"></i>
+                                                                                <span class="fw-bold">{{ $review->rating }}</span>
+                                                                            </div>
+                                                                        @else
+                                                                            <button
+                                                                                class="btn btn-outline-warning btn-sm"
+                                                                                data-bs-toggle="modal"
+                                                                                data-bs-target="#reviewModal"
+                                                                                data-product-id="{{ $detail->productVariant->product->id }}"
+                                                                                data-product-name="{{ $detail->productVariant->product->name }}"
+                                                                                data-order-detail-id="{{ $detail->id }}">
+                                                                                <i class="bi bi-star"></i> Đánh giá
+                                                                            </button>
+                                                                        @endif
+                                                                    @endif
+                                                                </td>
                                                             </tr>
                                                         @endforeach
                                                     </tbody>
                                                 </table>
                                             </div>
 
-                                            <!-- Order Summary -->
-                                            <div class="row justify-content-end">
+                                            <div class="row justify-content-end mt-3">
                                                 <div class="col-md-12">
                                                     <div class="card border-0 bg-light">
                                                         <div class="card-body">
-                                                          
+                                                            
                                                             @if ($order->calculated_discount > 0)
                                                                 <div
                                                                     class="d-flex justify-content-between mb-2 text-success">
                                                                     <span>Giảm giá:</span>
-                                                                    <span class="fw-semibold">-{{ number_format($order->calculated_discount, 0, ',', '.') }}₫</span>
+                                                                    <span
+                                                                        class="fw-semibold">-{{ number_format($order->calculated_discount, 0, ',', '.') }}₫</span>
                                                                 </div>
                                                             @endif
-                                                            {{-- hiển thị phí vận chuyển --}}
-                                                            <div class="d-flex justify-content-between mb-2">
-                                                                <span>Phí vận chuyển:</span>
-                                                                <span
-                                                                    class="fw-semibold">{{ number_format($order->shipping_fee, 0, ',', '.') }}₫</span>
-                                                            </div>
+                                                            
                                                             <hr>
                                                             <div class="d-flex justify-content-between">
                                                                 <span class="fw-bold fs-5">Thành tiền:</span>
@@ -515,44 +534,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            {{-- review --}}
-                                            @if ($order->status === 'completed')
-                                                <div class="border-top pt-3 mt-3">
-                                                    <h6 class="fw-semibold">Đánh giá sản phẩm:</h6>
-                                                    <ul class="list-group">
-                                                        @foreach ($order->orderDetails as $detail)
-                                                            @php
-                                                                $review = \App\Models\Review::where(
-                                                                    'order_detail_id',
-                                                                    $detail->id,
-                                                                )->first();
-                                                            @endphp
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                <span>{{ $detail->productVariant->product->name }}</span>
-                                                                @if ($review)
-                                                                    <div class="text-warning">
-                                                                        @for ($i = 1; $i <= 5; $i++)
-                                                                            <i
-                                                                                class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
-                                                                        @endfor
-                                                                    </div>
-                                                                @else
-                                                                    <button class="btn btn-outline-warning btn-sm"
-                                                                        data-bs-toggle="modal"
-                                                                        data-bs-target="#reviewModal"
-                                                                        data-product-id="{{ $detail->productVariant->product->id }}"
-                                                                        data-product-name="{{ $detail->productVariant->product->name }}"
-                                                                        data-order-detail-id="{{ $detail->id }}">
-                                                                        <i class="bi bi-star"></i> Viết đánh giá
-                                                                    </button>
-                                                                @endif
-                                                            </li>
-                                                        @endforeach
-                                                    </ul>
-                                                </div>
-                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -563,7 +544,7 @@
                                     </div>
                                     <h4 class="text-muted mb-2">Chưa có đơn hàng nào</h4>
                                     <p class="text-muted">Hãy bắt đầu mua sắm để tạo đơn hàng đầu tiên của bạn!</p>
-                                    <a href="{{ route('products-client') }}" class="btn btn-primary btn-lg rounded-pill px-4">
+                                    <a href="#" class="btn btn-primary btn-lg rounded-pill px-4">
                                         <i class="bi bi-shop me-2"></i>Bắt đầu mua sắm
                                     </a>
                                 </div>
@@ -575,8 +556,9 @@
                     </div>
                 </div>
             </div>
-       
-    <!-- Modal Huỷ đơn từ khách -->
+        </div>
+    </div>
+
     <div class="modal fade" id="clientCancelModal" tabindex="-1" aria-labelledby="clientCancelModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
@@ -609,7 +591,6 @@
         </div>
     </div>
 
-    <!-- Success Modal -->
     <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4">
@@ -624,8 +605,7 @@
                     <div class="mb-4">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                     </div>
-                    <h4 class="mb-3"></h4> <!-- Sẽ được cập nhật bằng JavaScript -->
-                    <p class="text-muted">Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của chúng tôi!</p>
+                    <h4 class="mb-3"></h4> <p class="text-muted">Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của chúng tôi!</p>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
                     <button type="button" class="btn btn-success btn-lg rounded-pill px-4" data-bs-dismiss="modal">
@@ -636,7 +616,6 @@
         </div>
     </div>
 
-    <!-- Error Modal -->
     <div class="modal fade" id="orderErrorModal" tabindex="-1" aria-labelledby="orderErrorModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -652,8 +631,7 @@
                     <div class="mb-4">
                         <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
                     </div>
-                    <h4 class="mb-3 text-danger"></h4> <!-- Sẽ được cập nhật bằng JavaScript -->
-                    <p class="text-muted">Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
+                    <h4 class="mb-3 text-danger"></h4> <p class="text-muted">Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
                     <button type="button" class="btn btn-outline-danger btn-lg rounded-pill px-4"
@@ -665,7 +643,6 @@
         </div>
     </div>
 
-    <!-- Review Modal -->
     <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -697,11 +674,9 @@
                     </form>
                 </div>
             </div>
-        </div>
-    </div>
      </div>
 </div>
-    <style>
+   <style>
         .bg-gradient-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
@@ -1106,5 +1081,4 @@ document.addEventListener('DOMContentLoaded', function() {
             return container;
         }
     </script>
-
 @endsection

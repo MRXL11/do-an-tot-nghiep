@@ -200,7 +200,7 @@ Route::get('/wishlist/check/product/{id}', [WishlistController::class, 'check'])
 Route::get('/account', [AccountController::class, 'show'])->name('account.show');
 Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
 // Route cho trang đơn hàng của khách hàng
-Route::get('/orders', [ClientOrderController::class, 'index'])->name('orders.index');
+Route::get('/orders', [ClientOrderController::class, 'index'])->name('orders.index');   
 // lấy phí vận chuyển
 Route::post('/checkout/shipping-fee', [CheckoutController::class, 'getShippingFee'])->name('checkout.getShippingFee');
 
