@@ -7,6 +7,7 @@
         <input type="hidden" name="shipping_address_id" id="shipping-address-id">
         <div class="container">
             <div class="row justify-content-center align-items-start">
+                {{-- Cột hiển thị sản phẩm trong giỏ hàng --}}
                 <div class="col-lg-7 mb-4">
                     <div class="card shadow">
                         <div class="card-body">
@@ -47,6 +48,7 @@
                     </div>
                 </div>
 
+                {{-- Cột thanh toán và thông tin giao hàng --}}
                 <div class="col-lg-5">
                     <div class="card bg-light border-0 shadow">
                         <div class="card-body">
@@ -206,6 +208,7 @@
         </div>
     </form>
 
+    {{-- Modal hiển thị danh sách Voucher --}}
     <div class="modal fade" id="coupon-modal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
@@ -439,6 +442,16 @@
                         if (cityInput) cityInput.value = '';
                         if (shippingAddressIdInput) shippingAddressIdInput.value = '';
                     }
+
+                    // Thêm đoạn này:
+                    const requiredFields = [nameInput, phoneInput, addressInput, cityInput, districtInput, wardInput];
+                    if (!useNewAddress) {
+                        // Địa chỉ có sẵn: bỏ required
+                        requiredFields.forEach(input => input && input.removeAttribute('required'));
+                    } else {
+                        // Địa chỉ mới: thêm required
+                        requiredFields.forEach(input => input && input.setAttribute('required', true));
+                    }
                 });
                 select.dispatchEvent(new Event('change'));
             }
@@ -623,6 +636,9 @@
                 recalculateTotals(Array.from(codesToApply));
             }
 
+            // ===================================================================
+            // === BẮT ĐẦU PHẦN ĐÃ SỬA LỖI TOKEN ===
+            // ===================================================================
             async function recalculateTotals(codes) {
                 couponModal.hide();
                 Swal.fire({ title: 'Đang cập nhật...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
@@ -631,8 +647,16 @@
                     isRecalculating = true;
                     const response = await fetch('{{ route('checkout.applyCoupons') }}', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
-                        body: JSON.stringify({ coupon_codes: codes, cart_item_ids: cartItemIds, shipping_fee: currentShippingFee })
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            coupon_codes: codes,
+                            cart_item_ids: cartItemIds,
+                            shipping_fee: currentShippingFee,
+                            _token: '{{ csrf_token() }}' // Gửi token trong body để đảm bảo xác thực
+                        })
                     });
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.message || 'Lỗi khi áp dụng mã.');
@@ -648,12 +672,14 @@
                     isRecalculating = false;
                 }
             }
+            // ===================================================================
+            // === KẾT THÚC PHẦN ĐÃ SỬA LỖI TOKEN ===
+            // ===================================================================
 
             function updateUI(orderDiscount, shippingDiscount, total) {
                 appliedCouponsList.innerHTML = '';
                 Object.values(appliedCoupons).forEach(coupon => {
                     if (coupon) {
-                        // Xác định văn bản hiển thị dựa trên loại coupon
                         const couponTypeText = coupon.type === 'order' ? 'Giảm giá đơn hàng' : 'Giảm giá vận chuyển';
                         
                         const appliedEl = document.createElement('div');
