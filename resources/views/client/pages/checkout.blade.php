@@ -146,17 +146,17 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-2">
-                                       <select name="province_id" id="province_id" class="form-control" required>
+                                       <select name="province_id" id="province_id" class="form-control">
                                             <option value="">-- Chọn Tỉnh/Thành phố --</option>
                                         </select>
                                     </div>
                                     <div class="col-md-4 mb-2">
-                                       <select name="district_id" id="district_id" class="form-control" required>
+                                       <select name="district_id" id="district_id" class="form-control">
                                             <option value="">-- Chọn Quận/Huyện --</option>
                                         </select>
                                     </div>
                                     <div class="col-md-4 mb-2">
-                                       <select name="ward_code" id="ward_code" class="form-control" required>
+                                       <select name="ward_code" id="ward_code" class="form-control">
                                             <option value="">-- Chọn Xã/Phường --</option>
                                         </select>
                                     </div>
@@ -263,6 +263,7 @@
             const shippingDiscountAmountEl = document.getElementById('shipping-discount-amount');
             let currentShippingFee = shippingFee;
             let isRecalculating = false;
+            let isShippingFeeLoading = false;
 
             // Cập nhật nút thanh toán
             function updatePaymentButton() {
@@ -719,8 +720,34 @@
                 updatePaymentButton();
             }
 
+            // Hàm bật/tắt loading phí ship
+            function setShippingFeeLoading(loading) {
+                isShippingFeeLoading = loading;
+                submitBtn.disabled = loading;
+                if (loading) {
+                    Swal.fire({
+                        title: 'Đang tính phí vận chuyển...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+                } else {
+                    Swal.close();
+                }
+            }
+
             if (form) {
                 form.addEventListener('submit', function(e) {
+                    if (isShippingFeeLoading) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Vui lòng chờ',
+                            text: 'Đang cập nhật phí vận chuyển, vui lòng đợi...',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        return;
+                    }
                     e.preventDefault();
                     if (!document.getElementById('agree').checked) {
                         Swal.fire({
