@@ -43,7 +43,7 @@
                                         <option value="fixed" {{ old('discount_type') == 'fixed' ? 'selected' : '' }}>Số tiền cố định (VNĐ)</option>
                                     </optgroup>
                                     <optgroup label="Giảm giá vận chuyển">
-                                        <option value="free_shipping" {{ old('discount_type') == 'free_shipping' ? 'selected' : '' }}>Phần trăm giá vận chuyển</option>
+                                        <option value="free_shipping" {{ old('discount_type') == 'free_shipping' ? 'selected' : '' }}>Miễn phí vận chuyển</option>
                                         <option value="fixed_shipping" {{ old('discount_type') == 'fixed_shipping' ? 'selected' : '' }}>Số tiền vận chuyển cố định (VNĐ)</option>
                                     </optgroup>
                                 </select>

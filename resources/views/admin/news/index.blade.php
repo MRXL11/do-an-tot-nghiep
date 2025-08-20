@@ -7,29 +7,45 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header bg-info text-white fw-bold">
-                <div class="row align-items-center">
-                    <div class="col-md-7">
+                <div class="row g-2 align-items-center">
+                    <!-- Form tìm kiếm -->
+                    <div class="col-md-6">
                         <form class="d-flex" method="GET" action="{{ route('admin.news.index') }}">
-                            <input type="text" name="search" value="{{ request('search') }}" class="form-control me-2" placeholder="Tìm kiếm theo tiêu đề, slug...">
+                            <input type="text" name="search" value="{{ request('search') }}" 
+                                   class="form-control me-2" placeholder="🔍 Tìm theo tiêu đề, slug...">
                             <button class="btn btn-light text-primary" type="submit">
                                 <i class="bi bi-search"></i>
                             </button>
                         </form>
                     </div>
+            
+                    <!-- Bộ lọc trạng thái -->
                     <div class="col-md-3">
                         <form method="GET" action="{{ route('admin.news.index') }}">
-                            <select name="status" onchange="this.form.submit()" class="form-select text-center">
-                                <option value="">Tất cả trạng thái</option>
-                                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Hoạt động</option>
-                                <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Tạm dừng</option>
+                            <select name="status" onchange="this.form.submit()" 
+                                    class="form-select text-center border-0 shadow-sm">
+                                <option value="">📂 Tất cả trạng thái</option>
+                                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>✅ Hoạt động</option>
+                                <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>⏸ Tạm dừng</option>
                             </select>
                         </form>
                     </div>
-                    <div class="col-md-2 text-end">
-                        <a href="{{ route('admin.news.create') }}" class="btn btn-success text-white"><i class="bi bi-plus-circle me-1"></i> Thêm mới</a>
+            
+                    <!-- Nút hành động -->
+                    <div class="col-md-3 d-flex gap-2 justify-content-end">
+                        <a href="{{ route('admin.news.create') }}" 
+                           class="btn btn-success d-flex align-items-center shadow-sm px-3">
+                            <i class="bi bi-plus-circle me-2"></i> Thêm mới
+                        </a>
+            
+                        <a href="{{ route('admin.news.trashed') }}" 
+                           class="btn btn-danger d-flex align-items-center shadow-sm px-3">
+                            <i class="bi bi-trash3-fill me-2"></i> Thùng rác
+                        </a>
                     </div>
                 </div>
             </div>
+            
 
             <div class="card-body">
                 @if(session('success'))
