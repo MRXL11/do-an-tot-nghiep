@@ -185,7 +185,8 @@ class CheckoutController extends Controller
                     'type' => $type,
                     'description' => $this->getCouponDescription($coupon)
                 ];
-            });
+            })
+            ->values(); // Thêm dòng này
 
         return response()->json($coupons);
     }
