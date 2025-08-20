@@ -1,169 +1,144 @@
-@php
-    $banner = App\Models\Banner::first();
-@endphp
 <div class="col-lg-8">
     <div class="left-content">
-        <div class="thumb" style="height: 412px; position: relative; background-color: #000;">
-            <div class="inner-content" @if(!$banner || !$banner->show_text) style="display: none;" @endif>
-                <h4>{{ $banner->title ?? 'Chào mừng đến với chúng tôi' }}</h4>
-                <span>{{ $banner->subtitle ?? 'Thời trang, phong cách &amp; thể hiện cá tính' }}</span>
-                <div class="main-border-button">
-                    <a href="#">Mua ngay!</a>
-                </div>
-            </div>
-
-            <div class="banner-slider">
-                <img src="{{ $banner && $banner->image_path_1 ? asset('storage/' . $banner->image_path_1) : asset('assets/images/left-banner-image.jpg') }}" alt="Banner 1" class="active">
-                <img src="{{ $banner && $banner->image_path_2 ? asset('storage/' . $banner->image_path_2) : asset('assets/images/left-banner-image.jpg') }}" alt="Banner 2">
-                <img src="{{ $banner && $banner->image_path_3 ? asset('storage/' . $banner->image_path_3) : asset('assets/images/left-banner-image.jpg') }}" alt="Banner 3">
-            </div>
-
-            <div class="slider-controls">
-                <button class="btn btn-outline-light btn-sm" id="prev-slide">&lt;</button>
-                <button class="btn btn-outline-light btn-sm" id="next-slide">&gt;</button>
-            </div>
+        <div class="slideshow-container" id="slideshow-container">
+            @if(isset($slides) && $slides->count() > 0)
+                @foreach($slides as $index => $slide)
+                    <div class="mySlides">
+                        @if($slide->news_id)
+                            <a href="{{ route('news.show', $slide->news_id) }}">
+                                <img src="{{ $slide->image_url }}" alt="Banner {{ $index + 1 }}" style="width:100%; height:100%; object-fit: cover;">
+                            </a>
+                        @else
+                            <img src="{{ $slide->image_url }}" alt="Banner {{ $index + 1 }}" style="width:100%; height:100%; object-fit: cover;">
+                        @endif
+                    </div>
+                @endforeach
+                <a class="prev" onclick="plusSlides(-1)">❮</a>
+                <a class="next" onclick="plusSlides(1)">❯</a>
+            @else
+                <p>Không có slide nào để hiển thị.</p>
+            @endif
+        </div>
+        <br>
+        <div style="text-align:center" id="dot-container">
+            @if(isset($slides) && $slides->count() > 0)
+                @foreach($slides as $index => $slide)
+                    <span class="dot" onclick="currentSlide({{ $index + 1 }})"></span>
+                @endforeach
+            @endif
         </div>
     </div>
 </div>
 
 <style>
-.main-banner .left-content .thumb {
+.main-banner .left-content .slideshow-container {
     position: relative;
     width: 100%;
-    max-width: 100%;
+    height: 412px;
+    background-color: #000;
     overflow: hidden;
 }
 
-.main-banner .left-content .banner-slider {
-    position: relative;
+.main-banner .left-content .mySlides {
+    display: none;
     width: 100%;
     height: 100%;
 }
 
-/* Crossfade: ảnh chồng lên nhau, chỉ đổi opacity */
-.main-banner .left-content .banner-slider img {
-    position: absolute;
-    inset: 0;
+.main-banner .left-content .mySlides img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-    will-change: opacity;
 }
 
-.main-banner .left-content .banner-slider img.active {
-    opacity: 1;
-    z-index: 1;
-}
-
-.main-banner .left-content .inner-content {
-    position: absolute;
-    left: 100px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-}
-
-.main-banner .left-content .inner-content h4 {
-    color: #fff;
-    margin-top: -10px;
-    font-size: 52px;
-    font-weight: 700;
-    margin-bottom: 20px;
-}
-
-.main-banner .left-content .inner-content span {
-    font-size: 16px;
-    color: #fff;
-    font-weight: 400;
-    font-style: italic;
-    display: block;
-    margin-bottom: 30px;
-}
-
-.main-banner .left-content .slider-controls {
+.main-banner .left-content .prev,
+.main-banner .left-content .next {
+    cursor: pointer;
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    z-index: 10;
-}
-
-.main-banner .left-content .slider-controls button {
-    background: rgba(0, 0, 0, 0.5);
-    border: none;
+    width: auto;
     padding: 10px 15px;
-    font-size: 24px;
-    line-height: 1;
-}
-
-.main-banner .left-content .slider-controls button:hover {
-    background: rgba(0, 0, 0, 0.8);
     color: #fff;
+    font-size: 24px;
+    background: rgba(0, 0, 0, 0.5);
+    user-select: none;
+    z-index: 10;
 }
 
-.main-banner .left-content .slider-controls #prev-slide { margin-left: 10px; }
-.main-banner .left-content .slider-controls #next-slide { margin-right: 10px; }
+.main-banner .left-content .prev:hover,
+.main-banner .left-content .next:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.main-banner .left-content .prev { left: 10px; }
+.main-banner .left-content .next { right: 10px; }
+
+.main-banner .left-content .dot {
+    cursor: pointer;
+    height: 15px;
+    width: 15px;
+    margin: 0 2px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    transition: background-color 0.6s ease;
+}
+
+.main-banner .left-content .dot.active,
+.main-banner .left-content .dot:hover {
+    background-color: #717171;
+}
 </style>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const images = document.querySelectorAll('.banner-slider img');
-    const prevBtn = document.getElementById('prev-slide');
-    const nextBtn = document.getElementById('next-slide');
+@push('scripts')
+    <script>
+        let slideIndex = 1;
+        let autoSlideInterval;
 
-    if (!images.length || !prevBtn || !nextBtn) return;
+        function plusSlides(n) {
+            clearInterval(autoSlideInterval);
+            showSlides(slideIndex += n);
+            startAutoSlide();
+        }
 
-    let currentImage = 0;
-    let autoSlideInterval;
+        function currentSlide(n) {
+            clearInterval(autoSlideInterval);
+            showSlides(slideIndex = n);
+            startAutoSlide();
+        }
 
-    function showImage(index) {
-        // ✅ Chuẩn hoá index TRƯỚC khi toggle class để không có khoảng đen
-        const next = (index + images.length) % images.length;
+        function showSlides(n) {
+            let i;
+            let slides = document.getElementsByClassName("mySlides");
+            let dots = document.getElementsByClassName("dot");
+            if (slides.length === 0) return;
+            if (n > slides.length) { slideIndex = 1 }
+            if (n < 1) { slideIndex = slides.length }
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";
+            }
+            for (i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" active", "");
+            }
+            if (slides.length > 0) {
+                slides[slideIndex - 1].style.display = "block";
+            }
+            if (dots.length > 0) {
+                dots[slideIndex - 1].className += " active";
+            }
+        }
 
-        images.forEach((img, i) => {
-            img.classList.toggle('active', i === next);
+        function startAutoSlide() {
+            autoSlideInterval = setInterval(() => {
+                plusSlides(1);
+            }, 10000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showSlides(slideIndex);
+            startAutoSlide();
         });
-
-        currentImage = next;
-    }
-
-    function startAutoSlide() {
-        stopAutoSlide(); // tránh nhân đôi interval
-        autoSlideInterval = setInterval(() => {
-            showImage(currentImage + 1);
-        }, 3000);
-    }
-
-    function stopAutoSlide() {
-        if (autoSlideInterval) clearInterval(autoSlideInterval);
-    }
-
-    prevBtn.addEventListener('click', () => {
-        stopAutoSlide();
-        showImage(currentImage - 1);
-        startAutoSlide();
-    });
-
-    nextBtn.addEventListener('click', () => {
-        stopAutoSlide();
-        showImage(currentImage + 1);
-        startAutoSlide();
-    });
-
-    // Khởi tạo
-    showImage(currentImage);
-    startAutoSlide();
-
-    // Tuỳ chọn: tạm dừng khi hover để tránh flicker khi bấm nhanh
-    const thumb = document.querySelector('.thumb');
-    if (thumb) {
-        thumb.addEventListener('mouseenter', stopAutoSlide);
-        thumb.addEventListener('mouseleave', startAutoSlide);
-    }
-});
-</script>
+    </script>
+@endpush
