@@ -75,7 +75,7 @@
                                  <p>Thống kê</p>
                              </a>
                          </li>
-                  
+
 
                          <li class="nav-item">
                              <a href="{{ route('admin.users.index') }}"
@@ -94,7 +94,7 @@
                                  <p>Sản Phẩm</p>
                              </a>
                          </li>
-                         
+
                          <li class="nav-item">
                              <a href="{{ route('reviews') }}"
                                  class="nav-link {{ request()->routeIs('reviews') ? 'active' : '' }}">
@@ -110,13 +110,20 @@
                              </a>
                          </li>
                          <li class="nav-item">
+                             <a href="{{ route('admin.contacts.index') }}"
+                                 class="nav-link {{ request()->routeIs('contacts') ? 'active' : '' }}">
+                                 <i class="bi bi-envelope"></i>
+                                 <p>Liên hệ</p>
+                             </a>
+                         </li>
+                         <li class="nav-item">
                             <a href="{{ route('admin.coupons.index') }}"
                             class="nav-link {{ request()->routeIs('coupons') ? 'active' : '' }}">
                              <i class="bi bi-ticket-perforated"></i>
                              <p>Voucher</p>
                           </a>
                          </li>
-                         
+
                          <li class="nav-item">
                              <a href="{{ route('admin.categories.index') }}"
                                  class="nav-link {{ request()->routeIs('admin.categories') ? 'active' : '' }}">
@@ -148,7 +155,7 @@
                                 <p>Bài viết</p>
                             </a>
                         </li>
-                        
+
                         <li class="nav-item">
                             <a href="{{ route('admin.slides.index') }}" class="nav-link">
                                 <i class="bi bi-image"></i>
