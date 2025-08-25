@@ -38,7 +38,7 @@ class ProductController extends Controller
     public function show(string $id)
     {
         $product = Product::with(['variants', 'reviews' => function ($query) {
-            $query->where('status', 'approved')->with('user');
+            $query->where('status', 'approved')->with('user')->orderBy('created_at', 'desc');
         }, 'category', 'brand'])->where('status', 'active')->find($id);
     
         if (!$product) {

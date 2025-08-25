@@ -77,32 +77,6 @@
             </div>
         @endguest
 
-        <!-- Sản phẩm mới nhất -->
-        <div class="mt-5">
-            <h5 class="mb-4"><i class="bi bi-stars text-warning me-2"></i>Sản phẩm mới nhất</h5>
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-                @foreach ($latestProducts as $product)
-                    <div class="col">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <img src="{{ Storage::url($product->thumbnail) }}" loading="lazy" class="card-img-top"
-                                alt="Product">
-                            <div class="card-body">
-                                <h6 class="card-title mb-1">{{ $product->name }}</h6>
-
-                                {{-- lấy khoảng giá của sản phẩm dựa trên variants --}}
-                                <p class="card-text text-primary fw-semibold">
-                                    {{ $product->getPriceRangeAttribute() }}</p>
-                            </div>
-                            <div class="card-footer bg-white border-0">
-                                <a href="{{ route('detail-product', $product->id) }}"
-                                    class="btn btn-sm btn-outline-success w-100"><i class="bi bi-eye"></i> Xem chi
-                                    tiết</a>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
     </div>
 
     <!-- modal thông báo thành công -->

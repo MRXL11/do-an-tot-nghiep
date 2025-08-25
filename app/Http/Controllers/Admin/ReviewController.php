@@ -96,6 +96,6 @@ class ReviewController extends Controller
         'status' => 'pending', 
     ]);
 
-    return redirect()->route('account.show')->with('success', 'Cảm ơn bạn đã gửi đánh giá!');
+    return redirect()->route('orders.index')->with('success', 'Cảm ơn bạn đã gửi đánh giá!');
 }
 }

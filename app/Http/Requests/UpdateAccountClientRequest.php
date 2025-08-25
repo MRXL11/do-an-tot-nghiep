@@ -25,7 +25,7 @@ class UpdateAccountClientRequest extends FormRequest
         return [
             'name' => 'required|string|max:100',
             'address' => 'nullable|string|max:255',
-            'phone_number' => 'nullable|string|max:15',
+            'phone_number' => 'nullable|string|max:11|regex:/^0[0-9]{9,10}$/|min:10',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Thêm rule cho avatar
             'old_password' => [
                 'nullable',
@@ -55,8 +55,10 @@ class UpdateAccountClientRequest extends FormRequest
             'old_password.string' => 'Mật khẩu cũ phải là chuỗi ký tự.',
             'new_password.string' => 'Mật khẩu mới phải là chuỗi ký tự.',
             'address.max' => 'Địa chỉ không được vượt quá 255 ký tự.',
-            'phone_number.max' => 'Số điện thoại không được vượt quá 15 ký tự.',
+            'phone_number.max' => 'Số điện thoại không được vượt quá 11 số.',
             'phone_number.string' => 'Số điện thoại phải là chuỗi ký tự.',
+            'phone_number.min' => 'Số điện thoại phải có ít nhất 10 số.',
+            'phone_number.regex' => 'Số điện thoại chỉ được chứa các chữ số.',
             'avatar.image' => 'Avatar phải là file ảnh.',
             'avatar.mimes' => 'Avatar phải có định dạng jpeg, png, jpg hoặc gif.',
             'avatar.max' => 'Avatar không được lớn hơn 2MB.',
