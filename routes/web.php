@@ -72,6 +72,10 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
         Route::post('orders/cancel-request/{order}', [OrderController::class, 'handleCancelRequest'])
             ->name('admin.orders.handleCancelRequest');
 
+        // Quan ly contacts
+        Route::resource('contacts', \App\Http\Controllers\Admin\ContactController::class)
+                    ->only(['index', 'show', 'destroy']);
+
         // Danh mục (Categories)
         Route::get('/categories/trashed', [CategoryController::class, 'trashed'])->name('categories.trashed');
         Route::resource('categories', CategoryController::class);
@@ -103,7 +107,7 @@ Route::middleware(['auth', 'restrict.admin'])->group(function () {
             Route::patch('/slides/{slide}/toggle-status', [SlideController::class, 'toggleStatus'])->name('slides.toggleStatus');
             Route::get('/slides/trashed', [SlideController::class, 'trashed'])->name('slides.trashed');
             Route::post('/slides/{id}/restore', [SlideController::class, 'restore'])->name('slides.restore');
-        
+
         // Voucher (Coupons)
         Route::get('coupons/trashed', [CouponController::class, 'trashed'])->name('coupons.trashed');
         Route::post('coupons/{id}/restore', [CouponController::class, 'restore'])->name('coupons.restore');
@@ -164,10 +168,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/check-stock', [CartController::class, 'checkStock'])->name('cart.checkStock');
 
     // Route hiển thị và xử lý thanh toán
-   
+
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::post('/checkout/submit', [CheckoutController::class, 'submit'])->name('checkout.submit');
-    
+
     // [XÓA BỎ] - Route cũ để áp dụng một mã
     // Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.applyCoupon');
 
@@ -211,7 +215,7 @@ Route::get('/wishlist/check/product/{id}', [WishlistController::class, 'check'])
 Route::get('/account', [AccountController::class, 'show'])->name('account.show');
 Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
 // Route cho trang đơn hàng của khách hàng
-Route::get('/orders', [ClientOrderController::class, 'index'])->name('orders.index');   
+Route::get('/orders', [ClientOrderController::class, 'index'])->name('orders.index');
 // lấy phí vận chuyển
 Route::post('/checkout/shipping-fee', [CheckoutController::class, 'getShippingFee'])->name('checkout.getShippingFee');
 
@@ -266,3 +270,4 @@ Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name(
 // Đăng nhập Google (Socialite)
 Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback'])->name('google.callback');
+
