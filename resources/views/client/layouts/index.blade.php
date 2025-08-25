@@ -47,7 +47,7 @@
     <!-- ***** Social Area Ends ***** -->
 
     <!-- ***** Subscribe Area Starts ***** -->
-    @include('client.layouts.subscribe')
+    {{-- @include('client.layouts.subscribe') --}}
 
     <!-- ***** Subscribe Area Ends ***** -->
 

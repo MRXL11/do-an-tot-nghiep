@@ -12,8 +12,7 @@
                             role="alert">
                             <i class="bi bi-check-circle-fill me-2"></i>
                             {{ session('order-success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
 
@@ -22,16 +21,14 @@
                             role="alert">
                             <i class="bi bi-check-circle-fill me-2"></i>
                             {{ session('cancel-request-success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @elseif (session('cancel-request-error'))
                         <div class="alert alert-danger alert-dismissible fade show m-3 rounded-3 border-0 shadow-sm"
                             role="alert">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
                             {{ session('cancel-request-error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
 
@@ -40,8 +37,7 @@
                             role="alert">
                             <i class="bi bi-check-circle-fill me-2"></i>
                             {{ session('return-success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
 
@@ -50,8 +46,7 @@
                             role="alert">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
                             {{ session('return-error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
 
@@ -67,50 +62,74 @@
                         </div>
                     </div>
 
-<div class="card-body p-4">
-    <div class="accordion accordion-flush" id="orderAccordion">
-        @forelse ($orders as $order)
-            <div class="accordion-item border-0 mb-4 rounded-4 shadow-sm overflow-hidden"
-                data-order-code="{{ $order->order_code }}">
-                <h2 class="accordion-header" id="heading{{ $order->id }}">
-                    <div class="d-flex align-items-end bg-light rounded-4 p-4 border-0 flex-column">
-                        <button
-                            class="accordion-button collapsed bg-transparent border-0 p-0 flex-grow-1 shadow-none"
-                            type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapse{{ $order->id }}">
-                            <div class="d-flex align-items-center justify-content-between w-100">
-                                <div class="d-flex align-items-center">
-                                    <div class="bg-primary rounded-circle p-2 me-3">
-                                        <i class="bi bi-box-seam text-white"></i>
-                                    </div>
-                                    <div>
-                                        <div class="mb-3 d-flex flex-column">
-                                            <h6 class="fw-bold text-dark mb-1">
-                                                #{{ $order->order_code }} - {{ $order->shippingAddress->name ?? $order->user->name }}
-                                            </h6>
-                                            <h6 class="mb-1">
-                                                {{ $order->getPaymentMethod($order->payment_method)['label'] }}
-                                                -
-                                                <span class="fw-semibold"
-                                                    style="color: {{ $order->getPaymentStatus($order->payment_status)['color'] }}">
-                                                    {{ $order->getPaymentStatus($order->payment_status)['label'] }}
-                                                </span>
-                                            </h6>
-                                            <small class="text-muted d-block mb-1">
-                                                <i class="bi bi-calendar3 me-1"></i>
-                                                {{ $order->created_at->format('d/m/Y - H:i') }}
-                                            </small>
-                                            <small class="text-muted d-block">
-                                                <i class="bi bi-box me-1"></i>
-                                                @php
-                                                    $products = $order->orderDetails->take(2)->map(function($detail) {
-                                                        return $detail->productVariant->product->name . ' (x' . $detail->quantity . ')';
-                                                    })->join(', ');
-                                                    $more = $order->orderDetails->count() > 2 ? '...' : '';
-                                                @endphp
-                                                Sản phẩm: {{ $products }}{{ $more }}
-                                            </small>
-                                        </div>
+                    <div class="card-body p-4">
+                        <div class="accordion accordion-flush" id="orderAccordion">
+                            @forelse ($orders as $order)
+                                <div class="accordion-item border-0 mb-4 rounded-4 shadow-sm overflow-hidden"
+                                    data-order-code="{{ $order->order_code }}">
+                                    <h2 class="accordion-header" id="heading{{ $order->id }}">
+                                        <div class="d-flex align-items-end bg-light rounded-4 p-4 border-0 flex-column">
+                                            <button
+                                                class="accordion-button collapsed bg-transparent border-0 p-0 flex-grow-1 shadow-none"
+                                                type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#collapse{{ $order->id }}">
+                                                <div class="d-flex align-items-center justify-content-between w-100">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="bg-primary rounded-circle p-2 me-3">
+                                                            <i class="bi bi-box-seam text-white"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="mb-3 d-flex flex-column">
+
+                                                                <h6 class="fw-bold text-dark mb-1">
+                                                                    {{ $order->shippingAddress->name ?? $order->user->name }}
+                                                                </h6>
+
+                                                                <small class="mb-0 text-muted mb-1">
+                                                                    <i class="bi bi-telephone me-1"></i>
+                                                                    {{ $order->shippingAddress->phone_number }}
+                                                                </small>
+
+                                                                <small class="text-muted d-block mb-1">
+                                                                    <i class="bi bi-calendar3 me-1"></i>
+                                                                    {{ $order->created_at->format('d/m/Y - H:i') }}
+                                                                </small>
+
+                                                                <small class="text-muted d-block mb-1">
+                                                                    <i class="bi bi-geo-alt me-1"></i>
+                                                                    {{ $order->shippingAddress->full_address }}
+                                                                </small>
+
+                                                                <small class="text-muted d-block mb-1">
+                                                                    <i class="bi bi-box me-1"></i>
+                                                                    @php
+                                                                        $products = $order->orderDetails
+                                                                            ->take(2)
+                                                                            ->map(function ($detail) {
+                                                                                return $detail->productVariant->product
+                                                                                    ->name .
+                                                                                    ' (x' .
+                                                                                    $detail->quantity .
+                                                                                    ')';
+                                                                            })
+                                                                            ->join(', ');
+                                                                        $more =
+                                                                            $order->orderDetails->count() > 2
+                                                                                ? '...'
+                                                                                : '';
+                                                                    @endphp
+                                                                    Sản phẩm: {{ $products }}{{ $more }}
+                                                                </small>
+
+                                                                <small class="" style="font-size: 0.95rem">
+                                                                    {{ $order->getPaymentMethod($order->payment_method)['label'] }}
+                                                                    -
+                                                                    <span class="fw-semibold"
+                                                                        style="color: {{ $order->getPaymentStatus($order->payment_status)['color'] }}">
+                                                                        {{ $order->getPaymentStatus($order->payment_status)['label'] }}
+                                                                    </span>
+                                                                </small>
+                                                            </div>
 
                                                             {{-- hiển thị trạng thái yêu cầu huỷ (nếu có) --}}
                                                             @php
@@ -286,10 +305,6 @@
                                             </button>
 
                                             @php
-                                                $momoRetry =
-                                                    in_array($order->payment_method, ['online', 'bank_transfer']) &&
-                                                    $order->payment_status === 'pending' &&
-                                                    empty($order->vnp_txn_ref);
                                                 $vpnRetry =
                                                     in_array($order->payment_method, ['online', 'bank_transfer']) &&
                                                     $order->payment_status === 'pending' &&
@@ -297,7 +312,7 @@
                                                     !($isRequested || $isCancelled || $adminReason);
                                             @endphp
 
-                                            @if ($momoRetry)
+                                            @if (isset($momoRetry))
                                                 <form id="auto-momo-form-{{ $order->id }}"
                                                     action="{{ route('momo_payment') }}" method="POST"
                                                     style="display: none;">
@@ -377,59 +392,13 @@
                                         data-bs-parent="#orderAccordion">
                                         <div class="accordion-body p-4 bg-white">
 
-                                            <div class="row g-3 mb-4">
-                                                <div class="col-md-6">
-                                                    <div class="card bg-light border-0 h-100">
-                                                        <div class="card-body p-3">
-                                                            <h6 class="card-title mb-2 text-primary">
-                                                                <i class="bi bi-person-badge me-2"></i>Thông tin người nhận
-                                                            </h6>
-                                                            <p class="mb-1 fw-semibold">
-                                                                {{ $order->shippingAddress->name }}</p>
-                                                            <p class="mb-0 text-muted">
-                                                                <i class="bi bi-telephone me-1"></i>
-                                                                {{ $order->shippingAddress->phone_number }}
-                                                            </p>
-                                                        </div>
+                                            <div class="mb-3 bg-light p-3 rounded shadow-sm border">
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <span class="mb-0 fw-bold text-secondary">Mã đơn hàng:</span>
                                                     </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="card bg-light border-0 h-100">
-                                                        <div class="card-body p-3">
-                                                            <h6 class="card-title mb-2 text-primary">
-                                                                <i class="bi bi-geo-alt me-2"></i>Địa chỉ giao hàng
-                                                            </h6>
-                                                            <p class="mb-0 text-muted">
-                                                                {{ $order->shippingAddress->full_address }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="row g-3 mb-4">
-                                                <div class="col-md-6">
-                                                    <div class="d-flex align-items-center p-3 bg-light rounded-3">
-                                                        <i class="bi bi-credit-card text-primary fs-4 me-3"></i>
-                                                        <div>
-                                                            <small class="text-muted d-block">Thanh toán</small>
-                                                            <span class="fw-semibold"
-                                                                style='color: {{ $order->getPaymentMethod($order->payment_method)['color'] }};'>
-                                                                {{ $order->getPaymentMethod($order->payment_method)['label'] }}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="d-flex align-items-center p-3 bg-light rounded-3">
-                                                        <i class="bi bi-cash-coin text-success fs-4 me-3"></i>
-                                                        <div>
-                                                            <small class="text-muted d-block">Trạng thái</small>
-                                                            <span class="fw-semibold"
-                                                                style='color: {{ $order->getPaymentStatus($order->payment_status)['color'] }};'>
-                                                                {{ $order->getPaymentStatus($order->payment_status)['label'] }}
-                                                            </span>
-                                                        </div>
+                                                    <div class="col-6 text-end">
+                                                        <span class="text-primary fw-bold">{{ $order->order_code }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -457,8 +426,11 @@
                                                                                 alt="{{ $detail->productVariant->product->name }}"
                                                                                 style="width: 50px; height: 50px; object-fit:fill;">
                                                                         </div>
-                                                                        <span
-                                                                            class="fw-medium">{{ $detail->productVariant->product->name }}</span>
+                                                                        <span class="fw-medium">
+                                                                            <a
+                                                                                href="{{ route('detail-product', $detail->productVariant->product->id) }}">
+                                                                                {{ $detail->productVariant->product->name }}</a>
+                                                                        </span>
                                                                     </div>
                                                                 </td>
                                                                 <td class="align-middle">
@@ -487,13 +459,14 @@
                                                                             )->first();
                                                                         @endphp
                                                                         @if ($review)
-                                                                            <div class="text-warning d-flex align-items-center justify-content-center">
+                                                                            <div
+                                                                                class="text-warning d-flex align-items-center justify-content-center">
                                                                                 <i class="bi bi-star-fill me-1"></i>
-                                                                                <span class="fw-bold">{{ $review->rating }}</span>
+                                                                                <span
+                                                                                    class="fw-bold">{{ $review->rating }}</span>
                                                                             </div>
                                                                         @else
-                                                                            <button
-                                                                                class="btn btn-outline-warning btn-sm"
+                                                                            <button class="btn btn-outline-warning btn-sm"
                                                                                 data-bs-toggle="modal"
                                                                                 data-bs-target="#reviewModal"
                                                                                 data-product-id="{{ $detail->productVariant->product->id }}"
@@ -514,7 +487,7 @@
                                                 <div class="col-md-12">
                                                     <div class="card border-0 bg-light">
                                                         <div class="card-body">
-                                                            
+
                                                             @if ($order->calculated_discount > 0)
                                                                 <div
                                                                     class="d-flex justify-content-between mb-2 text-success">
@@ -523,7 +496,7 @@
                                                                         class="fw-semibold">-{{ number_format($order->calculated_discount, 0, ',', '.') }}₫</span>
                                                                 </div>
                                                             @endif
-                                                            
+
                                                             <hr>
                                                             <div class="d-flex justify-content-between">
                                                                 <span class="fw-bold fs-5">Thành tiền:</span>
@@ -605,7 +578,8 @@
                     <div class="mb-4">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                     </div>
-                    <h4 class="mb-3"></h4> <p class="text-muted">Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của chúng tôi!</p>
+                    <h4 class="mb-3"></h4>
+                    <p class="text-muted">Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của chúng tôi!</p>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
                     <button type="button" class="btn btn-success btn-lg rounded-pill px-4" data-bs-dismiss="modal">
@@ -631,7 +605,8 @@
                     <div class="mb-4">
                         <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
                     </div>
-                    <h4 class="mb-3 text-danger"></h4> <p class="text-muted">Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
+                    <h4 class="mb-3 text-danger"></h4>
+                    <p class="text-muted">Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
                     <button type="button" class="btn btn-outline-danger btn-lg rounded-pill px-4"
@@ -674,9 +649,9 @@
                     </form>
                 </div>
             </div>
-     </div>
-</div>
-   <style>
+        </div>
+    </div>
+    <style>
         .bg-gradient-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
@@ -765,78 +740,81 @@
         });
     </script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const buttons = document.querySelectorAll('.open-client-cancel-modal');
-    const form = document.getElementById('client-cancel-form');
-    const modal = new bootstrap.Modal(document.getElementById('clientCancelModal'));
-    const reasonField = document.getElementById('cancel_reason');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.open-client-cancel-modal');
+            const form = document.getElementById('client-cancel-form');
+            const modal = new bootstrap.Modal(document.getElementById('clientCancelModal'));
+            const reasonField = document.getElementById('cancel_reason');
 
-    buttons.forEach(button => {
-        button.addEventListener('click', function() {
-            const orderId = this.dataset.orderId;
-            form.action = `/order/${orderId}/cancel-request`;
-            form.reset();
-            modal.show();
-        });
-    });
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const reason = reasonField.value.trim();
-
-        if (reason.length < 10) {
-            reasonField.classList.add('is-invalid');
-            reasonField.focus();
-            return;
-        }
-
-        reasonField.classList.remove('is-invalid');
-
-        fetch(form.action, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ cancel_reason: reason })
-        })
-        .then(response => response.json())
-        .then(data => {
-            modal.hide();
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Thành công',
-                    text: data.message,
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    location.reload(); // Tải lại trang để cập nhật trạng thái
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.dataset.orderId;
+                    form.action = `/order/${orderId}/cancel-request`;
+                    form.reset();
+                    modal.show();
                 });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi',
-                    text: data.message,
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK'
-                });
-            }
-        })
-        .catch(error => {
-            modal.hide();
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Đã có lỗi xảy ra. Vui lòng thử lại!',
-                showConfirmButton: true,
-                confirmButtonText: 'OK'
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const reason = reasonField.value.trim();
+
+                if (reason.length < 10) {
+                    reasonField.classList.add('is-invalid');
+                    reasonField.focus();
+                    return;
+                }
+
+                reasonField.classList.remove('is-invalid');
+
+                fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            cancel_reason: reason
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        modal.hide();
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công',
+                                text: data.message,
+                                showConfirmButton: true,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                location.reload(); // Tải lại trang để cập nhật trạng thái
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi',
+                                text: data.message,
+                                showConfirmButton: true,
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        modal.hide();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: 'Đã có lỗi xảy ra. Vui lòng thử lại!',
+                            showConfirmButton: true,
+                            confirmButtonText: 'OK'
+                        });
+                    });
             });
         });
-    });
-});
-</script>
+    </script>
 
     <script>
         function showReturnRequestPrompt(orderId) {

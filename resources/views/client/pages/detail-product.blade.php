@@ -160,23 +160,25 @@
 
         <!-- Reviews section -->
         <div class="row mt-5">
-            <div class="col-lg-6">
+            <div class="col-lg-12">
                 <h4><i class="bi bi-chat-left-text me-2"></i>Đánh giá khách hàng</h4>
                 @if ($reviews->isEmpty())
                     <p>Chưa có đánh giá nào cho sản phẩm này.</p>
                 @else
-                    @foreach ($reviews as $review)
-                        <div class="border rounded p-3 mb-3">
-                            <strong>{{ $review->user->name }}</strong>
-                            <span class="text-muted small">- {{ $review->created_at->format('d/m/Y') }}</span>
-                            <div>
-                                @for ($i = 1; $i <= 5; $i++)
-                                    <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }} text-warning"></i>
-                                @endfor
+                    <div class="reviews-container border rounded p-3 mt-2" style="max-height: 300px; overflow-y: auto;">
+                        @foreach ($reviews as $review)
+                            <div class="border rounded p-3 mb-3 bg-light">
+                                <strong>{{ $review->user->name }}</strong>
+                                <span class="text-muted small">- {{ $review->created_at->format('d/m/Y') }}</span>
+                                <div>
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }} text-warning"></i>
+                                    @endfor
+                                </div>
+                                <p class="mb-0">{{ $review->comment }}</p>
                             </div>
-                            <p class="mb-0">{{ $review->comment }}</p>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 @endif
             </div>
 
