@@ -87,7 +87,7 @@ class ProductClientController extends Controller
         }
      
         // Sắp xếp sản phẩm
-        $validSorts = ['newest', 'sales', 'likes', 'rating'];
+        $validSorts = ['newest', 'sales', 'likes', 'rating', 'best_selling'];
         $sort = $request->input('sort', 'newest');
         $sortWarning = null;
 
@@ -113,6 +113,18 @@ class ProductClientController extends Controller
                         $query->where('status', 'approved');
                     })
                     ->orderByRaw('avg_rating DESC NULLS LAST');
+                break;
+            case 'sales':
+                // Sắp xếp theo số lượt thích (likes_count) nhiều nhất
+                $productsQuery->withCount('likes')->orderByDesc('likes_count');
+                break;
+            case 'best_selling':
+                // Đếm số lượng bán thành công từ order_items + orders
+                $productsQuery->withCount(['orderDetails as sold_count' => function ($query) {
+                    $query->select(\DB::raw('SUM(quantity)'))
+                        ->join('orders', 'order_details.order_id', '=', 'orders.id')
+                        ->where('orders.status', 'success');
+                }])->orderByDesc('sold_count');
                 break;
             default:
                 $productsQuery->orderBy('created_at', 'desc');
@@ -164,3 +176,4 @@ class ProductClientController extends Controller
         return view('client.layouts.index', compact('menProducts', 'womenProducts', 'kidsProducts'));
     }
 }
+

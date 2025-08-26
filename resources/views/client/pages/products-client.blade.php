@@ -149,17 +149,19 @@
                             <div class="collapse" id="colorsCollapse">
                                 <div class="card-body p-3">
                                     <div class="shop__sidebar__color">
-                                        @foreach (collect($colors)->unique(function ($item) {
-                                                    return strtolower($item);
-                                                }) as $color)
-                                            <label
-                                                class="c-{{ $loop->iteration }} {{ strtolower(request()->color) == strtolower($color) ? 'active' : '' }}"
-                                                for="color-{{ $color }}">
-                                                <input type="radio" name="color" id="color-{{ $color }}"
-                                                onchange="location.href='{{ route('products-client', array_merge(request()->route()->parameters(), request()->query(), ['color' => $color])) }}'"
-                                                @if(strtolower(request()->color) == strtolower($color)) checked @endif>
-                                            </label>
-                                        @endforeach
+                                        <ul class="list-unstyled">
+                                            @foreach (collect($colors)->unique(function ($item) {
+                                                        return strtolower($item);
+                                                    }) as $color)
+                                                <li class="mb-2 {{ strtolower(request()->color) == strtolower($color) ? 'active' : '' }}">
+                                                    <a href="{{ route('products-client', array_merge(request()->route()->parameters(), request()->query(), ['color' => $color])) }}"
+                                                       class="d-flex align-items-center py-1 px-2 rounded-2 {{ strtolower(request()->color) == strtolower($color) ? 'bg-primary text-white' : '' }}">
+                                                        <span class="me-2" style="display:inline-block;width:20px;height:20px;border-radius:50%;background:{{ $color }};border:1px solid #ccc;"></span>
+                                                        <span>{{ ucfirst($color) }}</span>
+                                                    </a>
+                                                </li>
+                                            @endforeach
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
@@ -175,12 +177,14 @@
                     <h3><i class="bi bi-list me-2"></i>Danh sách sản phẩm</h3>
                     <div class="btn-group align-items-center hover-zoom">
                         <a href="{{ request()->route('slug') ? route('products-client', request()->route('slug')) . '?sort=newest' : route('products-client', array_merge(request()->query(), ['sort' => 'newest'])) }}"
-                            class="btn btn-outline-primary {{ request()->sort == 'newest' || !request()->sort ? 'active' : '' }}"><i
-                                class="bi bi-sort-alpha-down"></i> Mới nhất</a>
+                            class="btn btn-outline-primary {{ request()->sort == 'newest' || !request()->sort ? 'active' : '' }}">
+                            <i class="bi bi-stars"></i> Mới nhất trong tuần
+                        </a>
                         
-                        <a href="{{ route('products-client', array_merge(request()->query(), ['sort' => 'discount'])) }}"
-                            class="btn btn-outline-primary {{ request()->sort == 'discount' ? 'active' : '' }}"><i
-                                class="bi bi-star"></i> Đánh giá</a>
+                        <a href="{{ request()->route('slug') ? route('products-client', request()->route('slug')) . '?sort=best_selling' : route('products-client', array_merge(request()->query(), ['sort' => 'best_selling'])) }}"
+                            class="btn btn-outline-danger {{ request()->sort == 'best_selling' ? 'active' : '' }}">
+                            <i class="bi bi-fire"></i> Đang bán chạy
+                        </a>
                     </div>
                 </div>
 
@@ -252,10 +256,29 @@
                         <div class="col-md-4 mb-4">
                             <div class="card h-100 border">
                                 <div class="position-relative py-2">
-                                    <img src="{{ asset('storage/' . $product->thumbnail) }}"
-                                        class="card-img-top img-fluid px-2" alt="{{ $product->name }}"
-                                        style="height: 250px; object-fit: cover;">
-                                    </img>
+                                    <div class="product-image-hover position-relative">
+                                        <a href="{{ route('detail-product', ['id' => $product->id]) }}">
+                                            <img src="{{ asset('storage/' . $product->thumbnail) }}"
+                                                class="card-img-top img-fluid px-2" alt="{{ $product->name }}"
+                                                style="height: 250px; object-fit: cover;">
+                                            <div class="hover-detail-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.4); color: #fff; opacity: 0; transition: opacity 0.3s;">
+                                                <span class="fs-5 fw-bold">Xem chi tiết sản phẩm</span>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <style>
+                                        .product-image-hover {
+                                            position: relative;
+                                            overflow: hidden;
+                                        }
+                                        .product-image-hover .hover-detail-overlay {
+                                            pointer-events: none;
+                                        }
+                                        .product-image-hover:hover .hover-detail-overlay {
+                                            opacity: 1 !important;
+                                            pointer-events: auto;
+                                        }
+                                    </style>
                                     @php
                                         /* lấy data sản phẩm để truyền vào view,
                                      sau đó dùng JS để xử lý thêm vào localStorage để lưu wishlist cho user chưa đăng nhập */
@@ -275,14 +298,38 @@
                                     @else
                                         {{-- Hiển thị nút yêu thích cho khách chưa đăng nhập --}}
                                         <button class="btn btn-danger position-absolute top-0 end-0 m-2 add-to-wishlist"
-                                            data-product='@json($productData)'>
+                                            data-product='@json($productData)'
+                                            style="position: relative;">
                                             <i class="bi bi-heart"></i>
+                                            <span class="wishlist-tooltip position-absolute top-100 end-0 translate-middle-x px-2 py-1 bg-dark text-white rounded-2 small" style="display:none; white-space:nowrap; z-index:10;">
+                                                Yêu thích
+                                            </span>
                                         </button>
+                                        <script>
+                                            document.addEventListener('DOMContentLoaded', function() {
+                                                document.querySelectorAll('.add-to-wishlist').forEach(function(btn) {
+                                                    btn.addEventListener('mouseenter', function() {
+                                                        const tooltip = btn.querySelector('.wishlist-tooltip');
+                                                        if (tooltip) tooltip.style.display = 'block';
+                                                    });
+                                                    btn.addEventListener('mouseleave', function() {
+                                                        const tooltip = btn.querySelector('.wishlist-tooltip');
+                                                        if (tooltip) tooltip.style.display = 'none';
+                                                    });
+                                                });
+                                            });
+                                        </script>
                                     @endif
-                                
-                                    @if ($product->variants->where('is_new', true)->count() > 0)
-                                        <span class="badge bg-success position-absolute"
-                                            style="top: 2.5rem; right: 0.5rem; z-index:1;">Mới</span>
+
+                                    {{-- Hiển thị badge "New" nếu sản phẩm mới tạo trong 7 ngày gần nhất --}}
+                                    @php
+                                        $isNewProduct = \Carbon\Carbon::parse($product->created_at)->gt(now()->subDays(7));
+                                    @endphp
+                                    @if ($isNewProduct)
+                                        <span class="badge bg-warning text-dark position-absolute d-flex align-items-center justify-content-center"
+                                            style="top: 0.5rem; right: 3.2rem; height: 2.30rem; min-width: 2.5rem; z-index:1; font-size: 0.95rem;">
+                                            New
+                                        </span>
                                     @endif
                                 </div>
                                 <div class="card-body text-center d-flex flex-column">
@@ -318,15 +365,14 @@
 
 
                                     @if ($minPrice == $maxPrice)
-                                        <p class="text-danger fw-bold mb-3">{{ number_format($minPrice) }} đ</p>
+                                        <p class="text-danger fw-bold mb-3">{{ number_format($minPrice) }}đ</p>
                                     @else
-                                        <p class="text-danger fw-bold mb-3">{{ number_format($minPrice) }} đ -
-                                            {{ number_format($maxPrice) }} đ</p>
+                                        <p class="text-danger fw-bold mb-3">{{ number_format($minPrice) }}đ - {{ number_format($maxPrice) }}đ</p>
                                     @endif
                                     <div class="d-flex gap-2 mt-auto justify-content-center">
                                         <a href="{{ route('detail-product', ['id' => $product->id]) }}"
                                             class="btn btn-outline-primary">
-                                            <i class="bi bi-eye"></i> Xem
+                                            <i class="bi bi-eye"></i> Chi tiết sản phẩm
                                         </a>
                                         {{-- <a href="" class="btn btn-outline-danger"><i class="bi bi-cart"></i>
                                             Thêm</a> --}}
@@ -395,140 +441,99 @@
         /* General card styling for product cards */
         .card {
             transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+            border-radius: 18px;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            transform: translateY(-8px) scale(1.03);
         }
 
-        .card:hover .btn-outline-primary {
-            background-color: #007bff;
-            color: #fff;
-            border-color: #007bff;
+        .card-img-top {
+            border-radius: 14px;
+            transition: transform 0.4s cubic-bezier(.4,2,.3,1);
+        }
+        .card:hover .card-img-top {
+            transform: scale(1.08);
         }
 
-        .card:hover .btn-outline-danger {
-            background-color: #dc3545;
-            color: #fff;
-            border-color: #dc3545;
-        }
-
-        /* Sidebar-specific styling */
-        .shop__sidebar {
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .shop__sidebar__search form {
-            position: relative;
-Baldwin         }
-
-        .shop__sidebar__search input {
-            border: 1px solid #dee2e6;
-            border-radius: 25px;
-            padding: 0px 20px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        .shop__sidebar__search input:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-            outline: none;
-        }
-
-        .shop__sidebar__search button {
-            border-radius: 25px;
-            padding: 0 20px;
-            background: #007bff;
-            border: none;
-            transition: background-color 0.3s;
-        }
-
-        .shop__sidebar__search button:hover {
-            background: #0056b3;
-        }
-
-        .shop__sidebar__filters .card {
-            border: none;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            overflow: hidden;
-        }
-
-        .shop__sidebar__filters .card-heading {
-            background: #f8f9fa;
-            padding: 15px;
-            font-size: 16px;
+        .card-title {
+            font-size: 1.1rem;
             font-weight: 600;
-            text-transform: uppercase;
-            cursor: pointer;
+            color: #222;
+            margin-bottom: 0.5rem;
         }
 
+        .text-danger.fw-bold {
+            font-size: 1 rem;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-outline-primary {
+            border-radius: 25px;
+            font-weight: 500;
+            padding: 0.45rem 1.2rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn-outline-primary:hover {
+            background: #007bff;
+            color: #fff;
+        }
+
+        /* Sidebar filter đẹp hơn */
+        .shop__sidebar {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+            padding: 18px 14px 18px 14px;
+        }
+        .shop__sidebar__filters .card {
+            border-radius: 12px;
+            margin-bottom: 18px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+        }
+        .shop__sidebar__filters .card-heading {
+            font-size: 1rem;
+            font-weight: 700;
+            background: #f5f7fa;
+            border-bottom: 1px solid #e9ecef;
+            border-radius: 12px 12px 0 0;
+            padding: 13px 18px;
+        }
         .shop__sidebar__filters .card-body {
-            padding: 15 YM15px;
-            border-top: 1px solid #e9ecef;
+            padding: 14px 18px;
         }
 
-        .shop__sidebar__categories ul,
-        .shop__sidebar__price ul,
-        .shop__sidebar__brand ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .shop__sidebar__categories ul li,
-        .shop__sidebar__price ul li,
-        .shop__sidebar__brand ul li {
-            margin-bottom: 5px;
-        }
-
-        .shop__sidebar__categories ul li a,
-        .shop__sidebar__price ul li a,
-        .shop__sidebar__brand ul li a {
-            color: #495057;
-            font-size: 14px;
-            text-decoration: none;
-            display: block;
-            padding: 8px 12px;
-            border-radius: 5px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
+        /* Filter item active */
         .shop__sidebar__categories ul li.active a,
         .shop__sidebar__price ul li.active a,
         .shop__sidebar__brand ul li.active a {
-            background: #e7f1ff;
+            background: linear-gradient(90deg, #e7f1ff 60%, #f5faff 100%);
             color: #007bff;
-            font-weight: 600;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.06);
         }
 
+        /* Filter item hover */
         .shop__sidebar__categories ul li a:hover,
         .shop__sidebar__price ul li a:hover,
         .shop__sidebar__brand ul li a:hover {
-            background: #f1f5f8;
-            color: #007bff;
+            background: #f0f6ff;
+            color: #0056b3;
         }
 
-        .shop__sidebar__size {
-            padding-top: 10px;
-        }
-
+        /* Filter size đẹp hơn */
         .shop__sidebar__size label {
-            font-size: 14px;
-            font-weight: 500;
-            border: 1px solid #dee2e6;
-            padding: 8px;
-            margin-right: 8 creaturepx;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-radius: 25px;
+            border-radius: 20px;
+            padding: 7px 18px;
+            font-size: 15px;
+            margin: 0 6px 8px 0;
+            background: #f8f9fa;
+            border: 1.5px solid #dee2e6;
+            transition: all 0.2s;
         }
-
         .shop__sidebar__size label.active,
         .shop__sidebar__size label:hover {
             background: #007bff;
@@ -536,121 +541,41 @@ Baldwin         }
             border-color: #007bff;
         }
 
-        .shop__sidebar__size label input {
-            display: none;
+        /* Filter color tròn, bóng đẹp */
+        .shop__sidebar__color ul li a span:first-child {
+            border: 1.5px solid #e0e0e0;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+            transition: border 0.2s, box-shadow 0.2s;
         }
-
-        .shop__sidebar__color {
-            padding-top: 10px;
-        }
-
-        .shop__sidebar__color label {
-            height: 32px;
-            width: 32px;
-            border-radius: 50%;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            position: relative;
-            display: inline-block;
-            transition: transform 0.3s;
-        }
-
-        .shop__sidebar__color label.active:after,
-        .shop__sidebar__color label:hover:after {
-            content: '';
-            position: absolute;
-            top: -4px;
-            left: -4px;
-            right: -4px;
-            bottom: -4px;
+        .shop__sidebar__color ul li a.bg-primary span:first-child {
             border: 2px solid #007bff;
-            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.10);
         }
 
-        .shop__sidebar__color label input {
-            display: none;
+        /* Badge "New" nổi bật */
+        .badge.bg-warning {
+            font-size: 0.95rem;
+            padding: 0.4em 1.1em;
+            /* border-radius: 1.2em; */
+            box-shadow: 0 1px 6px rgba(255,193,7,0.13);
         }
 
-        .shop__sidebar__color label.c-1 {
-            background: #A1866F;
+        /* Responsive: 2 sản phẩm/row trên tablet */
+        @media (max-width: 991.98px) {
+            .col-md-4 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
         }
-
-        .shop__sidebar__color label.c-2 {
-            background: black;
-        }
-
-        .shop__sidebar__color label.c-3 {
-            background: #2E2A5F;
-        }
-
-        .shop__sidebar__color label.c-4 {
-            background: #dcd8c1;
-        }
-
-        .shop__sidebar__color label.c-5 {
-            background: #512e05;
-        }
-
-        .shop__sidebar__color label.c-6 {
-            background: #8a8582;
-        }
-
-        .shop__sidebar__color label.c-7 {
-            background: #696969;
-        }
-
-        .shop__sidebar__color label.c-8 {
-            background: #245f2b;
-        }
-
-        .shop__sidebar__color label.c-9 {
-            background: #102b4e;
-        }
-
-        .shop__sidebar__color label.c-10 {
-            background: #6f4e37;
-        }
-
-        /* màu cà phê */
-        .shop__sidebar__color label.c-11 {
-            background: #f8f8f2;
-            border: #1c1818 1px solid;
-        }
-
-        /* màu trắng ngà */
-        .shop__sidebar__color label.c-12 {
-            background: #ffffff;
-            border: #2E2A5F 1px solid;
-        }
-
-        .shop__sidebar__tags {
-            padding-top: 10px;
-        }
-
-        .shop__sidebar__tags a {
-            color: #404040;
-            font-size: 13px;
-            font-weight: 600;
-            background: #f1f5f8;
-            padding: 6px;
-            border-radius: 25px;
-            text-decoration: none;
-            margin-right: 8px;
-            margin-bottom: 8px;
-            display: inline-block;
-            transition: all 0.3s;
-        }
-
-        .shop__sidebar__tags a:hover {
-            background: #007bff;
-            color: #fff;
-        }
-
-        .card:hover img {
-            transform: scale(1.2);
-            transition: transform 0.5s ease;
-            border-radius: 10px;
+        /* Responsive: 1 sản phẩm/row trên mobile */
+        @media (max-width: 575.98px) {
+            .col-md-4 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            .shop__sidebar {
+                margin-bottom: 24px;
+            }
         }
     </style>
 

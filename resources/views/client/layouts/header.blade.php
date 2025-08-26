@@ -125,32 +125,3 @@
         </div>
     </div>
 </header>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggle = document.getElementById('searchToggle');
-        const form = document.getElementById('headerSearchForm');
-        if (!toggle || !form) return;
-
-        const input = form.querySelector('input[name=\"header_search\"]');
-        
-        if (window.location.pathname.includes('products-client') && input.value) {
-            form.classList.remove('d-none');
-        } else {
-            form.classList.add('d-none');
-        }
-        
-        toggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            form.classList.toggle('d-none');
-            if (!form.classList.contains('d-none')) {
-                input.focus();
-            }
-        });
-        
-        document.addEventListener('click', function(e) {
-            if (!form.contains(e.target) && !toggle.contains(e.target)) {
-                form.classList.add('d-none');
-            }
-        });
-    });
-</script>
