@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Category;
 
+
 /**
  * @property int $id
  * @property string $name
@@ -92,6 +93,18 @@ class Product extends Model
         return $this->hasMany(Wishlist::class);
     }
 
+    public function orderDetails()
+    {
+        return $this->hasManyThrough(
+            \App\Models\OrderDetail::class,
+            \App\Models\ProductVariant::class,
+            'product_id', // Khóa ngoại trên bảng product_variants
+            'product_variant_id', // Khóa ngoại trên bảng order_details
+            'id', // Khóa chính trên bảng products
+            'id'  // Khóa chính trên bảng product_variants
+        );
+    }
+
     /**
      * Lấy khoảng giá của sản phẩm dựa trên các biến thể (variants).
      *
@@ -126,5 +139,6 @@ class Product extends Model
         // Trả về "Liên hệ" nếu không có biến thể
         return 'Liên hệ';
     }
+
     
 }
