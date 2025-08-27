@@ -30,7 +30,7 @@
         </div>
         <h1 class="text-danger mb-3">Thanh toán thất bại</h1>
         <p class="mb-4">{{ $error }}</p>
-        <a href="{{ route('checkout') }}" class="btn btn-danger">Quay lại thanh toán</a>
+        <a href="{{ route('orders.index') }}" class="btn btn-danger">Quay lại thanh toán</a>
     </div>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </body>

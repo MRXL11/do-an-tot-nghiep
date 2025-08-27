@@ -350,7 +350,7 @@
                         </div>
                     @endif
 
-                    {{-- ❔ Nếu không có gì hết --}}
+                    {{--  Nếu không có gì hết --}}
                     @if (!$order->note && !$order->cancellation_requested && !$order->admin_cancel_note)
                         <div class="alert alert-secondary small" role="alert">
                             <strong>Ghi chú:</strong><br>
@@ -368,22 +368,38 @@
                             <span>{{ number_format($order->orderDetails->sum('subtotal'), 0, ',', '.') }}₫</span>
                         </li>
                         {{-- xử lý mã mã giảm giá --}}
-                        @if ($order->coupon)
-                            <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
-                                Giảm:
-                                <span>-{{ number_format($discount, 0, ',', '.') }}₫</span>
-                            </li>
-                        @else
-                            <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
-                                Giảm:
-                                <span>-0₫</span>
-                            </li>
+                       
+                        
+                        <div class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
+                            <span>Phí vận chuyển (gốc):</span>
+                            <strong>{{ number_format($order->shipping_fee, 0, ',', '.') }} ₫</strong>
+                        </div>
+                        {{-- giảm giá phí vận chuyển --}}
+                        @if ($order->shipping_discount > 0)
+                            <div class="list-group-item d-flex justify-content-between align-items-center fw-semibold text-success">
+                                <span>Giảm phí vận chuyển:</span>
+                                <strong>-{{ number_format($order->shipping_discount, 0, ',', '.') }} ₫</strong>
+                            </div>
                         @endif
-                        <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
-                            Phí vận chuyển:
-                            <span>20.000₫</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
+                         {{-- số tiền giảm giá cho đơn hàng --}}
+                        @if ($orderDiscount > 0)
+                                <div class="list-group-item d-flex justify-content-between align-items-center fw-semibold text-success">
+                                    <span>Giảm giá đơn hàng:</span>
+                                    <strong>- {{ number_format($orderDiscount, 0, ',', '.') }} ₫</strong>
+                                </div>
+                         @endif
+                        {{-- tổng giảm giá --}}
+                        @php
+                            $totalDiscount = $orderDiscount + $order->shipping_discount;
+                        @endphp
+                        @if ($totalDiscount > 0)
+                            <div class="list-group-item d-flex justify-content-between align-items-center fw-semibold text-success">
+                                <span>Tổng giảm giá:</span>
+                                <strong>-{{ number_format($totalDiscount, 0, ',', '.') }} ₫</strong>
+                            </div>
+                        @endif
+                        
+                        <li class="list-group-item d-flex justify-content-between align-items-center fw-semibold text-primary">
                             Thành tiền:
                             <span>{{ number_format($order->total_price, 0, ',', '.') }}₫</span>
                         </li>

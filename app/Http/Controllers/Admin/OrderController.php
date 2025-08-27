@@ -62,9 +62,12 @@ class OrderController extends Controller
         $order = Order::with('user', 'shippingAddress', 'orderDetails.productVariant.product', 'coupon')
             ->findOrFail($id);
 
-        $discount = 0;
+       
         $total = $order->orderDetails()->sum('subtotal');
-
+        // Lấy discount từ cột đã lưu (không cần tính lại từ coupon)
+    $orderDiscount = $order->order_discount ?? 0;
+    $shippingDiscount = $order->shipping_discount ?? 0;
+    
         // Tính toán giảm giá nếu có coupon
         if ($order->coupon) {
             if ($order->coupon->discount_type === 'fixed') {
@@ -74,7 +77,7 @@ class OrderController extends Controller
             }
         }
 
-        return view('admin.orders.show', compact('order', 'discount', 'total'));
+        return view('admin.orders.show', compact('order', 'discount', 'total', 'orderDiscount', 'shippingDiscount'));
     }
 
     public function update(Request $request, $id)

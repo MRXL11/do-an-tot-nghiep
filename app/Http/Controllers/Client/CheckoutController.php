@@ -484,6 +484,8 @@ class CheckoutController extends Controller
                 'note' => $request->note ?? null,
                 'shipping_address_id' => $shippingAddress->id,
                 'shipping_fee' => $shippingFee,  // Đảm bảo dòng này có mặt!
+                'order_discount' => $orderDiscount,  // Số tiền giảm cho đơn hàng
+                'shipping_discount' => $shippingDiscount,  // Số tiền giảm cho phí ship
                 'vnp_txn_ref' => $request->paymentMethod === 'card' ? time() . Str::random(4) : null,
                 'coupon_id' => Coupon::where('code', $orderCode)->value('id'),
                 'extra_info' => json_encode(['coupon_codes' => array_filter([$orderCode, $shippingCode])]),
