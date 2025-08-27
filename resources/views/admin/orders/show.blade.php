@@ -260,7 +260,7 @@
                                 <td>{{ $item->productVariant->product->short_description }}</td>
                                 <td>{{ $item->quantity }}</td>
                                 <td>{{ number_format($item->price, 0, ',', '.') }}</td>
-                                <td>{{ number_format($discount, 0, ',', '.') }}</td>
+                               
                                 <td>{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
