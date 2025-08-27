@@ -67,7 +67,9 @@ protected $fillable = [
         'vnp_bank_tran_no',
         'vnp_card_type',
         'vnp_pay_date',
-        'vnp_secure_hash'
+        'vnp_secure_hash',
+        'order_discount', 
+        'shipping_discount'
     ];
     public function user()
     {

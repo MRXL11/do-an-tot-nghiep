@@ -14,7 +14,7 @@ class CustomerNotificationController extends Controller
         $notifications = Notification::whereIn('user_id', function ($query) {
             $query->select('id')->from('users')->where('role_id', 2);
         })->orderByDesc('created_at')->paginate(10);
-
+        
         return view('admin.others_menu.notifications-client', compact('notifications'));
     }
 

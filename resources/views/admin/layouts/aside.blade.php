@@ -162,12 +162,12 @@
                                 <p>Banner</p>
                             </a>
                         </li>
-                         <li class="nav-item">
+                         {{-- <li class="nav-item">
                              <a href="" class="nav-link">
                                  <i class="bi bi-person-circle"></i>
                                  <p>Profile</p>
                              </a>
-                         </li>
+                         </li> --}}
                          <li class="nav-item">
                              <a href="{{ route('logout') }}" class="nav-link">
                                  <i class="bi bi-box-arrow-right"></i>

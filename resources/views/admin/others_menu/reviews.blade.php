@@ -9,7 +9,7 @@
   <div class="col-lg-12">
     <div class="row g-4 mb-4">
       <!-- Cột đánh giá -->
-      <div class="col-md-8">
+      <div class="col-md-12">
         <!-- Bộ lọc -->
         <form method="GET" class="mb-3 d-flex gap-2">
         <select name="rating" class="form-select" style="width: 120px;">
@@ -114,8 +114,8 @@
                 </div>
 
 
-                <!-- Cột Chat khách hàng -->
-                <div class="col-md-4">
+                <!-- Cột Chat khách hàng  chưa làm kịp-->
+                {{-- <div class="col-md-4">
                     <div class="card direct-chat direct-chat-primary mb-4">
                         <div class="card-header">
                             <h3 class="card-title">Tin nhắn từ khách hàng</h3>
@@ -189,7 +189,7 @@
                             </form>
                         </div>
                     </div>
-                </div>
+                </div> --}}
                 <!-- End cột chat -->
             </div>
         </div>

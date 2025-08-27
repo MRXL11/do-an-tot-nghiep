@@ -82,7 +82,7 @@
                                                             <div class="mb-3 d-flex flex-column">
 
                                                                 <h6 class="fw-bold text-dark mb-1">
-                                                                    {{ $order->shippingAddress->name ?? $order->user->name }}
+                                                                Người nhận:   <span class="text-primary"> {{ $order->shippingAddress->name ?? $order->user->name }}</span>
                                                                 </h6>
 
                                                                 <small class="mb-0 text-muted mb-1">
@@ -293,6 +293,7 @@
                                                                 {{ $order->getStatusMeta($order->status)['label'] }}
                                                             </span>
                                                         @endif
+                                                     
 
                                                         {{-- Tổng tiền --}}
                                                         <div class="mt-1">
@@ -488,18 +489,44 @@
                                                     <div class="card border-0 bg-light">
                                                         <div class="card-body">
 
-                                                            @if ($order->calculated_discount > 0)
-                                                                <div
-                                                                    class="d-flex justify-content-between mb-2 text-success">
-                                                                    <span>Giảm giá:</span>
-                                                                    <span
-                                                                        class="fw-semibold">-{{ number_format($order->calculated_discount, 0, ',', '.') }}₫</span>
-                                                                </div>
-                                                            @endif
+                                                              {{-- phí vận chuyển --}}
+                                                            <div class="d-flex justify-content-between">
+                                                                <span class="fw-bold text-success">Phí vận chuyển:</span>
+                                                                <span
+                                                                    class="fw-bold text-primary">{{ number_format($order->shipping_fee, 0, ',', '.') }}₫</span>
+                                                            </div>
+                                                        {{-- giảm giá phí vận chuyển --}}
+
+                                                        @if ($order->order_discount> 0)
+                                                            <div class="d-flex justify-content-between">
+                                                                 <span class="fw-bold  text-success">Giảm giá cho đơn hàng:</span>
+                                                                <span class="fw-bold text-primary">
+                                                                    -{{ number_format($order->order_discount, 0, ',', '.') }}₫
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                        {{-- giảm giá phí vận chuyển --}}
+                                                        @if ($order->shipping_discount > 0)
+                                                            <div class="d-flex justify-content-between">
+                                                                 <span class="fw-bold   text-success">Giảm giá phí vận chuyển:</span>
+                                                                <span class="fw-bold text-primary ">
+                                                                    -{{ number_format($order->shipping_discount, 0, ',', '.') }}₫
+                                                                </span> 
+                                                            </div>
+                                                        @endif
+                                                        {{-- tổng giảm giá nếu  --}}
+                                                        @if ($order->order_discount > 0 || $order->shipping_discount > 0)
+                                                            <div class="d-flex justify-content-between">
+                                                                 <span class="fw-bold  text-success">Tổng giảm giá:</span>
+                                                                <span class="fw-bold text-primary">
+                                                                    -{{ number_format($order->order_discount + $order->shipping_discount, 0, ',', '.') }}₫
+                                                                </span>
+                                                            </div>
+                                                        @endif
 
                                                             <hr>
                                                             <div class="d-flex justify-content-between">
-                                                                <span class="fw-bold fs-5">Thành tiền:</span>
+                                                                <span class="fw-bold fs-5 text-danger">Thành tiền:</span>
                                                                 <span
                                                                     class="fw-bold fs-5 text-primary">{{ number_format($order->total_price, 0, ',', '.') }}₫</span>
                                                             </div>

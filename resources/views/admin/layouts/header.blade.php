@@ -14,7 +14,7 @@
           <!--begin::End Navbar Links-->
           <ul class="navbar-nav ms-auto">
             <!--begin::Navbar Search-->
-           @include('admin.layouts.search')
+           {{-- @include('admin.layouts.search')
             <!--end::Navbar Search-->
             <!--begin::Messages Dropdown Menu-->
             @include('admin.layouts.messages')
@@ -22,7 +22,7 @@
             <!--begin::Notifications Dropdown Menu-->
             @include('admin.layouts.notifications')
             <!--end::Notifications Dropdown Menu-->
-            <!--begin::User Menu Dropdown-->
+            <!--begin::User Menu Dropdown--> --}}
            @include('admin.layouts.profile_mini')
             <!--end::User Menu Dropdown-->
           </ul>
