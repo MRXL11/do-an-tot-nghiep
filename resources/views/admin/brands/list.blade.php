@@ -7,7 +7,7 @@
     <div class="col-lg-12">       
         <div class="row g-4 mb-4">
             <!-- Cột trái: Danh sách Brands với bảng và paginate -->
-            <div class="col-md-9">
+            <div class="col-md-12">
                 {{-- Phần tìm kiếm --}}
                 <div class="card-header bg-info text-white fw-bold">
                     <div class="row align-items-center">
@@ -31,11 +31,15 @@
                         </form>
                         </div>
                         <!-- Nút thêm -->
-                        <div class="col-md-2 text-end">
+                        <div class="col-md-2">
                             <button class="btn btn-success">
                               <a href="{{ route('admin.brands.create') }}" class="text-white"><i class="bi bi-plus-circle me-1"></i> Thêm</a>
                             </button>
+                            <a href="{{ route('admin.brands.trashed') }}" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Thùng rác
+                        </a>
                         </div>
+                        
                     </div>
                     
                 </div>
@@ -125,11 +129,9 @@
             <!-- Kết thúc cột trái -->
 
             <!-- Cột phải: TOP Nhãn hàng bán chạy -->
-            <div class="col-md-3">
-               {{-- route trash --}}
-            <a href="{{ route('admin.brands.trashed') }}" class="btn btn-danger mb-2">
-                <i class="bi bi-trash"></i> Thùng rác
-            </a>
+            {{-- <div class="col-md-3">
+         
+            
                 <div class="card">
                     <div class="card-header mb-2">
                         <strong>
@@ -169,7 +171,7 @@
                     <!-- /.card-body -->
                 </div>
                 <!-- /.card -->
-            </div>
+            </div> --}}
             <!-- Kết thúc cột phải -->
         </div>
     </div>
