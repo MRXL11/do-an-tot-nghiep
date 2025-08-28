@@ -33,7 +33,7 @@
                                                 <h4>Đồ nam</h4>
                                                 <p>Thời trang phong cách, mạnh mẽ, lịch lãm cho nam giới hiện đại.</p>
                                                 <div class="main-border-button">
-                                                   <a href="{{ url('/#men') }}">Khám phá thêm</a>
+                                                    <a href="{{ url('/#men') }}">Khám phá thêm</a>
                                                 </div>
                                             </div>
                                         </div>

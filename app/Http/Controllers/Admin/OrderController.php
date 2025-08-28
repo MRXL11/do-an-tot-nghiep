@@ -65,8 +65,9 @@ class OrderController extends Controller
        
         $total = $order->orderDetails()->sum('subtotal');
         // Lấy discount từ cột đã lưu (không cần tính lại từ coupon)
-    $orderDiscount = $order->order_discount ?? 0;
-    $shippingDiscount = $order->shipping_discount ?? 0;
+        $discount = 0;
+        $orderDiscount = $order->order_discount ?? 0;
+        $shippingDiscount = $order->shipping_discount ?? 0;
     
         // Tính toán giảm giá nếu có coupon
         if ($order->coupon) {
