@@ -89,13 +89,20 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="{{ url('/client/notifications') }}"
+                                        <a href="{{ route('client.notifications') }}"
                                             class="{{ Request::is('client.notifications') ? 'active' : '' }}">
                                             <i class="bi bi-bell-fill me-1 text-warning"></i> Thông báo
+                                            @php
+                                                $unreadCount = \App\Models\Notification::where('user_id', Auth::id())
+                                                                                    ->where('is_read', 0)
+                                                                                    ->count();
+                                            @endphp
                                             @isset($unreadCount)
                                                 <span class="badge bg-danger unread-count">{{ $unreadCount }}</span>
                                             @endisset
                                         </a>
+                                        {{-- tại sao phần thông báo không hiện số lượng thông báo chưa đọc??? ở các trang khác --}}
+
                                     </li>
                                     <li>
                                         <a href="{{ route('logout') }}">

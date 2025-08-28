@@ -191,9 +191,7 @@ Route::get('/vnpay/test', [VNPayController::class, 'testPayment'])->name('vnpay.
 
 Route::get('/order/success/{order}', [ClientOrderController::class, 'success'])->name('order.success');
 Route::get('/order/failed', [ClientOrderController::class, 'failed'])->name('order.failed');
-// Thông báo khách hàng
-Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
-Route::post('/client/notifications/mark-all-read', [ClientNotificationController::class, 'markAllRead'])->name('client.notifications.markAllRead');
+
 
 // Hủy đơn hàng và yêu cầu trả hàng
 Route::post('/order/{orderId}/cancel-request', [ClientOrderController::class, 'createOrderCancelNotificationToAdmin'])->name('order.cancel.request');
@@ -209,7 +207,9 @@ Route::post('/checkout/shipping-fee', [CheckoutController::class, 'getShippingFe
 
 });
 
-
+// Thông báo khách hàng
+Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
+Route::post('/client/notifications/mark-all-read', [ClientNotificationController::class, 'markAllRead'])->name('client.notifications.markAllRead');
 // Các trang tĩnh
 Route::get('/about', function () {
     return view('client.pages.about');
