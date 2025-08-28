@@ -180,9 +180,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/checkout/apply-coupons', [CheckoutController::class, 'applyCoupons'])->name('checkout.applyCoupons');
 
     Route::post('/checkout/retry/{order}', [CheckoutController::class, 'retryPayment'])->name('checkout.retry');
-});
-
-// Thanh toán Momo
+    // Thanh toán Momo
 Route::get('/pay', [ClientOrderController::class, 'pay'])->name('pay');
 Route::post('/momo_payment', [ClientOrderController::class, 'momo_payment'])->name('momo_payment');
 Route::post('/momo_callback', [ClientOrderController::class, 'momoCallback'])->name('momo_callback');
@@ -193,6 +191,25 @@ Route::get('/vnpay/test', [VNPayController::class, 'testPayment'])->name('vnpay.
 
 Route::get('/order/success/{order}', [ClientOrderController::class, 'success'])->name('order.success');
 Route::get('/order/failed', [ClientOrderController::class, 'failed'])->name('order.failed');
+// Thông báo khách hàng
+Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
+Route::post('/client/notifications/mark-all-read', [ClientNotificationController::class, 'markAllRead'])->name('client.notifications.markAllRead');
+
+// Hủy đơn hàng và yêu cầu trả hàng
+Route::post('/order/{orderId}/cancel-request', [ClientOrderController::class, 'createOrderCancelNotificationToAdmin'])->name('order.cancel.request');
+Route::post('/order/{id}/received', [ClientOrderController::class, 'received'])->name('order.received');
+Route::post('/orders/{id}/return-request', [ReturnRequestController::class, 'requestReturn'])->name('orders.requestReturn');
+// Route cho tài khoản khách hàng
+Route::get('/account', [AccountController::class, 'show'])->name('account.show');
+Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
+// Route cho trang đơn hàng của khách hàng
+Route::get('/orders', [ClientOrderController::class, 'index'])->name('orders.index');
+// lấy phí vận chuyển
+Route::post('/checkout/shipping-fee', [CheckoutController::class, 'getShippingFee'])->name('checkout.getShippingFee');
+
+});
+
+
 // Các trang tĩnh
 Route::get('/about', function () {
     return view('client.pages.about');
@@ -211,13 +228,6 @@ Route::post('/wishlist/guest', [WishlistController::class, 'getGuestWishlist'])-
 Route::post('/wishlist/sync', [WishlistController::class, 'sync'])->name('wishlist.sync');
 Route::get('/wishlist/check/product/{id}', [WishlistController::class, 'check'])->name('wishlist.check');
 
-// Route cho tài khoản khách hàng
-Route::get('/account', [AccountController::class, 'show'])->name('account.show');
-Route::post('/account/client', [AccountController::class, 'update'])->name('account.update');
-// Route cho trang đơn hàng của khách hàng
-Route::get('/orders', [ClientOrderController::class, 'index'])->name('orders.index');
-// lấy phí vận chuyển
-Route::post('/checkout/shipping-fee', [CheckoutController::class, 'getShippingFee'])->name('checkout.getShippingFee');
 
 // Chi tiết sản phẩm và review
 Route::get('/products-client/{slug?}', [ProductClientController::class, 'index'])->name('products-client');
@@ -232,14 +242,7 @@ Route::get('/news/{id}', [\App\Http\Controllers\Client\ClientNewsController::cla
 
 
 
-// Thông báo khách hàng
-Route::get('/client/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
-Route::post('/client/notifications/mark-all-read', [ClientNotificationController::class, 'markAllRead'])->name('client.notifications.markAllRead');
 
-// Hủy đơn hàng và yêu cầu trả hàng
-Route::post('/order/{orderId}/cancel-request', [ClientOrderController::class, 'createOrderCancelNotificationToAdmin'])->name('order.cancel.request');
-Route::post('/order/{id}/received', [ClientOrderController::class, 'received'])->name('order.received');
-Route::post('/orders/{id}/return-request', [ReturnRequestController::class, 'requestReturn'])->name('orders.requestReturn');
 
 // Route xác thực (Auth)
 Route::middleware('web')->group(function () {
