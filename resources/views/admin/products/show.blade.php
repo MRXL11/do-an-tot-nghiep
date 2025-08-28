@@ -131,8 +131,7 @@
                 <div class="col-md-12">
                     <h3>Biến thể sản phẩm</h3>
                     <p class="text-muted mb-0">
-                        Chỉnh sửa giá nhập, giá bán và số lượng của các biến thể sản phẩm. Các trường màu sắc, kích cỡ và
-                        trạng thái không thể chỉnh sửa.
+                        Chỉnh sửa giá nhập, giá bán và số lượng của các biến thể sản phẩm. Các trường màu sắc, kích cỡ không thể chỉnh sửa.
                     </p>
                 </div>
             </div>
