@@ -397,7 +397,7 @@
 
         function autoRefreshChart(startDate, endDate) {
             if (refreshInterval) {
-                clearInterval(refrefreshInterval);
+                clearInterval(refreshInterval);
             }
             refreshInterval = setInterval(() => {
                 renderRevenueChart(startDate, endDate);
@@ -727,7 +727,9 @@
                                 { label: 'Đang giao', data: [statusData[2]], backgroundColor: '#17a2b8' },
                                 { label: 'Đã giao', data: [statusData[3]], backgroundColor: '#339966' },
                                 { label: 'Đã hoàn thành', data: [statusData[4]], backgroundColor: '#004400' },
-                                { label: 'Đã huỷ', data: [statusData[5]], backgroundColor: '#dc3545' }
+                                { label: 'Đã huỷ', data: [statusData[5]], backgroundColor: '#dc3545' },
+                                { label: 'Đang xử lý hoàn tiền', data: [statusData[6]], backgroundColor: '#ff9900' },
+                                { label: 'Đã hoàn tiền', data: [statusData[7]], backgroundColor: '#9933cc' }
                             ]
                         },
                         options: {

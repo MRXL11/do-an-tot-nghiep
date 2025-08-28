@@ -8,7 +8,7 @@
         <div class="col-lg-12">
             <div class="row g-4 mb-4">
                 <div class="col-md-12">
-                    {{-- tìm kiếm đơn hàng --}}
+                    {{-- Tìm kiếm đơn hàng --}}
                     <form class="d-flex mb-1" role="search" action="{{ route('admin.orders.index') }}" method="GET">
                         <div class="input-group">
                             <span class="input-group-text bg-light" id="search-icon">
@@ -31,9 +31,9 @@
                             <a class="btn btn-secondary ms-2" href="{{ route('admin.orders.index') }}">Đặt lại</a>
                         </div>
                     </form>
-                    {{-- kết thúc tìm kiếm --}}
+                    {{-- Kết thúc tìm kiếm --}}
 
-                    {{-- hiển thị thông báo --}}
+                    {{-- Hiển thị thông báo --}}
                     <div class="row">
                         @if (session('error'))
                             <div class="alert alert-danger rounded-3">
@@ -47,7 +47,7 @@
                         @endif
                     </div>
 
-                    {{-- hiển thị danh sách đơn hàng --}}
+                    {{-- Hiển thị danh sách đơn hàng --}}
                     @if ($noResults)
                         <div class="alert alert-warning" role="alert">
                             Không tìm thấy đơn hàng nào.
@@ -86,7 +86,7 @@
                                         @php
                                             $status = $order->getStatusLabel();
                                         @endphp
-                                        {{-- hiển thị trạng thái đơn hàng --}}
+                                        {{-- Hiển thị trạng thái đơn hàng --}}
                                         <span class="badge {{ $status['color'] }}">
                                             {{ $status['label'] }}
                                         </span>
@@ -135,7 +135,7 @@
                                                     </button>
                                                 @endif
 
-                                                {{-- xử lý với cod --}}
+                                                {{-- Xử lý với COD --}}
                                                 @if ($canMarkDone)
                                                     <button class="btn btn-outline-success btn-sm"
                                                         onclick="handleReturnAction('{{ route('admin.return-requests.update', $order->returnRequest->id) }}', 'refunded')">
@@ -157,7 +157,7 @@
                                         @endif
                                     </td>
 
-                                    {{-- các nút và modal --}}
+                                    {{-- Các nút và modal --}}
                                     <td>
                                         <div class="d-flex gap-2">
                                             {{-- Nút Chi tiết đơn hàng --}}
@@ -166,7 +166,7 @@
                                                 <i class="bi bi-info-circle"></i> Chi tiết
                                             </a>
 
-                                            @if (!in_array($order->status, ['delivered', 'completed', 'cancelled']))
+                                            @if (!in_array($order->status, ['delivered', 'completed', 'cancelled', 'refund_in_processing', 'refunded']))
                                                 {{-- Nút xác nhận trạng thái tiếp theo --}}
                                                 @php
                                                     $cancelMessages = [
@@ -240,6 +240,19 @@
                                                     </button>
                                                 </form>
                                             @endif
+
+                                            {{-- Nút Đánh dấu đã hoàn tiền cho trạng thái refund_in_processing --}}
+                                            @if ($order->status === 'refund_in_processing' && $order->returnRequest && $order->returnRequest->status === 'approved' && in_array($order->payment_method, ['online', 'bank_transfer']) && $order->payment_status !== 'refunded')
+                                                <form method="POST"
+                                                    action="{{ route('admin.orders.refunded', $order->id) }}"
+                                                    class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-success btn-sm"
+                                                        onclick="return confirm('Bạn có chắc chắn đánh dấu đơn hàng này là đã hoàn tiền?');">
+                                                        <i class="bi bi-cash-coin"></i> Đã hoàn tiền
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
 
                                         @php
@@ -247,9 +260,8 @@
                                                 !empty($order->cancel_reason) &&
                                                 !empty($order->admin_cancel_note) &&
                                                 $order->cancel_confirmed &&
-                                                $order->status !== 'canceled';
+                                                $order->status !== 'cancelled';
                                         @endphp
-
 
                                         <!-- Modal xác nhận huỷ đơn hàng -->
                                         <div class="modal fade" id="cancelOrderModal{{ $order->id }}" tabindex="-1"
@@ -272,7 +284,7 @@
                                                         </div>
 
                                                         <div class="modal-body">
-                                                            {{-- ✅ Hiển thị lý do khách hàng yêu cầu huỷ --}}
+                                                            {{-- Hiển thị lý do khách hàng yêu cầu huỷ --}}
                                                             @if ($order->cancel_reason && !$hideCustomerReason)
                                                                 <div class="mb-3">
                                                                     <p class="mb-1"><strong>Lý do khách hàng yêu cầu huỷ
@@ -283,7 +295,7 @@
                                                                 </div>
                                                             @endif
 
-                                                            {{-- ✅ Ghi chú từ admin --}}
+                                                            {{-- Ghi chú từ admin --}}
                                                             <div class="mb-3">
                                                                 <label for="admin_cancel_note_{{ $order->id }}"
                                                                     class="form-label">Lý do huỷ đơn (Admin):</label>
@@ -331,7 +343,7 @@
                                                         </div>
 
                                                         <div class="modal-body">
-                                                            {{-- ✅ Hiển thị lý do khách hàng yêu cầu huỷ --}}
+                                                            {{-- Hiển thị lý do khách hàng yêu cầu huỷ --}}
                                                             @if ($order->cancel_reason)
                                                                 <div class="mb-3">
                                                                     <p class="mb-1"><strong>Lý do khách yêu cầu huỷ
@@ -342,7 +354,7 @@
                                                                 </div>
                                                             @endif
 
-                                                            {{-- ✅ Ghi chú lý do từ chối của admin --}}
+                                                            {{-- Ghi chú lý do từ chối của admin --}}
                                                             <div class="mb-3">
                                                                 <label for="admin_cancel_note_reject_{{ $order->id }}"
                                                                     class="form-label">
@@ -371,7 +383,6 @@
                                                 </form>
                                             </div>
                                         </div>
-
                                     </td>
                                 </tr>
                             @endforeach
@@ -380,17 +391,16 @@
 
                     <!-- Phân trang -->
                     {{ $orders->links() }}
-                    {{-- kết thúc phân trang --}}
+                    {{-- Kết thúc phân trang --}}
                 </div>
-
             </div>
         </div>
     </div>
 
-    {{-- form lấy status mới --}}
+    {{-- Form lấy status mới --}}
     <form id="statusUpdateForm" method="POST" style="display: none;">
         @csrf
-        @method('PATCH') {{-- hoặc PATCH nếu bạn muốn --}}
+        @method('PATCH')
         <input type="hidden" name="status" id="statusInput">
     </form>
 @endsection

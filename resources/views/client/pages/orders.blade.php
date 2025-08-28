@@ -82,7 +82,8 @@
                                                             <div class="mb-3 d-flex flex-column">
 
                                                                 <h6 class="fw-bold text-dark mb-1">
-                                                                Người nhận:   <span class="text-primary"> {{ $order->shippingAddress->name ?? $order->user->name }}</span>
+                                                                    Người nhận: <span class="text-primary">
+                                                                        {{ $order->shippingAddress->name ?? $order->user->name }}</span>
                                                                 </h6>
 
                                                                 <small class="mb-0 text-muted mb-1">
@@ -264,7 +265,32 @@
                                                                 $order->cancellation_requested &&
                                                                 $order->cancel_confirmed &&
                                                                 $order->status === 'cancelled';
-                                                            $returnStatus = $return ? $return->return_status : null;
+                                                            $returnStatus = $return
+                                                                ? [
+                                                                        'requested' => [
+                                                                            'color' => 'info',
+                                                                            'icon' => 'bi bi-clock-history',
+                                                                            'title' =>
+                                                                                'Yêu cầu trả hàng đang chờ xử lý',
+                                                                        ],
+                                                                        'approved' => [
+                                                                            'color' => 'success',
+                                                                            'icon' => 'bi bi-shield-check',
+                                                                            'title' =>
+                                                                                'Yêu cầu trả hàng được phê duyệt',
+                                                                        ],
+                                                                        'rejected' => [
+                                                                            'color' => 'danger',
+                                                                            'icon' => 'bi bi-shield-x',
+                                                                            'title' => 'Yêu cầu trả hàng bị từ chối',
+                                                                        ],
+                                                                        'refunded' => [
+                                                                            'color' => 'success',
+                                                                            'icon' => 'bi bi-check-circle-fill',
+                                                                            'title' => 'Đã hoàn tiền',
+                                                                        ],
+                                                                    ][$return->status] ?? null
+                                                                : null;
                                                         @endphp
 
                                                         {{-- Ưu tiên hiển thị: hoàn hàng > huỷ đơn > trạng thái đơn --}}
@@ -274,6 +300,12 @@
                                                                 data-status-badge>
                                                                 <i class="{{ $returnStatus['icon'] }} me-1"></i>
                                                                 {{ $returnStatus['title'] }}
+                                                            </span>
+                                                        @elseif ($order->status === 'refund_in_processing')
+                                                            <span class="badge bg-info px-3 py-2 rounded-pill"
+                                                                data-status-badge>
+                                                                <i class="bi bi-clock-history me-1"></i> Đang xử lý yêu cầu
+                                                                trả hàng
                                                             </span>
                                                         @elseif ($cancelRequested)
                                                             <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"
@@ -293,7 +325,6 @@
                                                                 {{ $order->getStatusMeta($order->status)['label'] }}
                                                             </span>
                                                         @endif
-                                                     
 
                                                         {{-- Tổng tiền --}}
                                                         <div class="mt-1">
@@ -377,14 +408,14 @@
                                                         </button>
                                                     @endif
                                                 </div>
-                                            @elseif($order->status === 'refund_in_processing')
+                                                {{-- @elseif($order->status === 'refund_in_processing')
                                                 <div class="d-flex justify-content-end gap-3 mt-1 flex-wrap">
                                                     <span class="text-info">Đang xử lý yêu cầu trả hàng</span>
                                                 </div>
                                             @elseif($order->status === 'refunded')
                                                 <div class="d-flex justify-content-end gap-3 mt-1 flex-wrap">
                                                     <span class="text-success">Đã hoàn tiền</span>
-                                                </div>
+                                                </div> --}}
                                             @endif
                                         </div>
                                     </h2>
@@ -489,40 +520,43 @@
                                                     <div class="card border-0 bg-light">
                                                         <div class="card-body">
 
-                                                              {{-- phí vận chuyển --}}
+                                                            {{-- phí vận chuyển --}}
                                                             <div class="d-flex justify-content-between">
                                                                 <span class="fw-bold text-success">Phí vận chuyển:</span>
                                                                 <span
                                                                     class="fw-bold text-primary">{{ number_format($order->shipping_fee, 0, ',', '.') }}₫</span>
                                                             </div>
-                                                        {{-- giảm giá phí vận chuyển --}}
+                                                            {{-- giảm giá phí vận chuyển --}}
 
-                                                        @if ($order->order_discount> 0)
-                                                            <div class="d-flex justify-content-between">
-                                                                 <span class="fw-bold  text-success">Giảm giá cho đơn hàng:</span>
-                                                                <span class="fw-bold text-primary">
-                                                                    -{{ number_format($order->order_discount, 0, ',', '.') }}₫
-                                                                </span>
-                                                            </div>
-                                                        @endif
-                                                        {{-- giảm giá phí vận chuyển --}}
-                                                        @if ($order->shipping_discount > 0)
-                                                            <div class="d-flex justify-content-between">
-                                                                 <span class="fw-bold   text-success">Giảm giá phí vận chuyển:</span>
-                                                                <span class="fw-bold text-primary ">
-                                                                    -{{ number_format($order->shipping_discount, 0, ',', '.') }}₫
-                                                                </span> 
-                                                            </div>
-                                                        @endif
-                                                        {{-- tổng giảm giá nếu  --}}
-                                                        @if ($order->order_discount > 0 || $order->shipping_discount > 0)
-                                                            <div class="d-flex justify-content-between">
-                                                                 <span class="fw-bold  text-success">Tổng giảm giá:</span>
-                                                                <span class="fw-bold text-primary">
-                                                                    -{{ number_format($order->order_discount + $order->shipping_discount, 0, ',', '.') }}₫
-                                                                </span>
-                                                            </div>
-                                                        @endif
+                                                            @if ($order->order_discount > 0)
+                                                                <div class="d-flex justify-content-between">
+                                                                    <span class="fw-bold  text-success">Giảm giá cho đơn
+                                                                        hàng:</span>
+                                                                    <span class="fw-bold text-primary">
+                                                                        -{{ number_format($order->order_discount, 0, ',', '.') }}₫
+                                                                    </span>
+                                                                </div>
+                                                            @endif
+                                                            {{-- giảm giá phí vận chuyển --}}
+                                                            @if ($order->shipping_discount > 0)
+                                                                <div class="d-flex justify-content-between">
+                                                                    <span class="fw-bold   text-success">Giảm giá phí vận
+                                                                        chuyển:</span>
+                                                                    <span class="fw-bold text-primary ">
+                                                                        -{{ number_format($order->shipping_discount, 0, ',', '.') }}₫
+                                                                    </span>
+                                                                </div>
+                                                            @endif
+                                                            {{-- tổng giảm giá nếu  --}}
+                                                            @if ($order->order_discount > 0 || $order->shipping_discount > 0)
+                                                                <div class="d-flex justify-content-between">
+                                                                    <span class="fw-bold  text-success">Tổng giảm
+                                                                        giá:</span>
+                                                                    <span class="fw-bold text-primary">
+                                                                        -{{ number_format($order->order_discount + $order->shipping_discount, 0, ',', '.') }}₫
+                                                                    </span>
+                                                                </div>
+                                                            @endif
 
                                                             <hr>
                                                             <div class="d-flex justify-content-between">
@@ -817,7 +851,7 @@
                                 showConfirmButton: true,
                                 confirmButtonText: 'OK'
                             }).then(() => {
-                                location.reload(); // Tải lại trang để cập nhật trạng thái
+                                location.reload();
                             });
                         } else {
                             Swal.fire({
@@ -866,24 +900,56 @@
                 if (result.isConfirmed) {
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/orders/${orderId}/return-request`;
-
-                    const token = document.createElement('input');
-                    token.type = 'hidden';
-                    token.name = '_token';
-                    token.value = csrfToken;
-                    form.appendChild(token);
-
-                    const reason = document.createElement('input');
-                    reason.type = 'hidden';
-                    reason.name = 'reason';
-                    reason.value = result.value;
-                    form.appendChild(reason);
-
-                    document.body.appendChild(form);
-                    form.submit();
+                    fetch(`/orders/${orderId}/return-request`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: JSON.stringify({
+                                reason: result.value
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const orderElement = document.querySelector(
+                                    `[data-order-code="${data.order_code}"]`);
+                                if (orderElement) {
+                                    const statusBadge = orderElement.querySelector('[data-status-badge]');
+                                    if (statusBadge) {
+                                        statusBadge.textContent = getStatusLabel('refund_in_processing');
+                                        statusBadge.className =
+                                            `badge ${getStatusColor('refund_in_processing')} px-3 py-2 rounded-pill`;
+                                    }
+                                    updateOrderActions(orderElement, 'refund_in_processing', orderId);
+                                }
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công',
+                                    text: data.message,
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'OK'
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: data.message || 'Đã có lỗi xảy ra!',
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi',
+                                text: 'Đã có lỗi xảy ra khi gửi yêu cầu!',
+                                showConfirmButton: true,
+                                confirmButtonText: 'OK'
+                            });
+                        });
                 }
             });
         }
@@ -891,16 +957,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Gắn sự kiện click bằng event delegation
             document.addEventListener('click', function(event) {
                 if (event.target.closest('.btn-received')) {
                     const button = event.target.closest('.btn-received');
                     const orderId = button.dataset.orderId;
                     const orderCode = button.dataset.orderCode;
-                    console.log('Clicked Đã nhận hàng:', {
-                        orderId,
-                        orderCode
-                    });
 
                     Swal.fire({
                         title: 'Xác nhận nhận hàng',
@@ -925,7 +986,6 @@
                                     }
                                 })
                                 .then(response => {
-                                    console.log('Response status:', response.status);
                                     if (!response.ok) {
                                         throw new Error(
                                             `HTTP error! Status: ${response.status}`);
@@ -933,7 +993,6 @@
                                     return response.json();
                                 })
                                 .catch(error => {
-                                    console.error('Fetch error:', error);
                                     Swal.showValidationMessage(`Lỗi: ${error.message}`);
                                 });
                         }
@@ -941,7 +1000,6 @@
                         button.disabled = false;
                         button.innerHTML = '<i class="bi bi-check-circle me-2"></i>Đã nhận hàng';
                         if (result.isConfirmed) {
-                            console.log('Fetch result:', result.value);
                             const modal = new bootstrap.Modal(document.getElementById(result.value
                                 .success ? 'orderModal' : 'orderErrorModal'));
                             const modalMessage = modal._element.querySelector('.modal-body h4');
@@ -1014,7 +1072,6 @@
                 'refund_in_processing': 'Đang xử lý trả hàng',
                 'refunded': 'Đã hoàn tiền'
             };
-            console.log('Status:', status, 'Label:', statusMap[status] || status);
             return statusMap[status] || status;
         }
 
@@ -1059,31 +1116,32 @@
 
                 actionContainer.appendChild(receiveButton);
                 actionContainer.appendChild(returnButton);
-            } else if (status === 'refund_in_processing') {
-                const span = document.createElement('span');
-                span.className = 'text-info';
-                span.textContent = 'Đang xử lý yêu cầu trả hàng';
-                actionContainer.appendChild(span);
-            } else if (status === 'refunded') {
-                const span = document.createElement('span');
-                span.className = 'text-success';
-                span.textContent = 'Đã hoàn tiền';
-                actionContainer.appendChild(span);
+                // } else if (status === 'refund_in_processing') {
+                //     const span = document.createElement('span');
+                //     span.className = 'text-info';
+                //     span.textContent = 'Đang xử lý yêu cầu trả hàng';
+                //     actionContainer.appendChild(span);
+                // } else if (status === 'refunded') {
+                //     const span = document.createElement('span');
+                //     span.className = 'text-success';
+                //     span.textContent = 'Đã hoàn tiền';
+                //     actionContainer.appendChild(span);
+                // }
             }
-        }
 
-        function createActionContainer(orderElement) {
-            const container = document.createElement('div');
-            container.className = 'd-flex justify-content-end gap-3 mt-1 flex-wrap';
-            const accordionHeader = orderElement.querySelector('.accordion-header');
-            const flexColumn = accordionHeader.querySelector(
-                '.d-flex.align-items-end.bg-light.rounded-4.p-4.border-0.flex-column');
-            if (flexColumn) {
-                flexColumn.appendChild(container);
-            } else {
-                accordionHeader.appendChild(container);
+            function createActionContainer(orderElement) {
+                const container = document.createElement('div');
+                container.className = 'd-flex justify-content-end gap-3 mt-1 flex-wrap';
+                const accordionHeader = orderElement.querySelector('.accordion-header');
+                const flexColumn = accordionHeader.querySelector(
+                    '.d-flex.align-items-end.bg-light.rounded-4.p-4.border-0.flex-column');
+                if (flexColumn) {
+                    flexColumn.appendChild(container);
+                } else {
+                    accordionHeader.appendChild(container);
+                }
+                return container;
             }
-            return container;
         }
     </script>
 @endsection

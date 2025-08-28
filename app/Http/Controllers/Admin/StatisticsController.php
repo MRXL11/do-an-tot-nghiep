@@ -27,124 +27,92 @@ class StatisticsController extends Controller
         );
     }
 
-    public function filterRevenue(Request $request)
-    {
-        try {
-            // ✅ Lấy khoảng thời gian cần thống kê, mặc định 30 ngày gần nhất
-            $start = Carbon::parse($request->query('start', now()->subDays(29)->format('Y-m-d')))->startOfDay();
-            $end = Carbon::parse($request->query('end', now()->format('Y-m-d')))->endOfDay();
+public function filterRevenue(Request $request)
+{
+    try {
+        // Lấy khoảng thời gian cần thống kê, mặc định 30 ngày gần nhất
+        $start = Carbon::parse($request->query('start', now()->subDays(29)->format('Y-m-d')))->startOfDay();
+        $end = Carbon::parse($request->query('end', now()->format('Y-m-d')))->endOfDay();
 
-            /*
-        |--------------------------------------------------------------------------
-        | PHẦN 1: LẤY DOANH THU & GIÁ VỐN THEO NGÀY
-        |--------------------------------------------------------------------------
-        */
+        // Lấy doanh thu theo ngày (đơn đã giao hoặc hoàn thành và đã thanh toán)
+        $revenueData = DB::table('orders')
+            ->selectRaw('DATE(created_at) as day, SUM(total_price) as revenue')
+            ->whereIn('status', ['delivered', 'completed'])
+            ->where('payment_status', 'completed') // Chỉ tính đơn đã thanh toán
+            ->whereNotIn('status', ['refund_in_processing', 'refunded']) // Loại trừ đơn hoàn tiền
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy('day')
+            ->orderBy('day')
+            ->get()
+            ->keyBy('day');
 
-            // ✅ Lấy doanh thu theo ngày (đơn đã giao hoặc hoàn thành và đã thanh toán)
-            $revenueData = DB::table('orders')
-                ->selectRaw('DATE(created_at) as day, SUM(total_price) as revenue')
-                ->whereIn('status', ['delivered', 'completed'])
-                ->whereIn('payment_status', ['pending', 'completed'])
-                ->whereBetween('created_at', [$start, $end])
-                ->groupBy('day')
-                ->orderBy('day')
-                ->get()
-                ->keyBy('day'); // Trả về collection dạng ['2025-07-01' => object]
+        // Lấy giá vốn theo ngày từ order_details
+        $costData = DB::table('orders')
+            ->join('order_details', 'orders.id', '=', 'order_details.order_id')
+            ->selectRaw('DATE(orders.created_at) as day, SUM(order_details.import_price * order_details.quantity) as total_cost')
+            ->whereIn('orders.status', ['delivered', 'completed'])
+            ->where('orders.payment_status', 'completed') // Chỉ tính đơn đã thanh toán
+            ->whereNotIn('orders.status', ['refund_in_processing', 'refunded']) // Loại trừ đơn hoàn tiền
+            ->whereBetween('orders.created_at', [$start, $end])
+            ->groupBy('day')
+            ->orderBy('day')
+            ->get()
+            ->keyBy('day');
 
-            // ✅ Lấy giá vốn theo ngày từ order_details
-            $costData = DB::table('orders')
-                ->join('order_details', 'orders.id', '=', 'order_details.order_id')
-                ->selectRaw('DATE(orders.created_at) as day, SUM(order_details.import_price * order_details.quantity) as total_cost')
-                ->whereIn('orders.status', ['delivered', 'completed'])
-                ->whereIn('orders.payment_status', ['pending', 'completed'])
-                ->whereBetween('orders.created_at', [$start, $end])
-                ->groupBy('day')
-                ->orderBy('day')
-                ->get()
-                ->keyBy('day');
+        // Chuẩn hóa dữ liệu theo ngày
+        $days = [];
+        $period = CarbonPeriod::create($start, $end);
+        $totalRevenue = 0;
+        $totalProfit = 0;
 
-            /*
-        |--------------------------------------------------------------------------
-        | PHẦN 2: CHUẨN HÓA DỮ LIỆU THEO NGÀY
-        |--------------------------------------------------------------------------
-        */
-
-            $days = []; // Danh sách kết quả từng ngày
-            $period = CarbonPeriod::create($start, $end); // Mỗi ngày trong khoảng thời gian
-
-            $totalRevenue = 0; // Tổng doanh thu toàn kỳ
-            $totalProfit = 0;  // Tổng lợi nhuận toàn kỳ
-
-            foreach ($period as $date) {
-                $key = $date->format('Y-m-d');
-
-                // Doanh thu ngày đó (nếu không có thì 0)
-                $revenue = (float) ($revenueData[$key]->revenue ?? 0);
-
-                // Giá vốn ngày đó
-                $cost = (float) ($costData[$key]->total_cost ?? 0);
-
-                // Lợi nhuận = doanh thu - giá vốn
-                $profit = $revenue - $cost;
-
-                // Lưu vào mảng trả về
-                $days[] = [
-                    'day' => $key,
-                    'revenue' => round($revenue),
-                    'profit' => round($profit),
-                ];
-
-                // Cộng dồn
-                $totalRevenue += $revenue;
-                $totalProfit += $profit;
-            }
-
-            /*
-        |--------------------------------------------------------------------------
-        | PHẦN 3: DOANH THU KỲ TRƯỚC & TỶ LỆ TĂNG TRƯỞNG
-        |--------------------------------------------------------------------------
-        */
-
-            // ✅ Xác định kỳ trước: cùng độ dài, liền trước giai đoạn hiện tại
-            $diff = $start->diffInDays($end);
-            $prevStart = $start->copy()->subDays($diff + 1);
-            $prevEnd = $start->copy()->subDay();
-
-            // ✅ Tổng doanh thu kỳ trước
-            $prevTotal = DB::table('orders')
-                ->whereIn('status', ['delivered', 'completed'])
-                ->where('payment_status', 'completed')
-                ->whereBetween('created_at', [$prevStart, $prevEnd])
-                ->sum('total_price');
-
-            // ✅ Tính tỷ lệ tăng trưởng (%)
-            $growthRate = $prevTotal > 0
-                ? round((($totalRevenue - $prevTotal) / $prevTotal) * 100, 2)
-                : null;
-
-            /*
-        |--------------------------------------------------------------------------
-        | PHẦN 4: TRẢ DỮ LIỆU VỀ DẠNG JSON
-        |--------------------------------------------------------------------------
-        */
-
-            return response()->json([
-                'days' => $days,                            // Dữ liệu từng ngày
-                'total' => round($totalRevenue),           // Tổng doanh thu
-                'total_profit' => round($totalProfit),     // Tổng lợi nhuận
-                'prev_total' => round($prevTotal),         // Doanh thu kỳ trước
-                'growth_rate' => $growthRate,              // Tỷ lệ tăng trưởng
-            ]);
-        } catch (\Exception $e) {
-            // Trả lỗi nếu có exception
-            return response()->json([
-                'error' => true,
-                'message' => $e->getMessage(),
-                'line' => $e->getLine(),
-            ], 500);
+        foreach ($period as $date) {
+            $key = $date->format('Y-m-d');
+            $revenue = (float) ($revenueData[$key]->revenue ?? 0);
+            $cost = (float) ($costData[$key]->total_cost ?? 0);
+            $profit = $revenue - $cost;
+            $days[] = [
+                'day' => $key,
+                'revenue' => round($revenue),
+                'profit' => round($profit),
+            ];
+            $totalRevenue += $revenue;
+            $totalProfit += $profit;
         }
-    }
 
+        // Xác định kỳ trước
+        $diff = $start->diffInDays($end);
+        $prevStart = $start->copy()->subDays($diff + 1);
+        $prevEnd = $start->copy()->subDay();
+
+        // Tổng doanh thu kỳ trước
+        $prevTotal = DB::table('orders')
+            ->whereIn('status', ['delivered', 'completed'])
+            ->where('payment_status', 'completed')
+            ->whereNotIn('status', ['refund_in_processing', 'refunded']) // Loại trừ đơn hoàn tiền
+            ->whereBetween('created_at', [$prevStart, $prevEnd])
+            ->sum('total_price');
+
+        // Tính tỷ lệ tăng trưởng (%)
+        $growthRate = $prevTotal > 0
+            ? round((($totalRevenue - $prevTotal) / $prevTotal) * 100, 2)
+            : null;
+
+        // Trả dữ liệu về dạng JSON
+        return response()->json([
+            'days' => $days,
+            'total' => round($totalRevenue),
+            'total_profit' => round($totalProfit),
+            'prev_total' => round($prevTotal),
+            'growth_rate' => $growthRate,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => true,
+            'message' => $e->getMessage(),
+            'line' => $e->getLine(),
+        ], 500);
+    }
+}
     public function getOrdersPerDay(Request $request)
     {
         $start = Carbon::parse($request->query('start', now()->subDays(6)->format('Y-m-d')))->startOfDay();
@@ -238,7 +206,7 @@ class StatisticsController extends Controller
         $start = Carbon::parse($request->query('start', now()->subDays(29)->format('Y-m-d')))->startOfDay();
         $end = Carbon::parse($request->query('end', now()->format('Y-m-d')))->endOfDay();
 
-        $statuses = ['pending', 'processing', 'shipped', 'delivered', 'completed', 'cancelled'];
+        $statuses = ['pending', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'refund_in_processing', 'refunded'];
 
         $orderCounts = DB::table('orders')
             ->select('status', DB::raw('COUNT(*) as count'))

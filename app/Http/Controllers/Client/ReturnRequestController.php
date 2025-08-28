@@ -9,17 +9,20 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\Events\OrderStatusUpdated;
 
 class ReturnRequestController extends Controller
 {
-    public function requestReturn($orderId, Request $request)
+public function requestReturn($orderId, Request $request)
     {
         $order = Order::findOrFail($orderId);
 
+        // Kiểm tra trạng thái đơn hàng
         if ($order->status !== 'delivered') {
             return back()->with('return-error', 'Chỉ có thể yêu cầu trả hàng với đơn đã được giao.');
         }
 
+        // Kiểm tra xem đã có yêu cầu trả hàng chưa
         if ($order->returnRequest) {
             return back()->with('return-error', 'Bạn đã gửi yêu cầu trả hàng.');
         }
@@ -30,25 +33,38 @@ class ReturnRequestController extends Controller
             return back()->with('return-error', 'Vui lòng cung cấp lý do trả hàng.');
         }
 
-        // Ghi nhận yêu cầu
+        // Ghi nhận yêu cầu trả hàng
         ReturnRequest::create([
             'order_id' => $order->id,
             'user_id' => Auth::id(),
             'status' => 'requested',
-            'reason' => trim($reason), // ✅ Lưu lý do từ client
+            'reason' => $reason,
         ]);
 
-        \Log::info('Return request received', [
+        // Cập nhật trạng thái đơn hàng
+        $order->status = 'refund_in_processing';
+        $order->save();
+
+        // Ghi log để kiểm tra
+        \Log::info('Return request processed', [
             'order_id' => $orderId,
-            'reason' => $request->input('reason'),
+            'status' => $order->status,
+            'reason' => $reason,
         ]);
 
         // Gửi thông báo đến admin
         $this->notifyAdminsAboutReturnRequest($order);
 
-        return back()->with('return-success', 'Yêu cầu trả hàng đã được ghi nhận. Vui lòng chờ admin liên hệ.');
-    }
+        // Phát sự kiện để cập nhật giao diện client
+        broadcast(new OrderStatusUpdated($order));
 
+        return response()->json([
+            'success' => true,
+            'message' => 'Yêu cầu trả hàng đã được ghi nhận. Vui lòng chờ admin liên hệ.',
+            'order_code' => $order->order_code,
+            'status' => $order->status,
+        ]);
+    }
     /**
      * Gửi thông báo đến tất cả admin về yêu cầu trả hàng.
      *

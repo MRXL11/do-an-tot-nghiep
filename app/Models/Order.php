@@ -4,46 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Events\OrderStatusUpdated;
-/**
- * @property int $id
- * @property string $order_code
- * @property int $user_id
- * @property string $total_price
- * @property string $status
- * @property string $payment_method
- * @property string $payment_status
- * @property string|null $note
- * @property int $shipping_address_id
- * @property int|null $coupon_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Coupon|null $coupon
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderDetail> $orderDetails
- * @property-read int|null $order_details_count
- * @property-read \App\Models\ReturnRequest|null $returnRequest
- * @property-read \App\Models\ShippingAddress $shippingAddress
- * @property-read \App\Models\User $user
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCouponId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereNote($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereOrderCode($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentMethod($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingAddressId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereTotalPrice($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereUserId($value)
- * @mixin \Eloquent
- */
+
 class Order extends Model
 {
-    //
-protected $fillable = [
+    protected $fillable = [
         'shop_address_id',
         'order_code',
         'user_id',
@@ -71,6 +35,7 @@ protected $fillable = [
         'order_discount', 
         'shipping_discount'
     ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -85,6 +50,7 @@ protected $fillable = [
     {
         return $this->hasMany(OrderDetail::class);
     }
+
     public function coupon()
     {
         return $this->belongsTo(Coupon::class);
@@ -95,7 +61,7 @@ protected $fillable = [
         return $this->hasOne(ReturnRequest::class);
     }
 
-    // gán hiển thị tiếng việt và định dạng cho trạng thái đơn hàng
+    // Gán hiển thị tiếng Việt và định dạng cho trạng thái đơn hàng
     public function getStatusLabel()
     {
         $statuses = [
@@ -105,6 +71,8 @@ protected $fillable = [
             'delivered' => ['label' => 'Đã giao hàng', 'color' => 'bg-success'],
             'completed' => ['label' => 'Đã hoàn thành', 'color' => 'bg-secondary'],
             'cancelled' => ['label' => 'Đơn đã hủy', 'color' => 'bg-danger'],
+            'refund_in_processing' => ['label' => 'Đang xử lý trả hàng', 'color' => 'bg-info'],
+            'refunded' => ['label' => 'Đã hoàn tiền', 'color' => 'bg-success'],
         ];
 
         return $statuses[$this->status] ?? ['label' => 'Không xác định', 'color' => 'bg-secondary'];
@@ -113,18 +81,20 @@ protected $fillable = [
     public static function getStatusMeta($status)
     {
         $statuses = [
-            'pending'    => ['label' => 'Đang chờ xử lý', 'color' => 'bg-warning'],
-            'processing' => ['label' => 'Đang xử lý',     'color' => 'bg-primary'],
-            'shipped'    => ['label' => 'Đang giao hàng', 'color' => 'bg-info'],
-            'delivered'  => ['label' => 'Đã giao hàng',  'color' => 'bg-success'],
+            'pending' => ['label' => 'Đang chờ xử lý', 'color' => 'bg-warning'],
+            'processing' => ['label' => 'Đang xử lý', 'color' => 'bg-primary'],
+            'shipped' => ['label' => 'Đang giao hàng', 'color' => 'bg-info'],
+            'delivered' => ['label' => 'Đã giao hàng', 'color' => 'bg-success'],
             'completed' => ['label' => 'Đã hoàn thành', 'color' => 'bg-secondary'],
-            'cancelled'  => ['label' => 'Đơn đã hủy',     'color' => 'bg-danger'],
+            'cancelled' => ['label' => 'Đơn đã hủy', 'color' => 'bg-danger'],
+            'refund_in_processing' => ['label' => 'Đang xử lý trả hàng', 'color' => 'bg-info'],
+            'refunded' => ['label' => 'Đã hoàn tiền', 'color' => 'bg-success'],
         ];
 
         return $statuses[$status] ?? ['label' => 'Không xác định', 'color' => 'bg-secondary'];
     }
 
-    // gán hiển thị tiếng việt và định dạng cho phương thức thanh toán
+    // Gán hiển thị tiếng Việt và định dạng cho phương thức thanh toán
     public function getPaymentMethod($paymentMethod)
     {
         $methods = [
@@ -136,7 +106,7 @@ protected $fillable = [
         return $methods[$paymentMethod] ?? ['label' => 'Không xác định'];
     }
 
-    // gán hiển thị tiếng việt và định dạng cho trạng thái thanh toán
+    // Gán hiển thị tiếng Việt và định dạng cho trạng thái thanh toán
     public function getPaymentStatus($paymentStatus)
     {
         $paymentStatuses = [
@@ -152,6 +122,5 @@ protected $fillable = [
 
     protected $dispatchesEvents = [
         'updated' => OrderStatusUpdated::class,
-        // 'created' => OrderStatusUpdated::class,
     ];
 }
