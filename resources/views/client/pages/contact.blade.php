@@ -11,11 +11,13 @@
     <div class="container contact-us">
         <div class="row">
             <div class="col-lg-6">
-                <div id="map">
-                    <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d90186.37207676383!2d-80.13495239500924!3d25.9317678710111!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88d9ad1877e4a82d%3A0xa891714787d1fb5e!2sPier%20Park!5e1!3m2!1sen!2sth!4v1637512439384!5m2!1sen!2sth"
-                        width="100%" height="400px" frameborder="0" style="border:0" allowfullscreen></iframe>
-                </div>
+                <div id="map" 
+     style="cursor: pointer;"
+     onclick="window.open('https://www.google.com/maps/place/Tr%C6%B0%E1%BB%9Dng+Cao+%C4%91%E1%BA%B3ng+FPT+Polytechnic/@21.0391705,105.7479312,16.11z/data=!4m6!3m5!1s0x313455e940879933:0xcf10b34e9f1a03df!8m2!3d21.0381298!4d105.7472618!16s%2Fg%2F11krd97y__?entry=ttu&g_ep=EgoyMDI1MDgyNS4wIKXMDSoASAFQAw%3D%3D', '_blank')">
+    <iframe
+        src="https://www.google.com/maps/embed?pb=..."
+        width="100%" height="400px" frameborder="0" style="border:0; pointer-events: none;" allowfullscreen></iframe>
+</div>
             </div>
             <div class="col-lg-6">
                 <div class="section-heading">
@@ -52,56 +54,5 @@
         </div>
     </div>
 
-    <div class="subscribe mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="section-heading">
-                        <h2>Đăng ký nhận bản tin để được giảm giá 30%</h2>
-                        <span>Chi tiết tạo nên sự khác biệt cho HN_447 so với các mẫu khác.</span>
-                    </div>
-                    <form id="subscribe" action="{{ route('newsletter.subscribe') }}" method="get">
-                        <div class="row">
-                            <div class="col-lg-5">
-                                <fieldset>
-                                    <input name="name" type="text" id="name" placeholder="Họ và tên" required>
-                                </fieldset>
-                            </div>
-                            <div class="col-lg-5">
-                                <fieldset>
-                                    <input name="email" type="text" id="email" pattern="[^ @]*@[^ @]*"
-                                        placeholder="Địa chỉ email của bạn" required>
-                                </fieldset>
-                            </div>
-                            <div class="col-lg-2">
-                                <fieldset>
-                                    <button type="submit" id="form-submit" class="main-dark-button"><i
-                                            class="fa fa-paper-plane"></i></button>
-                                </fieldset>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="col-lg-4">
-                    <div class="row">
-                        <div class="col-6">
-                            <ul>
-                                <li>Địa điểm cửa hàng:<br><span>Số 1 Trịnh Văn Bô, Hà Nội</span></li>
-                                <li>Điện thoại:<br><span>010-020-0340</span></li>
-                                <li>Văn phòng:<br><span>Fpt</span></li>
-                            </ul>
-                        </div>
-                        <div class="col-6">
-                            <ul>
-                                <li>Giờ làm việc:<br><span>07:30 Sáng - 9:30 Tối hàng ngày</span></li>
-                                <li>Email:<br><span>HN_447@company.com</span></li>
-                                <li>Mạng xã hội:<br><span><a href="#">Facebook</a>, <a href="#">Instagram</a>,
-                                        <a href="#">Behance</a>, <a href="#">LinkedIn</a></span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 @endsection
