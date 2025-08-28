@@ -1,7 +1,8 @@
 @extends('admin.layouts.AdminLayouts')
 
 @section('title-page')
-    <h3>Chi tiết & Chỉnh sửa sản phẩm <strong class="text-primary">{{ $product->name }}</strong></h3>
+    <h3>
+        Chi tiết & Chỉnh sửa sản phẩm <strong class="text-primary">{{ $product->name }}</strong></h3>
 @endsection
 
 @section('content')
@@ -130,7 +131,8 @@
                 <div class="col-md-12">
                     <h3>Biến thể sản phẩm</h3>
                     <p class="text-muted mb-0">
-                        Chỉnh sửa giá nhập, giá bán và số lượng của các biến thể sản phẩm. Các trường màu sắc, kích cỡ và trạng thái không thể chỉnh sửa.
+                        Chỉnh sửa giá nhập, giá bán và số lượng của các biến thể sản phẩm. Các trường màu sắc, kích cỡ và
+                        trạng thái không thể chỉnh sửa.
                     </p>
                 </div>
             </div>
@@ -177,7 +179,20 @@
                                             </td>
                                             <td>{{ $variant->color ?? 'N/A' }}</td>
                                             <td>{{ $variant->size ?? 'N/A' }}</td>
-                                            <td>{{ $variant->status == 'active' ? 'Kích hoạt' : 'Không kích hoạt' }}</td>
+                                            <td>
+                                                <select class="form-control" id="status" name="variants[{{ $index }}][status]">
+                                                    <option value="active"
+                                                        {{ $variant->status == 'active' ? 'selected' : '' }}>Kích hoạt
+                                                    </option>
+                                                    <option value="inactive"
+                                                        {{ $variant->status == 'inactive' ? 'selected' : '' }}>Không kích
+                                                        hoạt
+                                                    </option>
+                                                </select>
+                                                @error('status')
+                                                    <div class="text-danger small">{{ $message }}</div>
+                                                @enderror
+                                            </td>
                                             <td>
                                                 <input type="number" class="form-control"
                                                     name="variants[{{ $index }}][import_price]"
