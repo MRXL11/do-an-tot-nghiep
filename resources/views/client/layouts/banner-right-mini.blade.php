@@ -13,7 +13,7 @@
                                                 <h4>Phái đẹp</h4>
                                                 <p>Sang trọng quý phái, hóa trẻ em, hóa người lớn</p>
                                                 <div class="main-border-button">
-                                                    <a href="#">Xem thêm</a>
+                                                    <a href="{{ url('/#women') }}">Xem thêm</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -33,7 +33,7 @@
                                                 <h4>Đồ nam</h4>
                                                 <p>Thời trang phong cách, mạnh mẽ, lịch lãm cho nam giới hiện đại.</p>
                                                 <div class="main-border-button">
-                                                    <a href="#">Khám phá thêm</a>
+                                                   <a href="{{ url('/#men') }}">Khám phá thêm</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -53,7 +53,7 @@
                                                 <h4>Trẻ em</h4>
                                                 <p>Trang phục năng động, thoải mái, đáng yêu cho bé trai và bé gái.</p>
                                                 <div class="main-border-button">
-                                                    <a href="#">Khám phá thêm</a>
+                                                    <a href="{{ url('/#kids') }}">Khám phá thêm</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -73,7 +73,7 @@
                                                 <h4>Phụ kiện</h4>
                                                 <p>Tạo điểm nhấn cá tính với phụ kiện thời trang độc đáo, hiện đại.</p>
                                                 <div class="main-border-button">
-                                                    <a href="#">Khám phá thêm</a>
+                                                    <a href="{{ route('products-client') }}">Khám phá thêm</a>
                                                 </div>
                                             </div>
                                         </div>

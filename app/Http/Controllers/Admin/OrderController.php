@@ -84,7 +84,7 @@ class OrderController extends Controller
     {
         $order = Order::findOrFail($id);
         $oldStatusLabel = Order::getStatusMeta($order->status)['label'];
-
+        
 
         // Lấy trạng thái mới từ request
         $newStatus = $request->input('status');
