@@ -35,11 +35,12 @@ class UpdateCouponRequest extends FormRequest
                 'nullable',
                 'numeric',
                 'min:0',
-                function ($attribute, $value, $fail) {
-                    if ($this->input('discount_type') == 'fixed' && !is_null($value) && $value < $this->input('discount_value')) {
-                        $fail('Giảm tối đa phải lớn hơn hoặc bằng giá trị giảm.');
-                    }
-                },
+                // function ($attribute, $value, $fail) {
+                //     $discountType = $this->input('discount_type');
+                //     if (in_array($discountType, ['fixed', 'fixed_shipping']) && !is_null($value) && $value < $this->input('discount_value')) {
+                //         $fail('Giảm tối đa phải lớn hơn hoặc bằng giá trị giảm.');
+                //     }
+                // },
             ],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],

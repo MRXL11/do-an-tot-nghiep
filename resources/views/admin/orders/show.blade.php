@@ -235,7 +235,7 @@
                             <th>Mô tả ngắn</th>
                             <th>Số lượng</th>
                             <th>Đơn giá (VNĐ)</th>
-                            <th>Giảm giá (VNĐ)</th>
+                            {{-- <th>Giảm giá (VNĐ)</th> --}}
                             <th>Tổng (VNĐ)</th>
                         </tr>
                     </thead>
