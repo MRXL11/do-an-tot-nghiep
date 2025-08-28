@@ -16,18 +16,18 @@
                 <div class="col-lg-3">
                     <h4>Mua sắm &amp; Các danh mục</h4>
                     <ul>
-                        <li><a href="#">Mua sắm nam giới</a></li>
-                        <li><a href="#">Mua sắm nữ giới</a></li>
-                        <li><a href="#">Mua sắm trẻ em</a></li>
+                        <li><a href="{{ url('/#men') }}">Mua sắm nam giới</a></li>
+                        <li><a href="{{ url('/#women') }}">Mua sắm nữ giới</a></li>
+                        <li><a href="{{ url('/#kids') }}">Mua sắm trẻ em</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3">
                     <h4>Liên kết hữu ích</h4>
                     <ul>
-                        <li><a href="#">Trang chủ</a></li>
-                        <li><a href="#">Về chúng tôi</a></li>
+                        <li><a href="{{ url('/') }}">Trang chủ</a></li>
+                        <li><a href="{{ url('/about') }}">Về chúng tôi</a></li>
                         <li><a href="#">Trợ giúp</a></li>
-                        <li><a href="#">Liên hệ chúng tôi</a></li>
+                        <li><a href="{{ url('/contact') }}">Liên hệ chúng tôi</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3">
